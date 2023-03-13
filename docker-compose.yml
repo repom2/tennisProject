@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  tennisproject:
+    container_name: tennisproject
+    build:
+      context: tennisproject
+    volumes:
+      - ./tennisproject:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://tennis:tennis@db:5432/tennis?connect_timeout=3
+      - DBT_HOST=db
+      - DBT_NAME=tennis
+      - DBT_USER=tennis
+      - DBT_PASSWORD=tennis
+      - DJANGO_SUPERUSER_USERNAME=repomi
+      - DJANGO_SUPERUSER_EMAIL=repomi@msn.com
+      - DJANGO_SUPERUSER_PASSWORD=repomi
+      - RUN_MIGRATIONS=true
+      - GUNICORN=true
+
+  db:
+    image: postgres
+    volumes:
+      - pgdata:/var/lib/posgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: tennis
+      POSTGRES_PASSWORD: tennis
+      POSTGRES_DB: tennis
+
+volumes:
+  pgdata:

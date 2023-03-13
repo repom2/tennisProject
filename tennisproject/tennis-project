@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+export DEBUG=${DEBUG:-false}
+export GUNICORN
+export UVICORN=${UVICORN:-false}
+export RUN_MIGRATIONS
+export $DJANGO_SUPERUSER_USERNAME
+export $DJANGO_SUPERUSER_PASSWORD
+export $DJANGO_SUPERUSER_EMAIL
+
+echo -e "\e[34m >>> Environment variables: \e[97m"
+if [ "${DEBUG}" == "true" ]; then
+	echo "DATABASE_URL=${DATABASE_URL}"
+fi
+echo "DEBUG=${DEBUG}"
+echo "RUN_MIGRATIONS=${RUN_MIGRATIONS}"
+echo "ALLOWED_HOSTS=${ALLOWED_HOSTS}"
+echo "DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}"
+echo "DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}"
+
+if [ "${RUN_MIGRATIONS}" == "true" ]; then
+	echo -e "\e[34m >>> Migrating changes \e[97m"
+	poetry run python manage.py migrate
+	echo -e "\e[32m >>> migration completed \e[97m"
+fi
+
+if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ] && [ -n "DJANGO_SUPERUSER_EMAIL" ] ; then
+    (python manage.py createsuperuser --no-input)
+fi
+
+echo -e "\e[34m >>> Starting the server \e[97m"
+
+if [ "${GUNICORN}" == "true" ]; then
+	echo "Starting gunicorn"
+	(gunicorn tennisproject.wsgi --user www-data --bind 0.0.0.0:8010 --workers 3) &
+nginx -g "daemon off;"
+fi
+
+if [ "${UVICORN}" == "true" ]; then
+	echo "Starting uvicorn"
+	poetry run python server.py
+	exit $?
+fi
+
+poetry run python manage.py runserver 0.0.0.0:8000
+
+

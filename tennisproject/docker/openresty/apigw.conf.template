@@ -1,0 +1,75 @@
+lua_package_path '/lua/?.lua;;';
+
+# oidc needs a resolver
+resolver $DNS_RESOLVER;
+
+# oidc needs to verify certs
+lua_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+lua_ssl_verify_depth 5;
+
+# cache for discovery metadata documents
+lua_shared_dict discovery 1m;
+# cache for JWKs
+lua_shared_dict jwks 1m;
+# cache for JWT verification results
+lua_shared_dict jwt_verification 10m;
+# cache for validation results
+#lua_shared_dict introspection 10m;
+
+server {
+    listen 80;
+
+    location / {
+        access_by_lua_block {
+            local opts = {
+               discovery = "$OIDC_DISCOVERY_URL",
+               client_id = "$OIDC_CLIENT_ID",
+               client_secret = "$OIDC_CLIENT_SECRET",
+            }
+
+            -- call bearer_jwt_verify for OAuth 2.0 JWT validation
+            local res, err = require("resty.openidc").bearer_jwt_verify(opts)
+
+             if err or not res then
+              ngx.status = 401
+              ngx.log(ngx.ERR, err)
+              ngx.say(err and err or "no access_token provided")
+              return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+            end
+
+            -- at this point res is a Lua table that represents the (validated) JSON
+            -- payload in the JWT token; now we typically do not want to allow just any
+            -- token that was issued by the Authorization Server but we want to apply
+            -- some access restrictions via client IDs or scopes
+
+            --if res.scope ~= "edit" then
+            --  ngx.exit(ngx.HTTP_FORBIDDEN)
+            --end
+
+            --if res.client_id ~= "$OIDC_CLIENT_ID" then
+            --    return ngx.exit(ngx.HTTP_FORBIDDEN)
+            --end
+
+            if res.iss ~= "$OIDC_ISSUER" then
+                return ngx.exit(ngx.HTTP_FORBIDDEN)
+            end
+
+            if res.aud ~= "$OIDC_AUDIENCE" then
+                return ngx.exit(ngx.HTTP_FORBIDDEN)
+            end
+
+            local default_role = "$OIDC_DEFAULT_ROLE";
+            if default_role == "" then
+                default_role = nil
+            end
+
+            ngx.req.set_header("X-Forwarded-User", res.sub)
+            ngx.req.set_header("X-Forwarded-Name", res.name)
+            ngx.req.set_header("X-Forwarded-Email", res.email)
+            ngx.req.set_header("X-Forwarded-Groups", res.groups)
+            ngx.req.set_header("X-Forwarded-Role", res.role or default_role)
+        }
+
+        proxy_pass $UPSTREAM_URL;
+    }
+}

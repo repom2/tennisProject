@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "tennis-project"
+version = "0.1.0"
+description = "Tennis Project"
+authors = ["repom2 <mikkorepo@msn.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.1.7"
+gunicorn = "^20.1.0"
+psycopg2 = "^2.9.5"
+psycopg2-binary = "^2.9.5"
+environ = "^1.0"
+dbt-postgres = "^1.4.5"
+dbt-rpc = "^0.3.1"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

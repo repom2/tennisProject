@@ -11,3 +11,5 @@ If you are using Docker Compose, Poetry can be used by prefixing commands with `
 ```bash
 docker compose exec app poetry add <package name>
 '''
+
+docker compose exec db psql -U tennis

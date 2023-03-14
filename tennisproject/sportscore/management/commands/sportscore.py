@@ -1,22 +1,97 @@
-import requests
+import json
 import os
+
+import pandas as pd
+import requests
+from django.core.exceptions import ValidationError
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from sportscore.models import Leagues
+
+pd.set_option('display.max_columns', None)
 
 
 class Command(BaseCommand):
     """Sportscore Data"""
 
     def add_arguments(self, parser):
-        list_sports_cmd = subparsers.add_parser("list-custom-fields")
+        subparsers = parser.add_subparsers(
+            title="subcommands", dest="subcommand", required=True
+        )
+
+        list_sports_cmd = subparsers.add_parser("sports")
         list_sports_cmd.set_defaults(subcommand=self.list_sports)
 
-    def list_sports(self):
+        list_sections_cmd = subparsers.add_parser("sections")
+        list_sections_cmd.set_defaults(subcommand=self.list_sections)
+
+        list_leagues_cmd = subparsers.add_parser("leagues")
+        list_leagues_cmd.set_defaults(subcommand=self.list_leagues)
+
+    def handle(self, *args, **options):
+        options["subcommand"](options)
+
+    def list_sports(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports"
         sport_score_key = os.getenv('SPORT_SCORE_KEY')
         headers = {
-            "X-RapidAPI-Key": sport_score_key,
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
         response = requests.request("GET", url, headers=headers)
 
-        print(response.text)
+        data = response.text
+        data = json.loads(data)
+        data_df = data['data']
+        df = pd.DataFrame(data_df)
+        print(df)
+
+    def list_sections(self, options):
+        url = "https://sportscore1.p.rapidapi.com/sports/2/sections"
+        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        headers = {
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        response = requests.request(
+            "GET", url, headers=headers)
+
+        data = response.text
+        data = json.loads(data)
+        data_df = data['data']
+        df = pd.DataFrame(data_df)
+        print(df)
+
+    def list_leagues(self, options):
+        url = "https://sportscore1.p.rapidapi.com/sports/2/leagues"
+        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        headers = {
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        querystring = {"page": "1"}
+
+        response = requests.request(
+            "GET", url, headers=headers, params=querystring
+        )
+
+        data = response.text
+        data = json.loads(data)
+        data_df = data['data']
+        last_page = data['meta']["last_page"]
+
+        for page in range(2, last_page+1):
+            querystring = {"page": str(page)}
+            response = requests.request(
+                "GET", url, headers=headers, params=querystring
+            )
+            data = response.text
+            data = json.loads(data)
+            data_df.extend(data["data"])
+
+        for item in data_df:
+            m = Leagues(**item)
+            m.save()

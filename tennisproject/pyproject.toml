@@ -14,6 +14,9 @@ psycopg2-binary = "^2.9.5"
 environ = "^1.0"
 dbt-postgres = "^1.4.5"
 dbt-rpc = "^0.3.1"
+pandas = "^1.5.3"
+isort = "^5.12.0"
+flake8 = "^6.0.0"
 
 
 [build-system]

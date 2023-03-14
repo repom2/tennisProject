@@ -22,6 +22,7 @@ services:
       - DJANGO_SUPERUSER_PASSWORD=repomi
       - RUN_MIGRATIONS=true
       - GUNICORN=true
+      - SPORT_SCORE_KEY
 
   db:
     image: postgres

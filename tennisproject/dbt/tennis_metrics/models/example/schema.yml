@@ -2,7 +2,7 @@
 version: 2
 
 models:
-  - name: tournaments
+  - name: tennisapi_tournaments
     description: "A starter dbt model"
     columns:
       - name: id

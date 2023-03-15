@@ -1,0 +1,10 @@
+---
+version: 2
+sources:
+  - name: public
+    quoting:
+      database: true
+      schema: false
+      identifier: false
+    tables:
+      - name: sportscore_leagues

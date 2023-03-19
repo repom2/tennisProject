@@ -3,13 +3,33 @@
 To reset the development environment and restart from a clean state, run
 
 ```bash
+docker build tennisproject
+
 docker compose down --volumes --rmi all
-'''
+
 
 If you are using Docker Compose, Poetry can be used by prefixing commands with `docker compose exec app`. For example:
 
-```bash
-docker compose exec app poetry add <package name>
-'''
+docker compose exec tennisproject bash
+
+docker compose exec tennisproject poetry add <package name>
 
 docker compose exec db psql -U tennis
+
+
+### Available Scripts
+
+In the project directory, you can run:
+
+### Save leagues (tournaments) to sportscore tables
+python manage.py sportscore leagues
+
+### DBT
+
+crosstab function
+
+### Save data fro sportscore to tennisapi table
+
+cd dbt/tennis_metrics
+
+dbt run 

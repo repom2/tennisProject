@@ -6,7 +6,7 @@ import requests
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from sportscore.models import Leagues
+from sportscore.models import Leagues, Events
 from tqdm import tqdm
 
 pd.set_option('display.max_columns', None)
@@ -28,6 +28,9 @@ class Command(BaseCommand):
 
         list_leagues_cmd = subparsers.add_parser("leagues")
         list_leagues_cmd.set_defaults(subcommand=self.list_leagues)
+
+        list_events_cmd = subparsers.add_parser("events")
+        list_events_cmd.set_defaults(subcommand=self.list_events)
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -83,15 +86,8 @@ class Command(BaseCommand):
         data = json.loads(data)
         data_df = data['data']
         last_page = data['meta']["last_page"]
-        print(last_page)
-        print(data_df)
 
-        for item in data_df:
-            print(item)
-            m = Leagues(**item)
-            m.save()
-
-        """with tqdm(total=last_page) as pbar:
+        with tqdm(total=last_page) as pbar:
             for page in range(1, last_page+1):
                 querystring = {"page": str(page)}
                 response = requests.request(
@@ -110,4 +106,44 @@ class Command(BaseCommand):
             for item in data_df:
                 m = Leagues(**item)
                 m.save()
-                pbar.update(1)"""
+                pbar.update(1)
+
+    def list_events(self, options):
+        url = "https://sportscore1.p.rapidapi.com/sports/2/events"
+        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        headers = {
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        querystring = {"page": "1"}
+
+        response = requests.request(
+            "GET", url, headers=headers, params=querystring
+        )
+
+        data = response.text
+        data = json.loads(data)
+        data_df = data['data']
+        to = data['meta']["to"]
+        to = 10
+        with tqdm(total=to) as pbar:
+            for page in range(1, to+1):
+                querystring = {"page": str(page)}
+                response = requests.request(
+                    "GET", url, headers=headers, params=querystring
+                )
+                data = response.text
+                data = json.loads(data)
+                try:
+                    data_df.extend(data["data"])
+                except KeyError:
+                    print(data_df)
+                    pass
+                pbar.update(1)
+
+        with tqdm(total=len(data_df)) as pbar:
+            for item in data_df:
+                m = Events(**item)
+                m.save()
+                pbar.update(1)

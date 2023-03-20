@@ -83,20 +83,31 @@ class Command(BaseCommand):
         data = json.loads(data)
         data_df = data['data']
         last_page = data['meta']["last_page"]
+        print(last_page)
+        print(data_df)
 
-        with tqdm(total=last_page) as pbar:
-            for page in range(2, last_page+1):
+        for item in data_df:
+            print(item)
+            m = Leagues(**item)
+            m.save()
+
+        """with tqdm(total=last_page) as pbar:
+            for page in range(1, last_page+1):
                 querystring = {"page": str(page)}
                 response = requests.request(
                     "GET", url, headers=headers, params=querystring
                 )
                 data = response.text
                 data = json.loads(data)
-                data_df.extend(data["data"])
+                try:
+                    data_df.extend(data["data"])
+                except KeyError:
+                    print(data_df)
+                    pass
                 pbar.update(1)
 
         with tqdm(total=len(data_df)) as pbar:
             for item in data_df:
                 m = Leagues(**item)
                 m.save()
-                pbar.update(1)
+                pbar.update(1)"""

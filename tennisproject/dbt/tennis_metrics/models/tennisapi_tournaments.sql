@@ -12,26 +12,31 @@
     indexes = [
         {'columns':['id'],'unique':True},
     ],
-    materialized='table',
     unique_key = "id",
-    schema = "public",
-    on_schema_change='ignore'
+    full_refresh = false,
+    on_schema_change='fail',
+    tags = [ "top-level" ],
     )
 }}
 
 select
-    s.id::numeric,
+    s.id::integer,
     s.slug,
-	facts.continent,
-	facts.end_date,
+    s.section_id::integer,
+    trim('"' FROM (section -> 'flag')::text) as section_slug,
+    trim('"' FROM (section -> 'name')::text) as section_name,
+    trim('"' FROM (section -> 'priority')::text) as priority,
+    trim('"' FROM (name_translations -> 'en')::text) as name,
+	facts.continent as continent,
+	case when s.end_date = '' then null else s.end_date::timestamp with time zone end as end_date,
 	facts.ground_type,
-	facts.number_of_competitors,
-    facts.number_of_sets,
+	facts.number_of_competitors::integer,
+    facts.number_of_sets::integer,
 	facts.prize_currency,
-	facts.start_date,
-	facts.total_prize_money
+	case when s.start_date = '' then null else s.start_date::timestamp with time zone end as start_date,
+	replace(facts.total_prize_money, ',', '')::integer as total_prize_money
 from sportscore_leagues s
-left join tennisapi_tournaments t on(t.id=s.id::numeric)
+left join tennisapi_tournaments t on(t.id=s.id::integer)
 left join (
 select *
 from crosstab(

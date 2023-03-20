@@ -8,3 +8,4 @@ sources:
       identifier: false
     tables:
       - name: sportscore_leagues
+

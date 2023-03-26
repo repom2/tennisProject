@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "sportscore",
     "tennisapi",
+    "tennis_atp",
 ]
 
 MIDDLEWARE = [

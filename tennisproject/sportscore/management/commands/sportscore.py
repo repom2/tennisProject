@@ -6,7 +6,7 @@ import requests
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from sportscore.models import Leagues, Events
+from sportscore.models import Leagues, Events, Players, Teams
 from tqdm import tqdm
 
 pd.set_option('display.max_columns', None)
@@ -31,6 +31,15 @@ class Command(BaseCommand):
 
         list_events_cmd = subparsers.add_parser("events")
         list_events_cmd.set_defaults(subcommand=self.list_events)
+
+        list_players_cmd = subparsers.add_parser("players")
+        list_players_cmd.set_defaults(subcommand=self.list_players)
+
+        event_players_cmd = subparsers.add_parser("tennis-players")
+        event_players_cmd.set_defaults(subcommand=self.event_players)
+
+        list_teams_cmd = subparsers.add_parser("teams")
+        list_teams_cmd.set_defaults(subcommand=self.list_teams)
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -145,5 +154,118 @@ class Command(BaseCommand):
         with tqdm(total=len(data_df)) as pbar:
             for item in data_df:
                 m = Events(**item)
+                m.save()
+                pbar.update(1)
+
+    def list_players(self, options):
+        url = "https://sportscore1.p.rapidapi.com/players"
+        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        headers = {
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        querystring = {"page": "1"}
+
+        response = requests.request(
+            "GET", url, headers=headers, params=querystring
+        )
+
+        data = response.text
+        print(data)
+        data = json.loads(data)
+        data_df = data['data']
+        to = data['meta']["to"]
+        #to = 10
+        with tqdm(total=to) as pbar:
+            for page in range(1, to+1):
+                querystring = {"page": str(page)}
+                response = requests.request(
+                    "GET", url, headers=headers, params=querystring
+                )
+                data = response.text
+                data = json.loads(data)
+                try:
+                    data_df.extend(data["data"])
+                except KeyError:
+                    print(data_df)
+                    pass
+                pbar.update(1)
+
+        with tqdm(total=len(data_df)) as pbar:
+            for item in data_df:
+                try:
+                    m = Players(**item)
+                except TypeError:
+                    item['name_translations'] = item.pop('name_translation')
+                    m = Players(**item)
+                m.save()
+                pbar.update(1)
+
+    def event_players(self, options):
+        qs = list(Events.objects.filter(sport_id=2).values_list('home_team_id', flat=True).distinct())
+        qs2 = Events.objects.filter(sport_id=2).values_list('away_team_id', flat=True).distinct()
+
+        in_first = set(qs)
+        in_second = set(qs2)
+
+        in_second_but_not_in_first = in_second - in_first
+
+        result = qs + list(in_second_but_not_in_first)
+
+        with tqdm(total=len(qs)) as pbar:
+            for id in result[0:1]:
+                url = "https://sportscore1.p.rapidapi.com/players/" + str(id)
+
+                headers = {
+                    "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+                    "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+                }
+
+                response = requests.request("GET", url, headers=headers)
+
+                data = response.text
+                data = json.loads(data)
+                m = Players(**data["data"])
+                m.save()
+
+    def list_teams(self, options):
+        url = "https://sportscore1.p.rapidapi.com/teams"
+        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        headers = {
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        querystring = {"page": "1"}
+
+        response = requests.request(
+            "GET", url, headers=headers, params=querystring
+        )
+
+        data = response.text
+        print(data)
+        data = json.loads(data)
+        data_df = data['data']
+        to = data['meta']["to"]
+        to = 1400
+        with tqdm(total=to) as pbar:
+            for page in range(1, to+1):
+                querystring = {"page": str(page)}
+                response = requests.request(
+                    "GET", url, headers=headers, params=querystring
+                )
+                data = response.text
+                data = json.loads(data)
+                try:
+                    data_df.extend(data["data"])
+                except KeyError:
+                    print(data_df)
+                    pass
+                pbar.update(1)
+
+        with tqdm(total=len(data_df)) as pbar:
+            for item in data_df:
+                m = Teams(**item)
                 m.save()
                 pbar.update(1)

@@ -22,7 +22,8 @@ docker compose exec db psql -U tennis
 In the project directory, you can run:
 
 ### Save leagues (tournaments) to sportscore tables
-python manage.py sportscore leagues
+poetry run python manage.py sportscore leagues
+poetry run python manage.py sportscore events
 
 ### DBT
 

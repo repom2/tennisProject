@@ -28,7 +28,7 @@ poetry run python manage.py sportscore events
 ### DBT
 
 crosstab function
-
+CREATE EXTENSION IF NOT EXISTS tablefunc;
 ### Save data fro sportscore to tennisapi table
 
 cd dbt/tennis_metrics

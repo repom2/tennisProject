@@ -21,6 +21,7 @@ class Tournaments(models.Model):
 
 
 class Players(models.Model):
+    id = models.TextField(primary_key=True)
     sportscore_id = models.IntegerField(null=True)
     player_id = models.IntegerField(null=True)
     dob = models.DateField(null=True)
@@ -28,3 +29,6 @@ class Players(models.Model):
     country_code = models.TextField(null=True)
     height = models.FloatField(null=True)
     wikidata_id = models.TextField(null=True)
+    first_name = models.TextField(null=True)
+    last_name = models.TextField(null=True)
+    slug = models.TextField(null=True)

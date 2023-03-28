@@ -54,8 +54,9 @@ class Command(BaseCommand):
         for i in range(start_year, end_year+1):
             file_name = "/app/tennis_atp/tennis_data/atp_matches_" + str(i) + ".csv"
             tmp_data = pd.read_csv(file_name, sep=',')
+            #df.to_dict(orient='records')
             products = [
-                Players(
+                AtpMatches(
                     tourney_id=row['tourney_id'],
                     tourney_name=row['tourney_name'],
                     surface=row['surface'],

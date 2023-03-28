@@ -13,7 +13,8 @@ class Players(models.Model):
 
 
 class AtpMatches(models.Model):
-    tourney_id = models.TextField(primary_key=True)
+    id = models.AutoField(primary_key=True)
+    tourney_id = models.TextField()
     tourney_name = models.TextField(null=True)
     surface = models.TextField(null=True)
     draw_size = models.TextField(null=True)

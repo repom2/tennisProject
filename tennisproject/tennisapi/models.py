@@ -18,3 +18,13 @@ class Tournaments(models.Model):
     number_of_sets = models.IntegerField(null=True)
     prize_currency = models.TextField(null=True)
     total_prize_money = models.IntegerField(null=True)
+
+
+class Players(models.Model):
+    sportscore_id = models.IntegerField(null=True)
+    player_id = models.IntegerField(null=True)
+    dob = models.DateField(null=True)
+    hand = models.TextField(null=True)
+    country_code = models.TextField(null=True)
+    height = models.FloatField(null=True)
+    wikidata_id = models.TextField(null=True)

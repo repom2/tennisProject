@@ -28,22 +28,22 @@ class Command(BaseCommand):
         options["subcommand"](options)
 
     def list_players(self, options):
-        file_name = "tennisproject/tennis_atp/tennis_data/atp_players.csv"
-        file_name = os.path.join(settings.BASE_DIR / file_name)
-        print(file_name)
-        tmp_data = pd.read_csv(file_name, sep=';')
+        file_name2 = "/app/tennisproject/tennis_atp/tennis_data/atp_players.csv"
+        file_name = os.path.join(settings.BASE_DIR / "atp_players.csv")
+        print(file_name2)
+        tmp_data = pd.read_csv(file_name, sep=',')
 
         products = [
             Players(
-                player_id=tmp_data.ix[row]['player_id'],
-                name_first=tmp_data.ix[row]['name_first'],
-                name_last=tmp_data.ix[row]['name_last'],
-                hand=tmp_data.ix[row]['hand'],
-                dob=tmp_data.ix[row]['dob'],
-                ioc=tmp_data.ix[row]['ioc'],
-                height=tmp_data.ix[row]['height'],
-                wikidata_id=tmp_data.ix[row]['wikidata_id'],
+                player_id=row['player_id'],
+                name_first=row['name_first'],
+                name_last=row['name_last'],
+                hand=row['hand'],
+                dob=row['dob'],
+                ioc=row['ioc'],
+                height=row['height'],
+                wikidata_id=row['wikidata_id'],
             )
-            for row in tmp_data
+            for index, row in tmp_data.iterrows()
         ]
         Players.objects.bulk_create(products)

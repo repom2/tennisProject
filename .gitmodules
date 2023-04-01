@@ -1,3 +1,6 @@
 [submodule "tennisproject/tennis_atp/tennis_data"]
 	path = tennisproject/tennis_atp/tennis_data
 	url = https://github.com/JeffSackmann/tennis_atp.git
+[submodule "tennisproject/tennis_atp/wta_data/tennis_wta"]
+	path = tennisproject/tennis_atp/wta_data/tennis_wta
+	url = https://github.com/JeffSackmann/tennis_wta.git

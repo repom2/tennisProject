@@ -40,49 +40,47 @@ left join tennisapi_tournaments t on(t.id=s.id::integer)
 left join (
 select *
 from crosstab(
-		'select
+	'select
 		id,
 		key,
 		value
-		from (
+	from (
 		select
-		s.id::numeric,
-		name as key,
-		value
+		    s.id::numeric,
+		    name as key,
+		    value
 		from (
-		SELECT
-		id,
-		slug,
-		x.*
-		FROM sportscore_leagues
-		,json_to_recordset(facts::json) x
-		( name text,
-		value text
+		    SELECT
+		        id,
+		        slug,
+		        x.*
+		    FROM sportscore_leagues
+		    ,json_to_recordset(facts::json) x
+		    ( name text,
+		    value text
 		)
-		) s
-		) as facts
-		order by id asc, key asc',
-		'select
+	) s ) as facts
+	order by id asc, key asc',
+	'select
 		distinct key
 		from (
-		select
-		s.id::numeric,
-		name as key,
-		value
-		from (
-		SELECT
-		id,
-		slug,
-		x.*
-		FROM sportscore_leagues
-		,json_to_recordset(facts::json) x
-		( name text,
-		value text
-		)
-		) s order by id asc
+		    select
+		        s.id::numeric,
+		        name as key,
+		        value
+		    from (
+		    SELECT
+		        id,
+		        slug,
+		        x.*
+		    FROM sportscore_leagues
+		    ,json_to_recordset(facts::json) x
+		    ( name text,
+		    value text
+		    )
+		    ) s order by id asc
 		) as facts
-		order by
-	key asc'
+		order by key asc'
 ) as ct(
     id text,
 	"continent" text,
@@ -93,6 +91,8 @@ from crosstab(
 	"prize_currency" text,
 	"start_date" text,
 	"total_prize_money" text
-)) facts on s.id = facts.id
+    )
+) facts on s.id = facts.id
+
 
 

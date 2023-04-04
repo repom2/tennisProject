@@ -32,3 +32,10 @@ class Players(models.Model):
     first_name = models.TextField(null=True)
     last_name = models.TextField(null=True)
     slug = models.TextField(null=True)
+
+
+class AtpTour(models.Model):
+    id = models.TextField(primary_key=True)
+    name = models.TextField(null=True)
+    date = models.DateField(null=True)
+    surface = models.TextField(null=True)

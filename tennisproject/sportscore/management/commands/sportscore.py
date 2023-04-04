@@ -97,7 +97,7 @@ class Command(BaseCommand):
         last_page = data['meta']["last_page"]
 
         with tqdm(total=last_page) as pbar:
-            for page in range(1, last_page+1):
+            for page in range(1, last_page+100):
                 querystring = {"page": str(page)}
                 response = requests.request(
                     "GET", url, headers=headers, params=querystring
@@ -107,7 +107,7 @@ class Command(BaseCommand):
                 try:
                     data_df.extend(data["data"])
                 except KeyError:
-                    print(data_df)
+                    print(data)
                     pass
                 pbar.update(1)
 
@@ -135,9 +135,9 @@ class Command(BaseCommand):
         data = json.loads(data)
         data_df = data['data']
         to = data['meta']["to"]
-        to = 10
+
         with tqdm(total=to) as pbar:
-            for page in range(1, to+1):
+            for page in range(1, to+1000):
                 querystring = {"page": str(page)}
                 response = requests.request(
                     "GET", url, headers=headers, params=querystring

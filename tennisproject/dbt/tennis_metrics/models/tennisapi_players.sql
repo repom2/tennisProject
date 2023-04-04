@@ -12,8 +12,8 @@
 select z.* from (
 select
     {{ dbt_utils.surrogate_key(
-      'sportscore_id',
-      'player_id'
+      ['sportscore_id',
+      'player_id']
   ) }} as id,
     s.*
 from (

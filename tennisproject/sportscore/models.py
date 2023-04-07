@@ -64,6 +64,10 @@ class Events(models.Model):
     round_info = models.TextField(null=True, blank=True)
     periods_time = models.TextField(null=True, blank=True)
     sport = models.JSONField(null=True)
+    league = models.JSONField(null=True)
+    challenge = models.JSONField(null=True)
+    season = models.JSONField(null=True)
+    section = models.JSONField(null=True)
 
 
 class Players(models.Model):

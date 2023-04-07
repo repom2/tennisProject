@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from sportscore.models import Leagues, Events, Players, Teams
+from tennisapi.models import AtpTour
 from tqdm import tqdm
 
 pd.set_option('display.max_columns', None)
@@ -28,6 +29,9 @@ class Command(BaseCommand):
 
         list_leagues_cmd = subparsers.add_parser("leagues")
         list_leagues_cmd.set_defaults(subcommand=self.list_leagues)
+
+        events_by_leagues_cmd = subparsers.add_parser("events-by-leagues")
+        events_by_leagues_cmd.set_defaults(subcommand=self.events_by_leagues)
 
         list_events_cmd = subparsers.add_parser("events")
         list_events_cmd.set_defaults(subcommand=self.list_events)
@@ -116,6 +120,56 @@ class Command(BaseCommand):
                 m = Leagues(**item)
                 m.save()
                 pbar.update(1)
+
+    # Update database
+    def events_by_leagues(self, options):
+        leagues = list(AtpTour.objects.filter(date__gt='2023-02-07').values_list('id'))
+
+        for id in leagues:
+            print(id)
+            id = id[0].split('-')[1]
+            url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
+
+            headers = {
+                "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+            }
+
+            querystring = {"page": "1"}
+
+            response = requests.request(
+                "GET", url, headers=headers, params=querystring
+            )
+
+            data = response.text
+            data = json.loads(data)
+            data_df = data['data']
+            meta_from = data['meta']["from"]
+            current_page = data['meta']["current_page"]
+            per_page = data['meta']["per_page"]
+            meta_to = data['meta']["to"]
+
+            if meta_to is not None:
+
+                while meta_to >= per_page:
+                    current_page += 1
+                    querystring = {"page": str(current_page)}
+                    response = requests.request(
+                        "GET", url, headers=headers, params=querystring
+                    )
+                    data = response.text
+                    data = json.loads(data)
+                    data_df.extend(data["data"])
+                    per_page += data['meta']["per_page"]
+                    meta_to = data['meta']["to"]
+
+            with tqdm(total=len(data_df)) as pbar:
+                for item in data_df:
+                    print(item)
+                    m = Events(**item)
+                    m.save()
+                    pbar.update(1)
+
 
     def list_events(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/events"

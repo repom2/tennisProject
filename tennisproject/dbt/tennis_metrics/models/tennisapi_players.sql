@@ -41,8 +41,15 @@ from
     from tennis_atp_players where dob != 'nan') a
 left join
     (select
-        id, slug, country_code, to_date(substring(details->> 'date_of_birth'
+        id,
+        slug,
+        case when country_code = 'DEU' then 'GER'
+        when country_code = 'CHL' then 'CHI'
+        when country_code = 'NLD' then 'NED'
+        when country_code = 'GRE' then 'GRC'
+        else country_code end as country_code,
+        to_date(substring(details->> 'date_of_birth'
     from '\((.+)\)'), 'DD Mon YYY') dob
     from  sportscore_teams
-    where sport_id='2') b on a.dob=b.dob and country_code=ioc and slug ilike '%' || name_last || '%'
+    where sport_id='2') b on a.dob=b.dob and country_code=ioc and slug ilike '%' || replace(name_last, ' ', '%') || '%'
 ) s ) z left join tennisapi_players p on (z.id=p.id)

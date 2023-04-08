@@ -20,14 +20,16 @@ from (
 select
     id::integer as sportscore_id,
     player_id::integer,
-    a.dob,
+    case when a.dob is null then b.dob else a.dob end as dob,
     hand,
-    ioc as country_code,
+    case when ioc is null then country_code else ioc end as country_code,
     case when height = 'nan' then null else height::float end,
     wikidata_id,
-    name_last as last_name,
+    case when name_last is null then name_full else name_last end as last_name,
     name_first as first_name,
-    lower(CONCAT(name_first, '-', name_last)) as slug
+    lower(CONCAT(name_first, '-', name_last)) as slug,
+    country,
+    prize_total_euros::integer as prize_total_euros
 from
     (select
         to_date(dob, 'YYYYMMDD') dob,
@@ -39,17 +41,16 @@ from
         height,
         wikidata_id
     from tennis_atp_players where dob != 'nan') a
-left join
+right join
     (select
         id,
         slug,
-        case when country_code = 'DEU' then 'GER'
-        when country_code = 'CHL' then 'CHI'
-        when country_code = 'NLD' then 'NED'
-        when country_code = 'GRE' then 'GRC'
-        else country_code end as country_code,
+        country_code,
+        country,
+        details->> 'prize_total_euros' as prize_total_euros,
+        name_full,
         to_date(substring(details->> 'date_of_birth'
     from '\((.+)\)'), 'DD Mon YYY') dob
     from  sportscore_teams
-    where sport_id='2') b on a.dob=b.dob and country_code=ioc and slug ilike '%' || replace(name_last, ' ', '%') || '%'
+    where sport_id='2') b on a.dob=b.dob and slug ilike '%' || replace(name_last, ' ', '%') || '%'
 ) s ) z left join tennisapi_players p on (z.id=p.id)

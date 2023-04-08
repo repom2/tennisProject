@@ -32,6 +32,8 @@ class Players(models.Model):
     first_name = models.TextField(null=True)
     last_name = models.TextField(null=True)
     slug = models.TextField(null=True)
+    country = models.TextField(null=True)
+    prize_total_euros = models.IntegerField(null=True)
 
 
 class AtpTour(models.Model):

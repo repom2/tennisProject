@@ -12,8 +12,11 @@
 select z.* from (
 select
     {{ dbt_utils.surrogate_key(
-      ['sportscore_id',
-      'player_id']
+      [
+      'sportscore_id',
+      'player_id',
+      'last_name'
+      ]
   ) }} as id,
     s.*
 from (
@@ -32,7 +35,7 @@ select
     prize_total_euros::integer as prize_total_euros
 from
     (select
-        to_date(dob, 'YYYYMMDD') dob,
+        case when dob != null then to_date(dob, 'YYYYMMDD') else null end as dob,
         ioc,
         name_last,
         name_first,
@@ -40,8 +43,8 @@ from
         hand,
         height,
         wikidata_id
-    from tennis_atp_players where dob != 'nan') a
-right join
+    from tennis_atp_players) a
+full join
     (select
         id,
         slug,

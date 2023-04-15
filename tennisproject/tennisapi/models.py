@@ -41,3 +41,29 @@ class AtpTour(models.Model):
     name = models.TextField(null=True)
     date = models.DateField(null=True)
     surface = models.TextField(null=True)
+
+
+class AtpMatches(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=AtpTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="atptours",
+    )
+    winner = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="winners",
+    )
+    loser = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="losers",
+    )
+    date = models.DateField(null=True)

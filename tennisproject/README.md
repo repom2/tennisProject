@@ -34,3 +34,10 @@ CREATE EXTENSION IF NOT EXISTS tablefunc;
 cd dbt/tennis_metrics
 
 dbt run 
+
+### UPDATE DATBASE
+Work flow:
+Get current League Ids
+Get event data loop through League Ids
+- Get Leagues
+- Get Events

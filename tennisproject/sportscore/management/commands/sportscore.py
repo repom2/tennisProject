@@ -48,6 +48,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         options["subcommand"](options)
 
+    # NO NEED
     def list_sports(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports"
         sport_score_key = os.getenv('SPORT_SCORE_KEY')
@@ -64,6 +65,7 @@ class Command(BaseCommand):
         df = pd.DataFrame(data_df)
         print(df)
 
+    # SECTION ID
     def list_sections(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/sections"
         sport_score_key = os.getenv('SPORT_SCORE_KEY')

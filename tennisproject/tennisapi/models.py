@@ -67,3 +67,4 @@ class AtpMatches(models.Model):
         related_name="losers",
     )
     date = models.DateField(null=True)
+    round_name = models.TextField(null=True)

@@ -61,7 +61,7 @@ class Events(models.Model):
     cup_match_order = models.TextField(null=True, blank=True)
     cup_match_in_round = models.TextField(null=True, blank=True)
     periods = models.JSONField(null=True)
-    round_info = models.TextField(null=True, blank=True)
+    round_info = models.JSONField(null=True, blank=True)
     periods_time = models.TextField(null=True, blank=True)
     sport = models.JSONField(null=True)
     league = models.JSONField(null=True)

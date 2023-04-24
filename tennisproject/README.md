@@ -45,3 +45,6 @@ Get event data loop through League Ids
 poetry run python manage.py sportscore leagues
 poetry run python manage.py sportscore events-by-leagues
 dbt run --select tennisapi_atpmatches
+
+### Elo Rating
+poetry run python manage.py elo_rate atp 'hard'

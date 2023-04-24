@@ -34,7 +34,8 @@ select
     when round_name = 'SF' then 'Semifinal'
     when round_name = 'QF' then 'Quarterfinal'
     when round_name = '1/8' then 'Quarterfinal'
-    else round_name end as round_name
+    else round_name end as round_name,
+    match_num::integer
 from (
     select
         match_num,

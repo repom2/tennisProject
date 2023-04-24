@@ -68,3 +68,4 @@ class AtpMatches(models.Model):
     )
     date = models.DateField(null=True)
     round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)

@@ -41,3 +41,7 @@ Get current League Ids
 Get event data loop through League Ids
 - Get Leagues
 - Get Events
+
+poetry run python manage.py sportscore leagues
+poetry run python manage.py sportscore events-by-leagues
+dbt run --select tennisapi_atpmatches

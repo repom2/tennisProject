@@ -1,5 +1,5 @@
-from tennisapi.models import AtpElo, AtpTour, AtpMatches
-from django.db.models import Q
+from tennisapi.models import AtpElo, AtpTour, AtpMatches, Players
+from django.db.models import Q, Exists, OuterRef
 
 
 c = 250
@@ -25,6 +25,7 @@ def calculate_k_factor(matches, o, c, s):
 
 def atp_elorate(surface):
     matches = AtpMatches.objects.filter(
+        ~Exists(AtpElo.objects.filter(id=OuterRef('match')))).filter(
         tour__surface__icontains=surface,
         round_name__isnull=False,
     ).filter(
@@ -35,34 +36,53 @@ def atp_elorate(surface):
         Q(round_name='R32') |
         Q(round_name='R64') |
         Q(round_name='R128')
-    ).order_by('date', 'match_num')
+    ).order_by('date', 'match_num').distinct()
 
     for match in matches:
         # Get elo from database
+        winner_id = Players.objects.filter(id=match.winner_id)[0]
+        loser_id = Players.objects.filter(id=match.loser_id)[0]
         winner = AtpElo.objects.filter(player__id=match.winner_id).order_by('-games')
         loser = AtpElo.objects.filter(player__id=match.loser_id).order_by('-games')
         if not winner:
             winner_elo = 1500
             winner_games = 0
         else:
-            winner_elo = winner.elo
-            winner_games = winner.games
+            winner_elo = winner[0].elo
+            winner_games = winner[0].games
         if not loser:
             loser_elo = 1500
             loser_games = 0
         else:
-            loser_elo = loser.elo
-            loser_games = loser.games
-
+            loser_elo = loser[0].elo
+            loser_games = loser[0].games
+        print(match.winner_id, match.loser_id, winner_elo, loser_elo)
         prob = probability_of_winning(loser_elo, winner_elo)
-        k = calculate_k_factor(player_matches, o, c, s)
+        k = calculate_k_factor(winner_games, o, c, s)
         winner_elo, winner_change = calculate_new_elo(winner_elo, 1, prob, k)
+        print(match.id)
+        print(type(match.id))
         m = AtpElo(
-            player=winner,
+            player=winner_id,
+            match=match,
             elo=winner_elo,
             elo_change=winner_change,
             games=winner_games + 1,
         )
         m.save()
+
+        # Loser
+        k = calculate_k_factor(loser_games, o, c, s)
+        loser_elo, loser_change = calculate_new_elo(loser_elo, 0, 1 - prob, k)
         print(prob)
+
+        m = AtpElo(
+            player=loser_id,
+            match=match,
+            elo=loser_elo,
+            elo_change=loser_change,
+            games=loser_games + 1,
+        )
+        m.save()
+
         break

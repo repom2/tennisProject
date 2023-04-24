@@ -43,6 +43,22 @@ class AtpTour(models.Model):
     surface = models.TextField(null=True)
 
 
+class AtpElo(models.Model):
+    match = models.ForeignKey(
+        'AtpMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="match",
+    )
+    player = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        related_name="player",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+
+
 class AtpMatches(models.Model):
     id = models.TextField(primary_key=True)
     tour = models.ForeignKey(
@@ -69,19 +85,3 @@ class AtpMatches(models.Model):
     date = models.DateField(null=True)
     round_name = models.TextField(null=True)
     match_num = models.IntegerField(null=True)
-
-
-class AtpElo(models.Model):
-    match = models.ForeignKey(
-        to=AtpMatches,
-        on_delete=models.DO_NOTHING,
-        related_name="match",
-    )
-    player = models.ForeignKey(
-        to=Players,
-        on_delete=models.DO_NOTHING,
-        related_name="player",
-    )
-    elo = models.IntegerField()
-    elo_change = models.IntegerField()
-    games = models.IntegerField()

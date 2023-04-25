@@ -56,4 +56,5 @@ full join
     from '\((.+)\)'), 'DD Mon YYY') dob
     from  sportscore_teams
     where sport_id='2') b on a.dob=b.dob and slug ilike '%' || replace(name_last, ' ', '%') || '%'
-) s ) z left join tennisapi_players p on (z.id=p.id)
+) s ) z
+

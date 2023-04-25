@@ -35,7 +35,7 @@ select
     prize_total_euros::integer as prize_total_euros
 from
     (select
-        case when dob != null then to_date(dob, 'YYYYMMDD') else null end as dob,
+        case when dob != 'nan' then to_date(dob, 'YYYYMMDD') else null end as dob,
         ioc,
         name_last,
         name_first,

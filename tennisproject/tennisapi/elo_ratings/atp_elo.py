@@ -84,5 +84,3 @@ def atp_elorate(surface):
             games=loser_games + 1,
         )
         m.save()
-
-        break

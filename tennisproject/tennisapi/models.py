@@ -85,3 +85,33 @@ class AtpMatches(models.Model):
     date = models.DateField(null=True)
     round_name = models.TextField(null=True)
     match_num = models.IntegerField(null=True)
+
+
+class Match(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=AtpTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="matches",
+    )
+    home = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="home",
+    )
+    away = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="away",
+    )
+    start_at = models.DateTimeField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+    home_odds = models.TextField(null=True)
+    away_odds = models.TextField(null=True)

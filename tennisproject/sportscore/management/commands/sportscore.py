@@ -125,12 +125,12 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpTour.objects.filter(date__gt='2023-02-07').values_list('id'))
-        leagues = list(Leagues.objects.values('id').distinct().values_list('id'))
+        leagues = list(AtpTour.objects.filter(date__gte='2023-04-24').values_list('id'))
+        #leagues = list(Leagues.objects.values('id').distinct().values_list('id'))
 
         for id in leagues:
-            #id = id[0].split('-')[1]
-            id = id[0]
+            id = id[0].split('-')[1]
+            #id = id[0]
             print(id)
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
 

@@ -103,7 +103,7 @@ class Command(BaseCommand):
         last_page = data['meta']["last_page"]
 
         with tqdm(total=last_page) as pbar:
-            for page in range(1, last_page+100):
+            for page in range(1, last_page+1000):
                 querystring = {"page": str(page)}
                 response = requests.request(
                     "GET", url, headers=headers, params=querystring
@@ -126,10 +126,12 @@ class Command(BaseCommand):
     # Update database
     def events_by_leagues(self, options):
         leagues = list(AtpTour.objects.filter(date__gt='2023-02-07').values_list('id'))
+        leagues = list(Leagues.objects.values('id').distinct().values_list('id'))
 
         for id in leagues:
+            #id = id[0].split('-')[1]
+            id = id[0]
             print(id)
-            id = id[0].split('-')[1]
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
 
             headers = {
@@ -145,14 +147,20 @@ class Command(BaseCommand):
 
             data = response.text
             data = json.loads(data)
-            data_df = data['data']
+            try:
+                data_df = data['data']
+            except:
+                continue
             meta_from = data['meta']["from"]
             current_page = data['meta']["current_page"]
             per_page = data['meta']["per_page"]
             meta_to = data['meta']["to"]
 
             if meta_to is not None:
-
+                print('type',type(meta_to))
+                print('meta_to', meta_to)
+                print('per_page', per_page)
+                print('type', type(per_page))
                 while meta_to >= per_page:
                     current_page += 1
                     querystring = {"page": str(current_page)}
@@ -164,6 +172,12 @@ class Command(BaseCommand):
                     data_df.extend(data["data"])
                     per_page += data['meta']["per_page"]
                     meta_to = data['meta']["to"]
+                    print('type', type(meta_to))
+                    print('meta_to', meta_to)
+                    print('per_page', per_page)
+                    print('type', type(per_page))
+                    if meta_to is None:
+                        break
 
             with tqdm(total=len(data_df)) as pbar:
                 for item in data_df:

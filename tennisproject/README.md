@@ -47,4 +47,18 @@ poetry run python manage.py sportscore events-by-leagues
 dbt run --select tennisapi_atpmatches
 
 ### Elo Rating
-poetry run python manage.py elo_rate atp 'hard'
+poetry run python manage.py elo_rate atp 'clay'
+
+dbt run --select tennisapi_match
+
+select *,
+	round((1.0 / (1.0 + pow(10, ((away_elo - home_elo)::numeric / 400)))), 2) as prob
+from (
+select start_at, b.last_name, c.last_name, home_odds, away_odds, b.player_id, c.player_id,
+(select elo from tennisapi_atpelo where b.id=player_id order by games desc limit 1) as home_elo,
+(select elo from tennisapi_atpelo where c.id=player_id order by games desc limit 1) as away_elo
+from tennisapi_match a
+left join tennisapi_players b on home_id = b.id
+left join tennisapi_players c on away_id = c.id
+where start_at >= '2023-4-27' order by start_at asc
+) s ;

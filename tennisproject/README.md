@@ -43,6 +43,7 @@ Get event data loop through League Ids
 - Get Events
 
 poetry run python manage.py sportscore leagues
+dbt run --select tennisapi_atptour
 poetry run python manage.py sportscore events-by-leagues
 dbt run --select tennisapi_atpmatches
 
@@ -62,3 +63,13 @@ left join tennisapi_players b on home_id = b.id
 left join tennisapi_players c on away_id = c.id
 where start_at >= '2023-4-27' order by start_at asc
 ) s ;
+
+
+### Players
+select c.date,t.name, d.last_name as winner, e.last_name as loser from tennisapi_atpelo a 
+inner join tennisapi_players b on b.id=a.player_id
+inner join tennisapi_atpmatches c on c.id=a.match_id
+inner join tennisapi_atptour t on t.id=c.tour_id
+left join tennisapi_players d on d.id=c.winner_id
+left join tennisapi_players e on e.id=c.loser_id
+where b.last_name ilike '%Hurkacz%' order by c.date desc;

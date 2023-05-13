@@ -93,4 +93,4 @@ from tennis_atp_atpmatches) a right join (select * from (
 	from sportscore_leagues gg where slug not like '%doubles%' and name_translations ->> 'en' not ilike '%double%' ) sl where section_slug like '%atp%'
 ) b on tourney_name ilike '%' || slug || '%' and (start_date::timestamp - '11 day'::interval) < tourney_date
 and (start_date::timestamp + '11 day'::interval) > tourney_date order by tourney_name
-) ) a ) ss where date != null
+) ) a ) ss where date is not null

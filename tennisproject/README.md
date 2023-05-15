@@ -73,3 +73,8 @@ inner join tennisapi_atptour t on t.id=c.tour_id
 left join tennisapi_players d on d.id=c.winner_id
 left join tennisapi_players e on e.id=c.loser_id
 where b.last_name ilike '%Hurkacz%' order by c.date desc;
+
+### Create backup
+pg_dump -h db --clean tennis -U tennis > tennisproject.sql
+
+docker compose cp tennisproject/app/tennisproject.sql .

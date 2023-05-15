@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: tennis-app-dev
+    image: tennis-app-dev:20220601
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/app
+    networks:
+      - tennis
+    deploy:
+      resources:
+        limits:
+          cpus: "2.00"
+          memory: 2048M
+
+  openresty:
+    build:
+      context: .
+      dockerfile: docker/openresty/Dockerfile
+    image: tennis-app-openresty:20220506
+    volumes:
+      - ./docker/openresty/tennis-app.dev.conf.template:/etc/nginx/templates/default.conf.template
+    environment:
+      SESSION_SECRET: supersecretsession
+      #METRICS_API_URL: http://metrics-service-dev:8000
+      METRICS_API_URL: http://metrics-service-apigw-dev
+      OIDC_DISCOVERY_URL: https://dev.dex.surveypal-test.dev/.well-known/openid-configuration
+      OIDC_CLIENT_ID: metrics-dev
+      OIDC_CLIENT_SECRET: metrics-dev
+      OIDC_SCOPE: "openid email profile offline_access"
+    restart: unless-stopped
+    depends_on:
+      - app
+    networks:
+      - metrics
+    ports:
+      - 3000:80
+
+  openresty-noauth:
+    build:
+      context: .
+      dockerfile: docker/openresty/Dockerfile
+    image: tennis-app-openresty:20220506
+    volumes:
+      - ./docker/openresty/tennis-app.dev.noauth.conf.template:/etc/nginx/templates/default.conf.template
+    environment:
+      SESSION_SECRET: supersecretsession
+      METRICS_API_URL: http://metrics-service-dev:8000
+      HARDCODED_AUTH_EMAIL: admin@example.com
+      HARDCODED_AUTH_ROLE: GlobalAdmin
+      #HARDCODED_AUTH_ROLE: OrganizationAdmin
+    restart: unless-stopped
+    depends_on:
+      - app
+      - openresty
+    networks:
+      - metrics
+    ports:
+      - 3001:80
+networks:
+  metrics:
+    name: metrics

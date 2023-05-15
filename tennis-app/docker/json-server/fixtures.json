@@ -1,0 +1,19 @@
+{
+    "agents": [
+        {
+            "id": 1,
+            "original_agent_id": 2,
+            "name": "John Doe"
+        }
+    ],
+    "tickets": [
+        {
+            "id": 1,
+            "agent_id": 1,
+            "original_ticket_id": 123,
+            "created_at": "2022-01-01T-01:00+00",
+            "grade": 4,
+            "feedback": "Great job!"
+        }
+    ]
+}

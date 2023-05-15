@@ -1,0 +1,116 @@
+lua_package_path '/lua/?.lua;;';
+
+# oidc needs a resolver
+resolver 127.0.0.11;
+
+# oidc needs to verify certs
+lua_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+lua_ssl_verify_depth 5;
+
+# cache for discovery metadata documents
+lua_shared_dict discovery 1m;
+# cache for JWKs
+lua_shared_dict jwks 1m;
+
+server {
+    listen 80;
+
+    set $session_storage cookie;
+    set $session_cookie_lifetime 604800; # 7 days
+    set $session_cookie_persistent on;
+    set $session_cookie_samesite   Lax;
+    set $session_secret $SESSION_SECRET;
+    # cannot use __Host because lack of tls
+    set $session_name _Host-tennis-app-localdev;
+
+    location / {
+        proxy_pass $UPSTREAM_URL;
+        # with static files:
+        #try_files $uri /index.html;
+    }
+
+    location /ws {
+        # TODO https://github.com/zmartzone/lua-resty-openidc/issues/373
+        proxy_set_header X-Real-IP  $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host $host;
+
+        proxy_pass $UPSTREAM_URL;
+        proxy_http_version 1.1;
+	    proxy_set_header Upgrade $http_upgrade;
+	    proxy_set_header Connection "upgrade";
+	}
+
+    location /auth {
+        # For OIDC uncomment this
+        access_by_lua_block {
+            local opts = {
+               redirect_uri = "/auth/callback",
+               logout_path = "/auth/logout",
+               discovery = "$OIDC_DISCOVERY_URL",
+               client_id = "$OIDC_CLIENT_ID",
+               client_secret = "$OIDC_CLIENT_SECRET",
+               scope = "$OIDC_SCOPE",
+               access_token_expires_leeway = 60,
+               session_contents = {access_token=true},
+            }
+
+            -- call authenticate for OpenID Connect user authentication
+            local res, err = require("resty.openidc").authenticate(opts)
+
+            if err then
+                -- ngx.status = 500
+                -- ngx.header.content_type = 'text/html';
+                -- ngx.say(err)
+                -- ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+                return ngx.redirect("/")
+            end
+        }
+
+        proxy_pass $UPSTREAM_URL;
+    }
+
+    location /api/ {
+        # For OIDC uncomment this
+        access_by_lua_block {
+            local opts = {
+               redirect_uri = nil,
+               logout_path = nil,
+               discovery = "$OIDC_DISCOVERY_URL",
+               client_id = "$OIDC_CLIENT_ID",
+               client_secret = "$OIDC_CLIENT_SECRET",
+               scope = "$OIDC_SCOPE",
+               session_contents = {access_token=true},
+            }
+
+            -- check session, but do not redirect to auth if not already logged in
+            local res, err, _, session = require("resty.openidc").authenticate(opts, nil, "pass")
+
+            if err then
+                ngx.status = 401
+                ngx.log(ngx.ERR, err)
+                ngx.say(err)
+                return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+            end
+
+            -- remove session cookie from upstream
+            session:hide()
+
+            if res ~= nil then
+                ngx.req.set_header('Authorization', 'Bearer '..res.access_token)
+            end
+
+            -- TODO remove this once backend is fixed
+            if res == nil then
+                return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+            end
+        }
+
+        proxy_connect_timeout $NGINX_PROXY_CONNECT_TIMEOUT;
+        proxy_read_timeout $NGINX_PROXY_READ_TIMEOUT;
+        proxy_send_timeout $NGINX_PROXY_SEND_TIMEOUT;
+
+        # remove the /api/ part from upstream request
+        proxy_pass $METRICS_API_URL/;
+    }
+}

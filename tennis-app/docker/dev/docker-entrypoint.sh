@@ -33,7 +33,7 @@ if [ "${1}" = "yarn" ] && [ "${2}" = "start" ]; then
 
 	if [ "${YARN_INSTALL}" = "true" ]; then
 		echo ">>> yarn install"
-		yarn install --frozen-lockfile
+		yarn install
 	fi
 fi
 

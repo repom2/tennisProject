@@ -27,11 +27,11 @@ services:
     environment:
       SESSION_SECRET: supersecretsession
       #METRICS_API_URL: http://metrics-service-dev:8000
-      METRICS_API_URL: http://metrics-service-apigw-dev
-      OIDC_DISCOVERY_URL: https://dev.dex.surveypal-test.dev/.well-known/openid-configuration
-      OIDC_CLIENT_ID: metrics-dev
-      OIDC_CLIENT_SECRET: metrics-dev
-      OIDC_SCOPE: "openid email profile offline_access"
+      #METRICS_API_URL: http://metrics-service-apigw-dev
+      #OIDC_DISCOVERY_URL: https://dev.dex.surveypal-test.dev/.well-known/openid-configuration
+      #OIDC_CLIENT_ID: metrics-dev
+      #OIDC_CLIENT_SECRET: metrics-dev
+      #OIDC_SCOPE: "openid email profile offline_access"
     restart: unless-stopped
     depends_on:
       - app

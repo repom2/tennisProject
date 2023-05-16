@@ -39,6 +39,8 @@ services:
     build:
       context: tennis-app
       target: development
+    environment:
+      IAM_APP_BASE_URL: http://localhost:4000
     volumes:
       - ./tennis-app:/app
     deploy:
@@ -56,6 +58,7 @@ services:
     environment:
       SESSION_SECRET: supersecretsession
       UPSTREAM_URL: http://tennis-app:3000
+      IAM_APP_BASE_URL: http://localhost:4000
       #METRICS_API_URL: http://metrics-service-apigw
       #METRICS_API_URL: http://metrics-service-oathkeeper:4455
       #OIDC_DISCOVERY_URL: https://dev.dex.surveypal-test.dev/.well-known/openid-configuration
@@ -65,7 +68,6 @@ services:
     restart: unless-stopped
     depends_on:
       - tennis-app
-      - metrics-service-oathkeeper
     ports:
       - 3000:80
 volumes:

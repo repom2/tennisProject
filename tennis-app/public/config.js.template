@@ -1,0 +1,4 @@
+var config = {
+    IAM_APP_BASE_URL: "${IAM_APP_BASE_URL}",
+    GTM_ID: "${GTM_ID}",
+};

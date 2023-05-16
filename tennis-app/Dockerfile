@@ -8,7 +8,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /
 COPY docker/dev/docker-entrypoint.sh /
-COPY docker/docker-entrypoint.d /docker-entrypoint.d
+#COPY docker/docker-entrypoint.d /docker-entrypoint.d
 
 # Add a work directory
 WORKDIR /app
@@ -16,7 +16,8 @@ WORKDIR /app
 # Cache and Install dependencies
 COPY package.json .
 COPY yarn.lock .
-RUN yarn install --frozen-lockfile
+RUN yarn install
+
 
 # Copy app files
 COPY . .
@@ -37,7 +38,7 @@ WORKDIR /app
 
 COPY package.json .
 COPY yarn.lock .
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
 COPY . .
 # never returns a failure, so success should be checked from reports in the CI pipeline
@@ -55,7 +56,7 @@ WORKDIR /app
 # Cache and Install dependencies
 COPY package.json .
 COPY yarn.lock .
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
 # Copy app files
 COPY . .
@@ -68,7 +69,7 @@ RUN yarn build
 # Bundle static assets with nginx
 FROM nginx:1.23-alpine AS production
 
-COPY docker/docker-entrypoint.d /docker-entrypoint.d
+#COPY docker/docker-entrypoint.d /docker-entrypoint.d
 COPY docker/nginx/tennis-app.conf.template /etc/nginx/templates/default.conf.template
 
 # Copy built assets from builder
@@ -88,7 +89,7 @@ RUN opm get zmartzone/lua-resty-openidc=1.7.4 bungle/lua-resty-session=3.10 \
     && mkdir /docker-entrypoint.d
 
 COPY docker/openresty/docker-entrypoint.sh /
-COPY docker/docker-entrypoint.d /docker-entrypoint.d
+#COPY docker/docker-entrypoint.d /docker-entrypoint.d
 COPY docker/openresty/20-envsubst-on-templates.sh /docker-entrypoint.d
 
 COPY docker/openresty/tennis-app.conf.template /etc/nginx/templates/default.conf.template

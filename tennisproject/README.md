@@ -49,6 +49,7 @@ dbt run --select tennisapi_atpmatches
 
 ### Elo Rating
 poetry run python manage.py elo_rate atp 'clay'
+poetry run python manage.py elo_rate wta 'clay'
 
 dbt run --select tennisapi_match
 

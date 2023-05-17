@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from sportscore.models import Leagues, Events, Players, Teams
-from tennisapi.models import AtpTour
+from tennisapi.models import AtpTour, WtaTour
 from tqdm import tqdm
 
 pd.set_option('display.max_columns', None)
@@ -126,7 +126,8 @@ class Command(BaseCommand):
     # Update database
     def events_by_leagues(self, options):
         leagues = list(AtpTour.objects.filter(date__gte='2023-04-24').values_list('id'))
-        #leagues = list(Leagues.objects.values('id').distinct().values_list('id'))
+        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-02-01').values_list('id'))
+        leagues = wta_leagues + leagues
 
         for id in leagues:
             id = id[0].split('-')[1]

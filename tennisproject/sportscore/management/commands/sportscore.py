@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from sportscore.models import Leagues, Events, Players, Teams
-from tennisapi.models import AtpTour, WtaTour
+from tennisapi.models import AtpTour, ChTour, WtaTour
 from tqdm import tqdm
 
 pd.set_option('display.max_columns', None)
@@ -126,8 +126,9 @@ class Command(BaseCommand):
     # Update database
     def events_by_leagues(self, options):
         leagues = list(AtpTour.objects.filter(date__gte='2023-04-24').values_list('id'))
-        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-02-01').values_list('id'))
-        leagues = wta_leagues + leagues
+        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-04-24').values_list('id'))
+        ch_leagues = list(ChTour.objects.filter(date__gte='2023-04-24').values_list('id'))
+        leagues = wta_leagues + leagues + ch_leagues
 
         for id in leagues:
             id = id[0].split('-')[1]
@@ -188,6 +189,7 @@ class Command(BaseCommand):
                     pbar.update(1)
 
 
+    # FIX TO PAGE
     def list_events(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/events"
         sport_score_key = os.getenv('SPORT_SCORE_KEY')

@@ -59,6 +59,13 @@ class AtpTour(models.Model):
     surface = models.TextField(null=True)
 
 
+class ChTour(models.Model):
+    id = models.TextField(primary_key=True)
+    name = models.TextField(null=True)
+    date = models.DateField(null=True)
+    surface = models.TextField(null=True)
+
+
 class WtaTour(models.Model):
     id = models.TextField(primary_key=True)
     name = models.TextField(null=True)
@@ -176,6 +183,36 @@ class Match(models.Model):
         null=True,
         blank=True,
         related_name="away",
+    )
+    start_at = models.DateTimeField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+    home_odds = models.TextField(null=True)
+    away_odds = models.TextField(null=True)
+
+
+class ChMatch(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=ChTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="matches",
+    )
+    home = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chhome",
+    )
+    away = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chaway",
     )
     start_at = models.DateTimeField(null=True)
     round_name = models.TextField(null=True)

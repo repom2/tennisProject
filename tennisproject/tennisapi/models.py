@@ -89,6 +89,22 @@ class AtpElo(models.Model):
     games = models.IntegerField()
 
 
+class ChElo(models.Model):
+    match = models.ForeignKey(
+        'ChMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="chmatch",
+    )
+    player = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        related_name="chplayer",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+
+
 class WtaElo(models.Model):
     match = models.ForeignKey(
         'WtaMatches',
@@ -127,6 +143,34 @@ class AtpMatches(models.Model):
         null=True,
         blank=True,
         related_name="losers",
+    )
+    date = models.DateField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+
+
+class ChMatches(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=ChTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chtours",
+    )
+    winner = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chwinners",
+    )
+    loser = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chlosers",
     )
     date = models.DateField(null=True)
     round_name = models.TextField(null=True)

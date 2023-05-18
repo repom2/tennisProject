@@ -33,6 +33,9 @@ class Command(BaseCommand):
         events_by_leagues_cmd = subparsers.add_parser("events-by-leagues")
         events_by_leagues_cmd.set_defaults(subcommand=self.events_by_leagues)
 
+        events_by_section_cmd = subparsers.add_parser("events-by-section")
+        events_by_section_cmd.set_defaults(subcommand=self.events_by_section_id)
+
         list_events_cmd = subparsers.add_parser("events")
         list_events_cmd.set_defaults(subcommand=self.list_events)
 
@@ -127,7 +130,7 @@ class Command(BaseCommand):
     def events_by_leagues(self, options):
         leagues = list(AtpTour.objects.filter(date__gte='2023-04-24').values_list('id'))
         wta_leagues = list(WtaTour.objects.filter(date__gte='2023-04-24').values_list('id'))
-        ch_leagues = list(ChTour.objects.filter(date__gte='2023-04-24').values_list('id'))
+        ch_leagues = list(ChTour.objects.filter(date__gte='2014-04-24').values_list('id'))
         leagues = wta_leagues + leagues + ch_leagues
 
         for id in leagues:
@@ -340,5 +343,59 @@ class Command(BaseCommand):
         with tqdm(total=len(data_df)) as pbar:
             for item in data_df:
                 m = Teams(**item)
+                m.save()
+                pbar.update(1)
+
+
+    def events_by_section_id(self, options):
+        url = "https://sportscore1.p.rapidapi.com/sections/143/events"
+        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        headers = {
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        querystring = {"page": "1"}
+
+        response = requests.request(
+            "GET", url, headers=headers, params=querystring
+        )
+
+        data = response.text
+        print(data)
+        data = json.loads(data)
+        data_df = data['data']
+        to = data['meta']["to"]
+        current_page = data['meta']["current_page"]
+        per_page = data['meta']["per_page"]
+        meta_to = data['meta']["to"]
+
+        if meta_to is not None:
+            print('type', type(meta_to))
+            print('meta_to', meta_to)
+            print('per_page', per_page)
+            print('type', type(per_page))
+            while meta_to >= per_page:
+                current_page += 1
+                querystring = {"page": str(current_page)}
+                response = requests.request(
+                    "GET", url, headers=headers, params=querystring
+                )
+                data = response.text
+                data = json.loads(data)
+                data_df.extend(data["data"])
+                per_page += data['meta']["per_page"]
+                meta_to = data['meta']["to"]
+                print('type', type(meta_to))
+                print('meta_to', meta_to)
+                print('per_page', per_page)
+                print('type', type(per_page))
+                if meta_to is None:
+                    break
+
+        with tqdm(total=len(data_df)) as pbar:
+            for item in data_df:
+                print(item)
+                m = Events(**item)
                 m.save()
                 pbar.update(1)

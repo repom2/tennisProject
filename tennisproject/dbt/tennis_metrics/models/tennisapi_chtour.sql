@@ -20,6 +20,7 @@ select distinct
 from (
 	select
 		id as idd,
+		section ->> 'id' as section_id,
 		case when start_date = '' then
 		(select date(min(start_at)) from sportscore_events q where q.league_id=gg.id)
 		else date(start_date) end as start_date,
@@ -29,5 +30,7 @@ from (
 		(select EXTRACT('Year' FROM date(min(start_at))) from sportscore_events q where q.league_id=gg.id)
 		else EXTRACT('Year' FROM date(start_date)) end as year,
 		trim('"' FROM (section -> 'flag')::text) as section_slug
-	from sportscore_leagues gg where slug not like '%doubles%' and name_translations ->> 'en' not ilike '%double%' ) sl where section_slug like '%challenger%'
+	from sportscore_leagues gg
+	where slug not like '%doubles%' and name_translations ->> 'en' not ilike '%double%' ) sl
+	where section_id = '143'
 ) b

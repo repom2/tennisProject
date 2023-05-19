@@ -3,6 +3,15 @@ from rest_framework import serializers
 
 
 class PlayerSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    dob = serializers.DateField()
+    hand = serializers.CharField()
+    height = serializers.IntegerField()
+    slug = serializers.CharField()
+    country = serializers.CharField()
+    prize_total_euros = serializers.IntegerField()
+
     class Meta:
         model = Players
         fields = '__all__'
@@ -15,8 +24,9 @@ class AtptourSerializer(serializers.Serializer):
 
 
 class AtpMatchesSerializer(serializers.Serializer):
-    winner = PlayerSerializer(many=True, read_only=True)
-    loser = PlayerSerializer(many=True, read_only=True)
+    tour = AtptourSerializer(source='name', many=True, read_only=True)
+    winner = PlayerSerializer(source='last_name', many=True, read_only=True)
+    loser = PlayerSerializer(source='last_name', many=True, read_only=True)
 
     class Meta:
         model = AtpMatches
@@ -24,9 +34,11 @@ class AtpMatchesSerializer(serializers.Serializer):
 
 
 class AtpEloSerializer(serializers.Serializer):
-    match = AtpMatchesSerializer(many=True, read_only=True)
-    player = PlayerSerializer(many=True, read_only=True)
+    #match = AtpMatchesSerializer(many=True, read_only=True)
+    slug = PlayerSerializer(many=True, read_only=True)
+    twe = PlayerSerializer(source='last_name', many=True, read_only=True)
+    elo = serializers.IntegerField()
 
     class Meta:
         model = AtpElo
-        fields = '__all__'
+        fields = ['elo', 'slug__last_name', 'twe']

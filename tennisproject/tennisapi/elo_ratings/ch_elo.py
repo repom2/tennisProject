@@ -1,4 +1,4 @@
-from tennisapi.models import AtpElo, AtpTour, AtpMatches, Players
+from tennisapi.models import ChElo, ChMatches, Players
 from django.db.models import Q, Exists, OuterRef
 
 
@@ -23,9 +23,9 @@ def calculate_k_factor(matches, o, c, s):
     return k
 
 
-def atp_elorate(surface):
-    matches = AtpMatches.objects.filter(
-        ~Exists(AtpElo.objects.filter(id=OuterRef('match')))).filter(
+def ch_elorate(surface):
+    matches = ChMatches.objects.filter(
+        ~Exists(ChElo.objects.filter(id=OuterRef('chmatch')))).filter(
         tour__surface__icontains=surface,
         round_name__isnull=False,
     ).filter(
@@ -40,10 +40,14 @@ def atp_elorate(surface):
 
     for match in matches:
         # Get elo from database
+        if match.loser_id is None or match.winner_id is None:
+            continue
+
         winner_id = Players.objects.filter(id=match.winner_id)[0]
         loser_id = Players.objects.filter(id=match.loser_id)[0]
-        winner = AtpElo.objects.filter(player__id=match.winner_id).order_by('-games')
-        loser = AtpElo.objects.filter(player__id=match.loser_id).order_by('-games')
+
+        winner = ChElo.objects.filter(player__id=match.winner_id).order_by('-games')
+        loser = ChElo.objects.filter(player__id=match.loser_id).order_by('-games')
         if not winner:
             winner_elo = 1500
             winner_games = 0
@@ -56,11 +60,12 @@ def atp_elorate(surface):
         else:
             loser_elo = loser[0].elo
             loser_games = loser[0].games
+
         prob = probability_of_winning(loser_elo, winner_elo)
         k = calculate_k_factor(winner_games, o, c, s)
         winner_elo, winner_change = calculate_new_elo(winner_elo, 1, prob, k)
 
-        m = AtpElo(
+        m = ChElo(
             player=winner_id,
             match=match,
             elo=winner_elo,
@@ -73,7 +78,7 @@ def atp_elorate(surface):
         k = calculate_k_factor(loser_games, o, c, s)
         loser_elo, loser_change = calculate_new_elo(loser_elo, 0, 1 - prob, k)
 
-        m = AtpElo(
+        m = ChElo(
             player=loser_id,
             match=match,
             elo=loser_elo,
@@ -81,6 +86,7 @@ def atp_elorate(surface):
             games=loser_games + 1,
         )
         m.save()
+
         print(
             winner_id.last_name,
             round(winner_elo, 0),

@@ -46,12 +46,17 @@ poetry run python manage.py sportscore leagues
 dbt run --select tennisapi_atptour
 poetry run python manage.py sportscore events-by-leagues
 dbt run --select tennisapi_atpmatches
+dbt run --select tennisapi_wtamatches
+dbt run --select tennisapi_match
+dbt run --select tennisapi_chmatch
 
 ### Elo Rating
 poetry run python manage.py elo_rate atp 'clay'
+poetry run python manage.py elo_rate wta 'clay'
 
-dbt run --select tennisapi_match
 
+
+#ATP
 select *,
 	round((1.0 / (1.0 + pow(10, ((away_elo - home_elo)::numeric / 400)))), 2) as prob
 from (
@@ -64,6 +69,18 @@ left join tennisapi_players c on away_id = c.id
 where start_at >= '2023-4-27' order by start_at asc
 ) s ;
 
+#WTA
+select *,
+	round((1.0 / (1.0 + pow(10, ((away_elo - home_elo)::numeric / 400)))), 2) as prob
+from (
+select start_at, b.last_name, c.last_name, home_odds, away_odds, b.player_id, c.player_id,
+(select elo from tennisapi_wtaelo where b.id=player_id order by games desc limit 1) as home_elo,
+(select elo from tennisapi_wtaelo where c.id=player_id order by games desc limit 1) as away_elo
+from tennisapi_wtamatch a
+left join tennisapi_wtaplayers b on home_id = b.id
+left join tennisapi_wtaplayers c on away_id = c.id
+where start_at >= '2023-5-16' order by start_at asc
+) s ;
 
 ### Players
 select c.date,t.name, d.last_name as winner, e.last_name as loser from tennisapi_atpelo a 

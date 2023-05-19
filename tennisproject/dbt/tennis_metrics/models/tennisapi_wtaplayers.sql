@@ -43,7 +43,7 @@ from
         hand,
         height,
         wikidata_id
-    from tennis_atp_players) a
+    from tennis_atp_wtaplayers) a
 full join
     (select
         id,

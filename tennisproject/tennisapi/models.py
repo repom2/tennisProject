@@ -36,7 +36,37 @@ class Players(models.Model):
     prize_total_euros = models.IntegerField(null=True)
 
 
+class WTAPlayers(models.Model):
+    id = models.TextField(primary_key=True)
+    sportscore_id = models.IntegerField(null=True)
+    player_id = models.IntegerField(null=True)
+    dob = models.DateField(null=True)
+    hand = models.TextField(null=True)
+    country_code = models.TextField(null=True)
+    height = models.FloatField(null=True)
+    wikidata_id = models.TextField(null=True)
+    first_name = models.TextField(null=True)
+    last_name = models.TextField(null=True)
+    slug = models.TextField(null=True)
+    country = models.TextField(null=True)
+    prize_total_euros = models.IntegerField(null=True)
+
+
 class AtpTour(models.Model):
+    id = models.TextField(primary_key=True)
+    name = models.TextField(null=True)
+    date = models.DateField(null=True)
+    surface = models.TextField(null=True)
+
+
+class ChTour(models.Model):
+    id = models.TextField(primary_key=True)
+    name = models.TextField(null=True)
+    date = models.DateField(null=True)
+    surface = models.TextField(null=True)
+
+
+class WtaTour(models.Model):
     id = models.TextField(primary_key=True)
     name = models.TextField(null=True)
     date = models.DateField(null=True)
@@ -53,6 +83,38 @@ class AtpElo(models.Model):
         to=Players,
         on_delete=models.DO_NOTHING,
         related_name="player",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+
+
+class ChElo(models.Model):
+    match = models.ForeignKey(
+        'ChMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="chmatch",
+    )
+    player = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        related_name="chplayer",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+
+
+class WtaElo(models.Model):
+    match = models.ForeignKey(
+        'WtaMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="wtamatch",
+    )
+    player = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        related_name="wtaplayer",
     )
     elo = models.IntegerField()
     elo_change = models.IntegerField()
@@ -87,6 +149,62 @@ class AtpMatches(models.Model):
     match_num = models.IntegerField(null=True)
 
 
+class ChMatches(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=ChTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chtours",
+    )
+    winner = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chwinners",
+    )
+    loser = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chlosers",
+    )
+    date = models.DateField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+
+
+class WtaMatches(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=WtaTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="atptours",
+    )
+    winner = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="winners",
+    )
+    loser = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="losers",
+    )
+    date = models.DateField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+
+
 class Match(models.Model):
     id = models.TextField(primary_key=True)
     tour = models.ForeignKey(
@@ -105,6 +223,66 @@ class Match(models.Model):
     )
     away = models.ForeignKey(
         to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="away",
+    )
+    start_at = models.DateTimeField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+    home_odds = models.TextField(null=True)
+    away_odds = models.TextField(null=True)
+
+
+class ChMatch(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=ChTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="matches",
+    )
+    home = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chhome",
+    )
+    away = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="chaway",
+    )
+    start_at = models.DateTimeField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+    home_odds = models.TextField(null=True)
+    away_odds = models.TextField(null=True)
+
+
+class WtaMatch(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=WtaTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="wtamatches",
+    )
+    home = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="home",
+    )
+    away = models.ForeignKey(
+        to=WTAPlayers,
         on_delete=models.DO_NOTHING,
         null=True,
         blank=True,

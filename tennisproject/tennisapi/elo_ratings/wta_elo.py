@@ -56,12 +56,11 @@ def wta_elorate(surface):
         else:
             loser_elo = loser[0].elo
             loser_games = loser[0].games
-        print(match.winner_id, match.loser_id, winner_elo, loser_elo)
+
         prob = probability_of_winning(loser_elo, winner_elo)
         k = calculate_k_factor(winner_games, o, c, s)
         winner_elo, winner_change = calculate_new_elo(winner_elo, 1, prob, k)
-        print(match.id)
-        print(type(match.id))
+
         m = WtaElo(
             player=winner_id,
             match=match,
@@ -74,7 +73,6 @@ def wta_elorate(surface):
         # Loser
         k = calculate_k_factor(loser_games, o, c, s)
         loser_elo, loser_change = calculate_new_elo(loser_elo, 0, 1 - prob, k)
-        print(prob)
 
         m = WtaElo(
             player=loser_id,
@@ -84,3 +82,12 @@ def wta_elorate(surface):
             games=loser_games + 1,
         )
         m.save()
+
+        print(
+            winner_id.last_name,
+            round(winner_elo, 0),
+            round(winner_elo - winner_change, 0),
+            loser_id.last_name,
+            round(loser_elo, 0),
+            round(loser_elo - loser_change, 0),
+        )

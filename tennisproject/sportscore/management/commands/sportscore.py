@@ -106,7 +106,7 @@ class Command(BaseCommand):
         last_page = data['meta']["last_page"]
 
         with tqdm(total=last_page) as pbar:
-            for page in range(1, last_page+1000):
+            for page in range(2, last_page+1):
                 querystring = {"page": str(page)}
                 response = requests.request(
                     "GET", url, headers=headers, params=querystring

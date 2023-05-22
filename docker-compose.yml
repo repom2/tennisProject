@@ -58,12 +58,11 @@ services:
     environment:
       SESSION_SECRET: supersecretsession
       UPSTREAM_URL: http://tennis-app:3000
-      IAM_APP_BASE_URL: http://localhost:4000
-      #METRICS_API_URL: http://metrics-service-apigw
-      #METRICS_API_URL: http://metrics-service-oathkeeper:4455
+      #IAM_APP_BASE_URL: http://localhost:4000
+      TENNIS_API_URL: http://tennisproject-apigw
       #OIDC_DISCOVERY_URL: https://dev.dex.surveypal-test.dev/.well-known/openid-configuration
-      #OIDC_CLIENT_ID: metrics-dev
-      #OIDC_CLIENT_SECRET: metrics-dev
+      OIDC_CLIENT_ID: tennis-dev
+      OIDC_CLIENT_SECRET: tennis-dev
       #OIDC_SCOPE: "openid email profile offline_access"
     restart: unless-stopped
     depends_on:

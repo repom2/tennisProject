@@ -57,6 +57,7 @@ poetry run python manage.py elo_rate wta 'clay'
 
 
 #ATP
+select * from (
 select *,
 	round((1.0 / (1.0 + pow(10, ((away_elo - home_elo)::numeric / 400)))), 2) as prob
 from (
@@ -66,10 +67,11 @@ select start_at, b.last_name, c.last_name, home_odds, away_odds, b.player_id, c.
 from tennisapi_match a
 left join tennisapi_players b on home_id = b.id
 left join tennisapi_players c on away_id = c.id
-where start_at >= '2023-4-27' order by start_at asc
-) s ;
+where start_at >= '2023-5-22' order by start_at asc
+) s ) ss where home_elo is not null and away_elo is not null;
 
 #WTA
+select * from (
 select *,
 	round((1.0 / (1.0 + pow(10, ((away_elo - home_elo)::numeric / 400)))), 2) as prob
 from (
@@ -79,8 +81,8 @@ select start_at, b.last_name, c.last_name, home_odds, away_odds, b.player_id, c.
 from tennisapi_wtamatch a
 left join tennisapi_wtaplayers b on home_id = b.id
 left join tennisapi_wtaplayers c on away_id = c.id
-where start_at >= '2023-5-16' order by start_at asc
-) s ;
+where start_at >= '2023-5-22' order by start_at asc
+) s ) ss where home_elo is not null and away_elo is not null;
 
 ### Players
 select c.date,t.name, d.last_name as winner, e.last_name as loser from tennisapi_atpelo a 

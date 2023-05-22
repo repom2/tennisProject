@@ -195,6 +195,17 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-cors-headers"
+version = "4.0.0"
+description = "django-cors-headers is a Django application for handling the server headers required for Cross-Origin Resource Sharing (CORS)."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+Django = ">=3.2"
+
+[[package]]
 name = "environ"
 version = "1.0"
 description = "Stack Based Globals Management"
@@ -752,7 +763,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11"
-content-hash = "733f1a4bada4e34a48f0403a0333b0b3cb20ae527e22d66481431d053d054afd"
+content-hash = "3ca6a036b29a144313ad50890916a91e5d5bb2c3f8a21c4977d0ecaf85f0898b"
 
 [metadata.files]
 agate = [
@@ -962,6 +973,10 @@ dbt-rpc = [
 django = [
     {file = "Django-4.1.7-py3-none-any.whl", hash = "sha256:f2f431e75adc40039ace496ad3b9f17227022e8b11566f4b363da44c7e44761e"},
     {file = "Django-4.1.7.tar.gz", hash = "sha256:44f714b81c5f190d9d2ddad01a532fe502fa01c4cb8faf1d081f4264ed15dcd8"},
+]
+django-cors-headers = [
+    {file = "django_cors_headers-4.0.0-py3-none-any.whl", hash = "sha256:e3cbd247a1a835da4cf71a70d4214378813ea7e08337778b82cb2c1bc19d28d6"},
+    {file = "django_cors_headers-4.0.0.tar.gz", hash = "sha256:a971cd4c75b29974068cc36b5c595698822f1e0edd5f1b32ea42ea37326ad4aa"},
 ]
 environ = [
     {file = "environ-1.0.tar.gz", hash = "sha256:4df7f1dfeb7d1c988d2e19a8bd5d547a526e0400aeb35adf732032472f35dcb0"},

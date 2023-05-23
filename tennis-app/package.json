@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^13.5.0",
     "dns-packet": "^5.6.0",
     "multicast-dns": "^7.2.5",
+    "openapi": "^1.0.1",
     "plugin-transform-react-jsx": "^0.0.1-security",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -20,7 +21,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "metricsapi:update": "openapi --useUnionTypes --useOptions --name TennisAPI -i openapi/public-api.yaml -o src/data/openapi"
   },
   "eslintConfig": {
     "extends": [
@@ -39,5 +41,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "openapi-typescript": "^6.2.4",
+    "openapi-typescript-codegen": "^0.24.0"
   }
 }

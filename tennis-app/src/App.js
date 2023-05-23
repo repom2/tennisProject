@@ -11,10 +11,12 @@ function App() {
         queryKey: ["PLAYERS"],
     };
 };
+console.log(usegetPlayers);
   return (
+
     <div className="App">
       <header className="App-header">
-      <p>The date is </p> <br/>
+      <p>The date is ret wron</p> <br/>
 
       </header>
     </div>

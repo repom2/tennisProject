@@ -22,7 +22,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "metricsapi:update": "openapi --useUnionTypes --useOptions --name TennisAPI -i openapi/public-api.yaml -o src/data/openapi"
+    "tennisapi:update": "openapi --useUnionTypes --useOptions --name TennisAPI -i openapi/public-api.yaml -o src/data/openapi"
   },
   "eslintConfig": {
     "extends": [

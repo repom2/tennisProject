@@ -55,7 +55,9 @@ full join
         to_date(substring(details->> 'date_of_birth'
     from '\((.+)\)'), 'DD Mon YYY') dob
     from  sportscore_teams
-    where sport_id='2') b on a.dob=b.dob and
-    (slug ilike '%' || replace(name_last, ' ', '%') || '%' or slug ilike '%' || replace(name_first, ' ', '%') || '%')
+    where sport_id='2' and section ->> 'id' = '145' and name_full not like '%/%' and a.slug !~ '[0-9]+') b
+    on a.dob=b.dob and
+    (slug ilike '%' || replace(name_last, ' ', '%') || '%'
+    or slug ilike '%' || replace(name_first, ' ', '%') || '%')
 ) s ) z
 

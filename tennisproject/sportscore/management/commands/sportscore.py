@@ -324,28 +324,29 @@ class Command(BaseCommand):
         data = json.loads(data)
         data_df = data['data']
         to = data['meta']["to"]
-        to = 1400
-        with tqdm(total=to) as pbar:
-            for page in range(1, to+1):
-                querystring = {"page": str(page)}
+        current_page = data['meta']["current_page"]
+        per_page = data['meta']["per_page"]
+        meta_to = data['meta']["to"]
+        if meta_to is not None:
+            while meta_to >= per_page:
+                current_page += 1
+                querystring = {"page": str(current_page)}
                 response = requests.request(
                     "GET", url, headers=headers, params=querystring
                 )
                 data = response.text
                 data = json.loads(data)
-                try:
-                    data_df.extend(data["data"])
-                except KeyError:
-                    print(data_df)
-                    pass
-                pbar.update(1)
+                data_df.extend(data["data"])
+                per_page += data['meta']["per_page"]
+                meta_to = data['meta']["to"]
+                if meta_to is None:
+                    break
 
         with tqdm(total=len(data_df)) as pbar:
             for item in data_df:
                 m = Teams(**item)
                 m.save()
                 pbar.update(1)
-
 
     def events_by_section_id(self, options):
         url = "https://sportscore1.p.rapidapi.com/sections/143/events"
@@ -371,10 +372,6 @@ class Command(BaseCommand):
         meta_to = data['meta']["to"]
 
         if meta_to is not None:
-            print('type', type(meta_to))
-            print('meta_to', meta_to)
-            print('per_page', per_page)
-            print('type', type(per_page))
             while meta_to >= per_page:
                 current_page += 1
                 querystring = {"page": str(current_page)}

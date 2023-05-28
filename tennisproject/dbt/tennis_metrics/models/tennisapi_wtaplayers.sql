@@ -56,7 +56,8 @@ full join
     from '\((.+)\)'), 'DD Mon YYY') dob
     from  sportscore_teams a
     inner join sportscore_events b on (home_team_id=a.id or away_team_id=a.id)
-    where a.sport_id='2' and section ->> 'id' = '144' and name_full not like '%/%' and a.slug !~ '[0-9]+') b
+    where a.sport_id='2' and section ->> 'id' = '144'
+    and season ->> 'name' not ilike '%atp%cup%' and name_full not like '%/%' and status = 'finished') b
     on a.dob=b.dob and
     (slug ilike '%' || replace(name_last, ' ', '%') || '%'
     or slug ilike '%' || replace(name_first, ' ', '%') || '%')

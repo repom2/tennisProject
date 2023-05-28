@@ -45,17 +45,18 @@ from
         wikidata_id
     from tennis_atp_players) a
 full join
-    (select
-        id,
-        slug,
+    (select distinct
+        a.id,
+        a.slug,
         country_code,
         country,
         details->> 'prize_total_euros' as prize_total_euros,
         name_full,
         to_date(substring(details->> 'date_of_birth'
     from '\((.+)\)'), 'DD Mon YYY') dob
-    from  sportscore_teams
-    where sport_id='2' and section ->> 'id' = '145' and name_full not like '%/%' and a.slug !~ '[0-9]+') b
+    from  sportscore_teams a
+    inner join sportscore_events b on (home_team_id=a.id or away_team_id=a.id)
+    where a.sport_id='2' and section ->> 'id' = '145' and name_full not like '%/%' and a.slug !~ '[0-9]+') b
     on a.dob=b.dob and
     (slug ilike '%' || replace(name_last, ' ', '%') || '%'
     or slug ilike '%' || replace(name_first, ' ', '%') || '%')

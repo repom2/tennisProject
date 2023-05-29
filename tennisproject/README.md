@@ -131,3 +131,17 @@ where b.last_name ilike '%Hurkacz%' order by c.date desc;
 pg_dump -h db --clean tennis -U tennis > tennisproject.sql
 
 docker compose cp tennisproject/app/tennisproject.sql .
+
+### Best Elo
+select 
+	a.player_id, 
+	first_name, 
+	last_name, 
+	max(date),
+	(select elo from tennisapi_atpelo b where b.player_id=a.player_id order by games desc limit 1) as elo,
+	(select count(*) from tennisapi_atpelo c where c.player_id=a.player_id) as games
+from tennisapi_atpelo a
+inner join tennisapi_atpmatches b on a.match_id=b.id
+inner join tennisapi_players c on a.player_id=c.id
+where date >= '2023-1-1'
+group by a.player_id, first_name, last_name order by elo desc

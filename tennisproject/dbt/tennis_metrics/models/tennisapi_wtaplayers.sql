@@ -61,5 +61,5 @@ full join
     on a.dob=b.dob and
     (slug ilike '%' || replace(name_last, ' ', '%') || '%'
     or slug ilike '%' || replace(name_first, ' ', '%') || '%')
-) s ) z
+) s ) z where (sportscore_id, player_id) not in ( (12553,201662), (11552, 201697) )
 

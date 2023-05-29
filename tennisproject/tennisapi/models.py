@@ -89,6 +89,22 @@ class AtpElo(models.Model):
     games = models.IntegerField()
 
 
+class AtpHardElo(models.Model):
+    match = models.ForeignKey(
+        'AtpMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="hardmatch",
+    )
+    player = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        related_name="hardplayer",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+
+
 class ChElo(models.Model):
     match = models.ForeignKey(
         'ChMatches',
@@ -115,6 +131,22 @@ class WtaElo(models.Model):
         to=WTAPlayers,
         on_delete=models.DO_NOTHING,
         related_name="wtaplayer",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+
+
+class WtaHardElo(models.Model):
+    match = models.ForeignKey(
+        'WtaMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="wtahardmatch",
+    )
+    player = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        related_name="wtahardplayer",
     )
     elo = models.IntegerField()
     elo_change = models.IntegerField()

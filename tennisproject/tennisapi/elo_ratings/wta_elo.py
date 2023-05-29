@@ -1,4 +1,4 @@
-from tennisapi.models import WtaElo, WtaMatches, WTAPlayers
+from tennisapi.models import WtaHardElo, WtaElo, WtaMatches, WTAPlayers, WtaTour
 from django.db.models import Q, Exists, OuterRef
 
 
@@ -25,7 +25,6 @@ def calculate_k_factor(matches, o, c, s):
 
 def wta_elorate(surface):
     matches = WtaMatches.objects.filter(
-        ~Exists(WtaElo.objects.filter(id=OuterRef('wtamatch')))).filter(
         tour__surface__icontains=surface,
         round_name__isnull=False,
     ).filter(
@@ -38,12 +37,25 @@ def wta_elorate(surface):
         Q(round_name='R128')
     ).order_by('date', 'match_num').distinct()
 
+    if surface == 'clay':
+        matches = matches.filter(
+            ~Exists(WtaElo.objects.filter(id=OuterRef('wtamatch'))))
+        elo_table = WtaElo
+    elif surface == 'hard':
+        matches = matches.filter(
+            ~Exists(WtaHardElo.objects.filter(id=OuterRef('wtahardmatch'))))
+        elo_table = WtaHardElo
+    else:
+        return
+
     for match in matches:
         # Get elo from database
+        tour = WtaTour.objects.filter(id=match.tour_id)[0]
         winner_id = WTAPlayers.objects.filter(id=match.winner_id)[0]
         loser_id = WTAPlayers.objects.filter(id=match.loser_id)[0]
-        winner = WtaElo.objects.filter(player__id=match.winner_id).order_by('-games')
-        loser = WtaElo.objects.filter(player__id=match.loser_id).order_by('-games')
+        winner = elo_table.objects.filter(player__id=match.winner_id).order_by('-games')
+        loser = elo_table.objects.filter(player__id=match.loser_id).order_by('-games')
+
         if not winner:
             winner_elo = 1500
             winner_games = 0
@@ -61,7 +73,7 @@ def wta_elorate(surface):
         k = calculate_k_factor(winner_games, o, c, s)
         winner_elo, winner_change = calculate_new_elo(winner_elo, 1, prob, k)
 
-        m = WtaElo(
+        m = elo_table(
             player=winner_id,
             match=match,
             elo=winner_elo,
@@ -74,7 +86,7 @@ def wta_elorate(surface):
         k = calculate_k_factor(loser_games, o, c, s)
         loser_elo, loser_change = calculate_new_elo(loser_elo, 0, 1 - prob, k)
 
-        m = WtaElo(
+        m = elo_table(
             player=loser_id,
             match=match,
             elo=loser_elo,
@@ -84,6 +96,10 @@ def wta_elorate(surface):
         m.save()
 
         print(
+            match.id,
+            match.date,
+            tour.surface,
+            tour.name,
             winner_id.last_name,
             round(winner_elo, 0),
             round(winner_elo - winner_change, 0),

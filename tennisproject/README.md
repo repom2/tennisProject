@@ -57,34 +57,66 @@ poetry run python manage.py elo_rate wta 'clay'
 
 
 #ATP
-select * from (
-select *,
+select 
+	ss.*, 
+	round(prob * home_odds, 2) as l1,
+	round((1 - prob) * away_odds, 2) as l2
+from (
+select 
+	start_at,
+	home_p,
+	away_p,
+	home_odds::numeric,
+	away_odds::numeric,
+	home_elo,
+	away_elo,
+	home,
+	away,
 	round((1.0 / (1.0 + pow(10, ((away_elo - home_elo)::numeric / 400)))), 2) as prob
 from (
-select start_at, b.last_name, c.last_name, home_odds, away_odds, b.player_id, c.player_id,
+select start_at, b.last_name as home_p, c.last_name as away_p, home_odds, away_odds, b.player_id, c.player_id,
 (select elo from tennisapi_atpelo where b.id=player_id order by games desc limit 1) as home_elo,
-(select elo from tennisapi_atpelo where c.id=player_id order by games desc limit 1) as away_elo
+(select elo from tennisapi_atpelo where c.id=player_id order by games desc limit 1) as away_elo,
+(select count(*) from tennisapi_atpelo where b.id=player_id) as home,
+(select count(*) from tennisapi_atpelo where c.id=player_id) as away
 from tennisapi_match a
 left join tennisapi_players b on home_id = b.id
 left join tennisapi_players c on away_id = c.id
-where start_at >= '2023-5-22' order by start_at asc
-) s ) ss where home_elo is not null and away_elo is not null;
+where start_at >= '2023-5-29' order by start_at::timestamp asc
+) s where home_p is not null and away_p is not null) ss  ;
 
 #WTA
-select * from (
-select *,
+select 
+	ss.*, 
+	round(prob * home_odds, 2) as l1,
+	round((1 - prob) * away_odds, 2) as l2
+from (
+select 
+	start_at,
+	home_p,
+	away_p,
+	home_odds::numeric,
+	away_odds::numeric,
+	home_elo,
+	away_elo,
+	home,
+	away,
+	home_hardelo,
+	away_hardelo,
 	round((1.0 / (1.0 + pow(10, ((away_elo - home_elo)::numeric / 400)))), 2) as prob
 from (
-select start_at, b.last_name, c.last_name, home_odds, away_odds, b.player_id, c.player_id,
+select start_at, b.last_name as home_p, c.last_name as away_p, home_odds, away_odds, b.player_id, c.player_id,
 (select elo from tennisapi_wtaelo where b.id=player_id order by games desc limit 1) as home_elo,
 (select elo from tennisapi_wtaelo where c.id=player_id order by games desc limit 1) as away_elo,
 (select count(*) from tennisapi_wtaelo where b.id=player_id) as home,
-(select count(*) from tennisapi_wtaelo where c.id=player_id) as away
+(select count(*) from tennisapi_wtaelo where c.id=player_id) as away,
+(select elo from tennisapi_wtahardelo where b.id=player_id order by games desc limit 1) as home_hardelo,
+(select elo from tennisapi_wtahardelo where c.id=player_id order by games desc limit 1) as away_hardelo
 from tennisapi_wtamatch a
 left join tennisapi_wtaplayers b on home_id = b.id
 left join tennisapi_wtaplayers c on away_id = c.id
-where start_at >= '2023-5-26' order by start_at asc
-) s ) ss  ;
+where start_at >= '2023-5-29' order by start_at::timestamp asc
+) s where home_p is not null and away_p is not null) ss  ;
 
 ### Players
 select c.date,t.name, d.last_name as winner, e.last_name as loser from tennisapi_atpelo a 

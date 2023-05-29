@@ -79,6 +79,7 @@ def wta_elorate(surface):
             elo=winner_elo,
             elo_change=winner_change,
             games=winner_games + 1,
+            date=match.date,
         )
         m.save()
 
@@ -92,6 +93,7 @@ def wta_elorate(surface):
             elo=loser_elo,
             elo_change=loser_change,
             games=loser_games + 1,
+            date=match.date,
         )
         m.save()
 

@@ -145,3 +145,47 @@ inner join tennisapi_atpmatches b on a.match_id=b.id
 inner join tennisapi_players c on a.player_id=c.id
 where date >= '2023-1-1'
 group by a.player_id, first_name, last_name order by elo desc
+
+
+### Machine learning query
+select 
+	date,
+	winner_name,
+	loser_name,
+	round_name,
+	winner_elo + winner_change as winner_elo,
+	winner_games,
+	winner_year_games,
+	round(winner_win::numeric / winner_year_games::numeric, 2) as winner_win_percent,
+	loser_elo - loser_change as loser_elo,
+	loser_games,
+	loser_year_games,
+	round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent
+from (
+select 
+	a.date,
+	h.last_name as winner_name,
+	aw.last_name as loser_name,
+	round_name,
+	(select elo from tennisapi_atpelo el where el.player_id=winner_id and el.match_id=b.id) as winner_elo,
+	(select elo_change from tennisapi_atpelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change,
+	(select count(*) from tennisapi_atpelo c where c.player_id=winner_id and c.date < b.date) as winner_games,
+	(select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games,
+	(select elo from tennisapi_atpelo el where el.player_id=loser_id and el.match_id=b.id) as loser_elo,
+	(select elo_change from tennisapi_atpelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change,
+	(select count(*) from tennisapi_atpelo c where c.player_id=loser_id and c.date < b.date) as loser_games,
+	(select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games,
+	(select sum(case when aa.winner_id=c.player_id then 1 else 0 end) 
+	 from tennisapi_atpelo c 
+	 inner join tennisapi_atpmatches aa on aa.id=c.match_id 
+	 where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_win,
+	 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) 
+	 from tennisapi_atpelo c 
+	 inner join tennisapi_atpmatches aa on aa.id=c.match_id 
+	 where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win
+from tennisapi_atptour a
+inner join tennisapi_atpmatches b on b.tour_id=a.id 
+left join tennisapi_players h on h.id = b.winner_id
+left join tennisapi_players aw on aw.id = b.loser_id
+where name ilike '%garros%' and round_name not ilike 'qualification%' order by a.date desc
+	) ss;

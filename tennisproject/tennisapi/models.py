@@ -87,6 +87,7 @@ class AtpElo(models.Model):
     elo = models.IntegerField()
     elo_change = models.IntegerField()
     games = models.IntegerField()
+    date = models.DateField(null=True)
 
 
 class AtpHardElo(models.Model):
@@ -103,6 +104,7 @@ class AtpHardElo(models.Model):
     elo = models.IntegerField()
     elo_change = models.IntegerField()
     games = models.IntegerField()
+    date = models.DateField(null=True)
 
 
 class ChElo(models.Model):
@@ -119,6 +121,7 @@ class ChElo(models.Model):
     elo = models.IntegerField()
     elo_change = models.IntegerField()
     games = models.IntegerField()
+    date = models.DateField(null=True)
 
 
 class WtaElo(models.Model):
@@ -135,6 +138,7 @@ class WtaElo(models.Model):
     elo = models.IntegerField()
     elo_change = models.IntegerField()
     games = models.IntegerField()
+    date = models.DateField(null=True)
 
 
 class WtaHardElo(models.Model):
@@ -151,6 +155,7 @@ class WtaHardElo(models.Model):
     elo = models.IntegerField()
     elo_change = models.IntegerField()
     games = models.IntegerField()
+    date = models.DateField(null=True)
 
 
 class AtpMatches(models.Model):

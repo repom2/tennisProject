@@ -52,7 +52,7 @@ from (
     on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_id)
     left join tennisapi_players b on home_team_id::integer = b.sportscore_id
     left join tennisapi_players c on away_team_id::integer = c.sportscore_id
-    where start_at::timestamp > '2023-02-27'
+    where start_at::timestamp > '2023-05-27'
     and sport_id='2'
     and status = 'notstarted'
 ) s

@@ -37,7 +37,8 @@ select
     else round_name end as round_name,
     match_num::integer,
     home_odds,
-    away_odds
+    away_odds,
+    winner_code
 from (
     select
         a.id as match_num,
@@ -45,6 +46,7 @@ from (
         b.id as home_id,
 	    c.id as away_id,
         start_at,
+        winner_code::integer,
         round_info ->> 'name' as round_name,
         (main_odds ->> 'outcome_1')::json ->> 'value' as home_odds,
         (main_odds ->> 'outcome_2')::json ->> 'value' as away_odds

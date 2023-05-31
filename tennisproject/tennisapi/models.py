@@ -270,6 +270,7 @@ class Match(models.Model):
     match_num = models.IntegerField(null=True)
     home_odds = models.TextField(null=True)
     away_odds = models.TextField(null=True)
+    winner_code = models.IntegerField(null=True)
 
 
 class ChMatch(models.Model):
@@ -300,6 +301,7 @@ class ChMatch(models.Model):
     match_num = models.IntegerField(null=True)
     home_odds = models.TextField(null=True)
     away_odds = models.TextField(null=True)
+    winner_code = models.IntegerField(null=True)
 
 
 class WtaMatch(models.Model):
@@ -330,3 +332,4 @@ class WtaMatch(models.Model):
     match_num = models.IntegerField(null=True)
     home_odds = models.TextField(null=True)
     away_odds = models.TextField(null=True)
+    winner_code = models.IntegerField(null=True)

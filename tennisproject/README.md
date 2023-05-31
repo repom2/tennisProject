@@ -48,11 +48,13 @@ poetry run python manage.py sportscore events-by-leagues
 dbt run --select tennisapi_atpmatches
 dbt run --select tennisapi_wtamatches
 dbt run --select tennisapi_match
+dbt run --select tennisapi_wtamatch
 dbt run --select tennisapi_chmatch
 
 ### Elo Rating
 poetry run python manage.py elo_rate atp 'clay'
 poetry run python manage.py elo_rate wta 'clay'
+poetry run python manage.py elo_rate wta 'hard'
 
 
 

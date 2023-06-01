@@ -19,10 +19,12 @@ def get_data():
                 away_odds, \
                 round_name, \
                 winner_elo, \
+                winner_hardelo, \
                 winner_games, \
                 winner_year_games, \
                 case when winner_year_games = 0 then 0 else round(winner_win::numeric / winner_year_games::numeric, 2) end as winner_win_percent, \
                 loser_elo, \
+                loser_hardelo, \
                 loser_games, \
                 loser_year_games, \
                 case when loser_year_games = 0 then 0 else round(loser_win::numeric / loser_year_games::numeric, 2) end as loser_win_percent, " \
@@ -37,10 +39,12 @@ def get_data():
                 round_name, \
                 winner_code, \
                 (select elo from tennisapi_atpelo el where el.player_id=home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_elo, \
+                (select elo from tennisapi_atphardelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo, \
                 (select count(*) from tennisapi_atpelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
                 (select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
                 (select elo from tennisapi_atpelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_elo, " \
-                "(select count(*) from tennisapi_atpelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
+                "(select elo from tennisapi_atphardelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,  \
+                (select count(*) from tennisapi_atpelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
                 (select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_atpelo c \
@@ -72,7 +76,7 @@ def predict_matches():
     print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_atp_model"
+    file_name = "roland_garros_atp_model_incl_hard"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -87,11 +91,17 @@ def predict_matches():
     print(x.head())
 
     y_pred = model.predict_proba(x)
+    # Lin
+    # y_pred = model.predict(x)
 
     print(y_pred)
 
-    data['y2'] = y_pred[:,0]
-    data['y1'] = y_pred[:,1]
+    # Linear
+    data['y2'] = y_pred[:, 0]
+    data['y1'] = y_pred[:, 1]
+    #data['y2'] = y_pred - 1
+    #data['y1'] = y_pred
+
     data['home_odds'] = data['home_odds'].astype(float)
     data['away_odds'] = data['away_odds'].astype(float)
     print(data)
@@ -135,6 +145,26 @@ def predict_matches():
         data.loc[index, 'bankroll'] = bankroll
         data.loc[index, 'bankroll2'] = bankroll2
 
-    print(data)
+    columns = [
+        # 'start_at',
+        'winner_name',
+        'loser_name',
+        'home_odds',
+        'away_odds',
+        'winner_elo',
+        #'winner_games',
+        'winner_year_games',
+        'winner_win_percent',
+        'loser_elo',
+        #'loser_games',
+        'loser_year_games',
+        'loser_win_percent',
+        'winner_code',
+        'yield1',
+        'yield2',
+        'bankroll',
+        'bankroll2',
+    ]
+    print(data[columns])
     data.to_csv('rg-atp.csv', index=False)
 

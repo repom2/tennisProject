@@ -10,6 +10,7 @@ import xgboost as xgb
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import (GradientBoostingClassifier,
                               RandomForestClassifier, RandomForestRegressor)
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, Normalizer,
                                    StandardScaler)
@@ -24,10 +25,12 @@ def get_data():
                 loser_name, \
                 round_name, \
                 winner_elo + winner_change as winner_elo, \
+                winner_hardelo, \
                 winner_games, \
                 winner_year_games, \
                 round(winner_win::numeric / winner_year_games::numeric, 2) as winner_win_percent, \
                 loser_elo - loser_change as loser_elo, \
+                loser_hardelo, \
                 loser_games, \
                 loser_year_games, \
                 round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent, " \
@@ -38,11 +41,13 @@ def get_data():
                 h.last_name as winner_name, \
                 aw.last_name as loser_name, \
                 round_name, \
-                (select elo from tennisapi_atpelo el where el.player_id=winner_id and el.match_id=b.id) as winner_elo, \
+                (select elo from tennisapi_atpelo el where el.player_id=winner_id and el.match_id=b.id) as winner_elo, " \
+                "(select elo from tennisapi_atphardelo el where el.player_id=winner_id and el.date < b.date order by games desc limit 1) as winner_hardelo, \
                 (select elo_change from tennisapi_atpelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
                 (select count(*) from tennisapi_atpelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
                 (select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
                 (select elo from tennisapi_atpelo el where el.player_id=loser_id and el.match_id=b.id) as loser_elo, \
+                (select elo from tennisapi_atphardelo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_hardelo, \
                 (select elo_change from tennisapi_atpelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
                 (select count(*) from tennisapi_atpelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
                 (select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
@@ -85,14 +90,23 @@ def train_model(
             "winner_elo",
             "loser_games",
             "winner_games",
+            "winner_hardelo",
+            "loser_hardelo",
         ])]
     )
 
     classifier = GradientBoostingClassifier()
+    #classifier = LogisticRegression()
+    #classifier = LinearRegression()
+    #classifier = xgb.XGBClassifier()
+    #classifier = RandomForestClassifier()
 
     pipeline = make_pipeline(scaler, classifier)
     model = pipeline.fit(x_train, y_train.values.ravel())
+    # GradientBoostingClassifier
     model.feature_importances = model.steps[1][1].feature_importances_
+    # LogisticRegression
+    # model.feature_importances = model.steps[1][1].coef_[0]
     model.feature_names = features
     model.round_mapping = round_mapping
 
@@ -117,8 +131,40 @@ def tennis_prediction():
     df1 = data.iloc[:3478, :]
     df2 = data.iloc[3478:, :]
 
-    columns = ['date', 'winner_name', 'loser_name', 'round_name', 'winner_elo', 'winner_games', 'winner_year_games', 'winner_win_percent', 'loser_elo', 'loser_games', 'loser_year_games', 'loser_win_percent', 'result']
-    revert_columns = ['date', 'winner_name', 'loser_name', 'round_name', 'loser_elo', 'loser_games', 'loser_year_games', 'loser_win_percent', 'winner_elo', 'winner_games', 'winner_year_games', 'winner_win_percent', 'result']
+    columns = [
+        'date',
+        'winner_name',
+        'loser_name',
+        'round_name',
+        'winner_elo',
+        'winner_hardelo',
+        'winner_games',
+        'winner_year_games',
+        'winner_win_percent',
+        'loser_elo',
+        'loser_hardelo',
+        'loser_games',
+        'loser_year_games',
+        'loser_win_percent',
+        'result'
+    ]
+    revert_columns = [
+        'date',
+        'winner_name',
+        'loser_name',
+        'round_name',
+        'loser_elo',
+        'loser_hardelo',
+        'loser_games',
+        'loser_year_games',
+        'loser_win_percent',
+        'winner_elo',
+        'winner_hardelo',
+        'winner_games',
+        'winner_year_games',
+        'winner_win_percent',
+        'result'
+    ]
 
     df2 = df2[revert_columns]
     df2["result"] = 0
@@ -133,10 +179,12 @@ def tennis_prediction():
     features = [
         'round_name',
         'loser_elo',
+        'loser_hardelo',
         'loser_games',
         'loser_year_games',
         'loser_win_percent',
         'winner_elo',
+        'winner_hardelo',
         'winner_games',
         'winner_year_games',
         'winner_win_percent',
@@ -150,6 +198,6 @@ def tennis_prediction():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_atp_model"
+    file_name = "roland_garros_atp_model_rf"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

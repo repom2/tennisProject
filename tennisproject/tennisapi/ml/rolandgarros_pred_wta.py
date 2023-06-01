@@ -75,7 +75,7 @@ def label_team(data, mapping):
 
 def predict_matches_wta():
     data = get_data()
-    print(data)
+    #print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "roland_garros_wta_model"
@@ -86,21 +86,23 @@ def predict_matches_wta():
     round_mapping = model.round_mapping
 
     data = label_team(data, round_mapping)
-    print(features)
+    #print(features)
 
     data = data.dropna()
     x = data[features]
-    print(x.head())
+    #print(x.head())
 
     y_pred = model.predict_proba(x)
+    #y_pred = model.predict(x)
 
-    print(y_pred)
+    #print(y_pred)
 
     data['y2'] = y_pred[:, 0]
     data['y1'] = y_pred[:, 1]
+    #data['y2'] = y_pred - 1
+    #data['y1'] = y_pred
     data['home_odds'] = data['home_odds'].astype(float)
     data['away_odds'] = data['away_odds'].astype(float)
-    print(data)
     data['yield1'] = data['y1'] * data['home_odds']
     data['yield2'] = data['y2'] * data['away_odds']
 

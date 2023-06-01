@@ -24,6 +24,7 @@ joblib = "^1.2.0"
 xgboost = "^1.7.5"
 sklearn = "^0.0.post5"
 scikit-learn = "^1.2.2"
+gradio = "^3.32.0"
 
 
 [build-system]

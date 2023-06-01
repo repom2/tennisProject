@@ -3,6 +3,7 @@ from tennisapi.ml.rolandgarros import tennis_prediction
 from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
 from tennisapi.ml.rolandgarros_pred import predict_matches
 from tennisapi.ml.rolandgarros_pred_wta import predict_matches_wta
+from tennisapi.ml.model_interact import feature_importance
 
 
 class Command(BaseCommand):
@@ -24,6 +25,11 @@ class Command(BaseCommand):
         roland_pred_wta_cmd = subparsers.add_parser("roland-pred-wta")
         roland_pred_wta_cmd.set_defaults(subcommand=self.roland_predict_wta)
 
+        print_feature_importance_cmd = subparsers.add_parser("features")
+        print_feature_importance_cmd.set_defaults(
+            subcommand=self.print_feature_importance
+        )
+
     def handle(self, *args, **options):
         options["subcommand"](options)
 
@@ -38,3 +44,6 @@ class Command(BaseCommand):
 
     def roland_predict_wta(self, options):
         predict_matches_wta()
+
+    def print_feature_importance(self, options):
+        feature_importance()

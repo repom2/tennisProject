@@ -10,6 +10,7 @@ import xgboost as xgb
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import (GradientBoostingClassifier,
                               RandomForestClassifier, RandomForestRegressor)
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, Normalizer,
                                    StandardScaler)
@@ -95,10 +96,15 @@ def train_model(
     )
 
     classifier = GradientBoostingClassifier()
+    #classifier = LogisticRegression()
+    #classifier = LinearRegression()
+    #classifier = xgb.XGBClassifier()
+    #classifier = RandomForestClassifier()
 
     pipeline = make_pipeline(scaler, classifier)
     model = pipeline.fit(x_train, y_train.values.ravel())
     model.feature_importances = model.steps[1][1].feature_importances_
+    #model.feature_importances = model.steps[1][1].coef_[0]
     model.feature_names = features
     model.round_mapping = round_mapping
 

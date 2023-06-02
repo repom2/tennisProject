@@ -1,15 +1,20 @@
+from numpy import loadtxt
+from tensorflow.keras.models import load_model
+import psycopg2
+from psycopg2 import extras
+import pandas as pd
+import numpy as np
+from tensorflow.keras import backend as K
 import warnings
 
-import pandas as pd
 from django.db import connection
 import os
 
 import joblib
 
+
 warnings.filterwarnings("ignore")
 
-pd.set_option('display.max_rows', 300)
-#pd.set_option('display.max_columns', None)
 
 def get_data():
     query = "select \
@@ -72,96 +77,168 @@ def label_team(data, mapping):
     return data
 
 
-def predict_matches_wta():
+
+def odds_loss(y_true, y_pred):
+    """
+    The function implements the custom loss function mentioned in info.pdf
+
+    Inputs
+    true : a vector of dimension batch_size, 7. A label encoded version of the output and the backp1_a and backp1_b
+    pred : a vector of probabilities of dimension batch_size , 5.
+
+    Returns
+    the loss value
+    """
+    win_home = y_true[:, 0:1]
+
+    win_away = y_true[:, 1:2]
+    no_bet = y_true[:, 2:3]
+    close_home = y_true[:, 3:4]
+
+    close_away = y_true[:, 4:5]
+    gain_loss_vector = K.concatenate(
+        [win_home * (close_home - 1) + (1 - win_home) * -1 / (close_home - 1),
+         # if (1 - win_home) * -1 > 0 else (1 - win_home) * -1 / (close_home - 1)),
+
+         win_away * (close_away - 1) + (1 - win_away) * -1 / (close_away - 1),
+         # if (1 - win_away) * -1 > 0 else (1 - win_away) * -1 / (close_away - 1)),
+         K.zeros_like(close_home)], axis=1)
+
+    print(gain_loss_vector)
+    print(y_pred)
+    return -1 * K.mean(K.sum(gain_loss_vector * y_pred, axis=1))
+
+
+def log_loss_pred():
     data = get_data()
-    #print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "roland_garros_wta_model2"
     file_path = local_path + file_name
 
-    model = joblib.load(file_path, 'r')
+    model = joblib.load(file_path)
     features = model.feature_names
     round_mapping = model.round_mapping
 
     data = label_team(data, round_mapping)
-    #print(features)
 
     data = data.dropna()
     x = data[features]
-    #print(x.head())
+    # print(x.head())
 
     y_pred = model.predict_proba(x)
-    #y_pred = model.predict(x)
+    # y_pred = model.predict(x)
 
-    #print(y_pred)
+    # print(y_pred)
 
     data['y2'] = y_pred[:, 0]
     data['y1'] = y_pred[:, 1]
-    #data['y2'] = y_pred - 1
-    #data['y1'] = y_pred
+    # data['y2'] = y_pred - 1
+    # data['y1'] = y_pred
     data['home_odds'] = data['home_odds'].astype(float)
     data['away_odds'] = data['away_odds'].astype(float)
     data['yield1'] = data['y1'] * data['home_odds']
     data['yield2'] = data['y2'] * data['away_odds']
 
-    data["bankroll"] = None
-    data["bankroll2"] = None
+    i = 0
+    '''
+    Vector of true labels (Win Home, Win spread home, Win spread away, Win Away, No bet)
+    '''
+    y_full = []
+    x_full = []
+
+    x_test = []
+
+    match_id_list = []
+
+    for nro, row in data.iterrows():
+        y = [0, 0, 0, 0, 0]
+
+        x = [
+            #row.round_name,
+            #row.winner_elo,
+            #row.winner_hardelo,
+            #row.winner_games,
+            #row.winner_year_games,
+            #row.winner_win_percent,
+            #row.loser_elo,
+            #row.loser_hardelo,
+            #row.loser_games,
+            #row.loser_year_games,
+            #row.loser_win_percent,
+            row.home_odds,
+            row.away_odds,
+            row["y1"],
+            row["y2"],
+        ]
+
+        x = np.asarray(x).astype('float32')
+        x_full.append(x)
+
+        x_t = [row.winner_name, row.loser_name, row.home_odds, row.away_odds, row.winner_code, row["yield1"],
+            row["yield2"]]
+        x_test.append(x_t)
+
+        i += 1
+
+    local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
+
+    file_name = "odds_loss.hdf5"
+    file_path = local_path + file_name
+    model = load_model(file_path, custom_objects={'odds_loss': odds_loss})#, compile=False)
+    # summarize model.
+    # model.summary()
+    # load dataset
+
+    np.set_printoptions(suppress=True)
+
+    samples_to_predict = np.array(x_full)
+
+    # print(samples_to_predict)
+
+    predictions = model.predict(samples_to_predict)
+    # print(predictions)
+
+    # Generate arg maxes for predictions
+    classes = np.argmax(predictions, axis=1)
+    print(classes)
+    print(len(x_test))
+    #print(x_test)
+    print(len(classes))
+
+    zip_obj = zip(x_test, classes)
+
     bankroll = 1000
     bankroll2 = 1000
     max_bet = 0.05
-    for index, row in data.iterrows():
-        if row["yield1"] > 1:
-            bet2 = ((row["yield1"] - 1) / (row.home_odds - 1)) * bankroll2
-            limit = bankroll2*max_bet
-            if bet2 > limit:
-                bet2 = limit
-            if row.winner_code == 2:
-                bankroll -= 100
-                bankroll2 -= bet2
-            elif row.winner_code == 1:
-                bankroll += (100 * (row.home_odds-1))
-                bankroll2 += (bet2 * (row.home_odds-1))
-            else:
-                continue
-        elif row["yield2"] > 1:
-            bet2 = ((row["yield2"] - 1) / (row.away_odds - 1)) * bankroll2
-            limit = bankroll2 * max_bet
-            if bet2 > limit:
-                bet2 = limit
-            if row.winner_code == 1:
-                bankroll -= 100
-                bankroll2 -= bet2
-            elif row.winner_code == 2:
-                bankroll += (100 * (row.away_odds - 1))
-                bankroll2 += (bet2 * (row.away_odds - 1))
-            else:
-                continue
+    roll = 100
+    bet = 100
+    for row, pred in zip_obj:
+        if pred == 0:
+            pred = 1
+            bet2 = bankroll2 * max_bet
+        elif pred == 1:
+            pred = 2
+            bet2 = bankroll2 * max_bet
         else:
+            pred = 'pass'
             continue
-        data.loc[index, 'bankroll'] = bankroll
-        data.loc[index, 'bankroll2'] = bankroll2
-
-    columns = [
-        # 'start_at',
-        'winner_name',
-        'loser_name',
-        'home_odds',
-        'away_odds',
-        'winner_elo',
-        # 'winner_games',
-        'winner_year_games',
-        'winner_win_percent',
-        'loser_elo',
-        # 'loser_games',
-        'loser_year_games',
-        'loser_win_percent',
-        'winner_code',
-        'yield1',
-        'yield2',
-        'bankroll',
-        'bankroll2',
-    ]
-    print(data[columns])
-    data.to_csv('rg-wta.csv', index=False)
-
+        limit = bankroll2 * max_bet
+        if bet2 > limit:
+            bet2 = limit
+        if row[4] == pred:
+            print('win')
+            if pred == 1:
+                bankroll += (row[2] - 1) * 100
+                bankroll2 += bet2
+            if pred == 2:
+                bankroll += (row[3] - 1) * 100
+                bankroll2 += bet2
+        elif row[4] == 'pass':
+            continue
+        elif row[4] == 0:
+            continue
+        else:
+            bankroll -= 100
+            bankroll2 -= bet2
+        print(row, pred, bankroll, bankroll2)

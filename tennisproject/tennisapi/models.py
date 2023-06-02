@@ -333,3 +333,53 @@ class WtaMatch(models.Model):
     home_odds = models.TextField(null=True)
     away_odds = models.TextField(null=True)
     winner_code = models.IntegerField(null=True)
+
+
+class WtaMatchRolandG(models.Model):
+    id = models.TextField(primary_key=True)
+    tour_id = models.TextField()
+    home = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="homerg",
+    )
+    away = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="awayrg",
+    )
+    start_at = models.DateTimeField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+    home_odds = models.TextField(null=True)
+    away_odds = models.TextField(null=True)
+    winner_code = models.IntegerField(null=True)
+
+
+class MatchRolandG(models.Model):
+    id = models.TextField(primary_key=True)
+    tour_id = models.TextField()
+    home = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="homerg",
+    )
+    away = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="awayrg",
+    )
+    start_at = models.DateTimeField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+    home_odds = models.TextField(null=True)
+    away_odds = models.TextField(null=True)
+    winner_code = models.IntegerField(null=True)

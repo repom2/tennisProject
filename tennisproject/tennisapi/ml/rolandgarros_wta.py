@@ -5,7 +5,6 @@ from django.db import connection
 import os
 
 import joblib
-import pandas as pd
 import xgboost as xgb
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import (GradientBoostingClassifier,
@@ -197,6 +196,6 @@ def tennis_prediction_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_wta_model"
+    file_name = "roland_garros_wta_model2"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

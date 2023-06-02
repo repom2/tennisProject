@@ -2,8 +2,12 @@ from django.core.management.base import BaseCommand
 from tennisapi.ml.rolandgarros import tennis_prediction
 from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
 from tennisapi.ml.rolandgarros_pred import predict_matches
+from tennisapi.ml.rolandgarros_pred_history import predict_matches_history
 from tennisapi.ml.rolandgarros_pred_wta import predict_matches_wta
+from tennisapi.ml.rolandgarros_pred_wta_history import predict_matches_wta_history
 from tennisapi.ml.model_interact import feature_importance
+from tennisapi.ml.log_loss_wta import log_loss_wta
+from tennisapi.ml.log_loss_pred import log_loss_pred
 
 
 class Command(BaseCommand):
@@ -22,13 +26,27 @@ class Command(BaseCommand):
         roland_pred_cmd = subparsers.add_parser("roland-pred")
         roland_pred_cmd.set_defaults(subcommand=self.roland_predict)
 
+        roland_pred_history_cmd = subparsers.add_parser("roland-pred-history")
+        roland_pred_history_cmd.set_defaults(subcommand=self.roland_predict_history)
+
         roland_pred_wta_cmd = subparsers.add_parser("roland-pred-wta")
         roland_pred_wta_cmd.set_defaults(subcommand=self.roland_predict_wta)
+
+        roland_pred_wta_history_cmd = subparsers.add_parser("roland-pred-wta-history")
+        roland_pred_wta_history_cmd.set_defaults(subcommand=self.roland_predict_wta_history)
 
         print_feature_importance_cmd = subparsers.add_parser("features")
         print_feature_importance_cmd.set_defaults(
             subcommand=self.print_feature_importance
         )
+
+        log_loss_wta_cmd = subparsers.add_parser("log-loss")
+        log_loss_wta_cmd.set_defaults(
+            subcommand=self.log_loss_wta_predict)
+
+        log_loss_wta_pred_cmd = subparsers.add_parser("log-loss-pred")
+        log_loss_wta_pred_cmd.set_defaults(
+            subcommand=self.log_loss_wta_pred)
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -42,8 +60,20 @@ class Command(BaseCommand):
     def roland_predict(self, options):
         predict_matches()
 
+    def roland_predict_history(self, options):
+        predict_matches_history()
+
     def roland_predict_wta(self, options):
         predict_matches_wta()
 
+    def roland_predict_wta_history(self, options):
+        predict_matches_wta_history()
+
     def print_feature_importance(self, options):
         feature_importance()
+
+    def log_loss_wta_predict(self, options):
+        log_loss_wta()
+
+    def log_loss_wta_pred(self, options):
+        log_loss_pred()

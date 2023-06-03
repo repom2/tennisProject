@@ -135,8 +135,6 @@ class Command(BaseCommand):
 
         for id in leagues:
             id = id[0].split('-')[1]
-            #id = id[0]
-            print(id)
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
 
             headers = {
@@ -396,3 +394,21 @@ class Command(BaseCommand):
                 m = Events(**item)
                 m.save()
                 pbar.update(1)
+
+    def match_statistics(self, options):
+        wta_leagues = list(
+            WtaTour.objects.filter(date__gte='2023-05-1').values_list('id'))
+
+        for id in leagues:
+            id = id[0].split('-')[1]
+
+        url = "https://sportscore1.p.rapidapi.com/events/1865330/statistics"
+
+        headers = {
+            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        response = requests.get(url, headers=headers)
+
+        print(response.json())

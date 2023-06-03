@@ -36,7 +36,9 @@ def get_data():
                 loser_games, \
                 loser_year_games, \
                 case when loser_year_games = 0 then 0 else round(loser_win::numeric / loser_year_games::numeric, 2) end as loser_win_percent, " \
-                "case when winner_code = null then 10 else winner_code end " \
+                "case when winner_code = null then 10 else winner_code end, " \
+                "home_court_time, " \
+                "away_court_time " \
             "from ( \
             select \
                 b.start_at, \
@@ -61,7 +63,11 @@ def get_data():
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_wtaelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
-                 where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win \
+                 where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win," \
+                "(select sum(court_time) from tennisapi_wtamatch c where name ilike '%garros%' " \
+                "and c.start_at < b.start_at and (c.home_id=b.home_id or c.away_id=b.home_id)) as home_court_time, " \
+                "(select sum(court_time) from tennisapi_wtamatch c where name ilike '%garros%' " \
+                "and c.start_at < b.start_at and (c.home_id=b.away_id or c.away_id=b.away_id)) as away_court_time  \
             from tennisapi_wtatour a \
             inner join tennisapi_wtamatch b on b.tour_id=a.id \
             left join tennisapi_wtaplayers h on h.id = b.home_id \
@@ -119,6 +125,10 @@ def predict_matches_wta():
         'loser_elo']
     data['clay_prob'] = data['clay_prob'].apply(probability_of_winning).round(2)
 
+    data['home_court_time'] = pd.to_datetime(data['home_court_time'], unit='s')
+    data['home_court_time'] = data['home_court_time'].dt.strftime('%H:%M')
+    data['away_court_time'] = pd.to_datetime(data['away_court_time'], unit='s')
+    data['away_court_time'] = data['away_court_time'].dt.strftime('%H:%M')
     data["bankroll"] = None
     data["bankroll2"] = None
 
@@ -163,7 +173,9 @@ def predict_matches_wta():
         'loser_name',
         'home_odds',
         'away_odds',
-        'winner_elo',
+        'home_court_time',
+        'away_court_time',
+        #'winner_elo',
         # 'winner_games',
         #'winner_year_games',
         #'winner_win_percent',

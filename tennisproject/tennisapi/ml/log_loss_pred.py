@@ -112,7 +112,7 @@ def log_loss_pred():
     data = get_data()
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_wta_model2"
+    file_name = "roland_garros_wta_model_gbc"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -215,6 +215,8 @@ def log_loss_pred():
     roll = 100
     bet = 100
     for row, pred in zip_obj:
+        yield1 = row[5]
+        yield2 = row[6]
         if pred == 0:
             pred = 1
             bet2 = bankroll2 * max_bet
@@ -224,12 +226,6 @@ def log_loss_pred():
         else:
             pred = 'pass'
             bet2 = bankroll2 * max_bet
-        """if row[5] > 1 and pred ==1:
-            pass
-        elif row[6] > 1 and pred ==2:
-            pass
-        else:
-            continue"""
         limit = bankroll2 * max_bet
         if bet2 > limit:
             bet2 = limit
@@ -238,9 +234,11 @@ def log_loss_pred():
             if pred == 1:
                 bankroll += (row[2] - 1) * 100
                 bankroll2 += bet2
-            if pred == 2:
+            elif pred == 2:
                 bankroll += (row[3] - 1) * 100
                 bankroll2 += bet2
+            else:
+                continue
         elif row[4] != pred and pred != 'pass':
             bankroll -= 100
             bankroll2 -= bet2

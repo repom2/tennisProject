@@ -121,3 +121,7 @@ class Teams(models.Model):
     flag = models.TextField(null=True)
     foundation = models.TextField(null=True)
     details = models.JSONField(null=True)
+
+class Stats(models.Model):
+    id = models.TextField(primary_key=True)
+    data = models.JSONField(null=True)

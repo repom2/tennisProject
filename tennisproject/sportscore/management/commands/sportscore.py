@@ -6,8 +6,8 @@ import requests
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from sportscore.models import Leagues, Events, Players, Teams
-from tennisapi.models import AtpTour, ChTour, WtaTour
+from sportscore.models import Leagues, Events, Players, Teams, Stats
+from tennisapi.models import AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 
 pd.set_option('display.max_columns', None)
@@ -47,6 +47,9 @@ class Command(BaseCommand):
 
         list_teams_cmd = subparsers.add_parser("teams")
         list_teams_cmd.set_defaults(subcommand=self.list_teams)
+
+        stats_cmd = subparsers.add_parser("stats")
+        stats_cmd.set_defaults(subcommand=self.match_statistics)
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -160,10 +163,6 @@ class Command(BaseCommand):
             meta_to = data['meta']["to"]
 
             if meta_to is not None:
-                print('type',type(meta_to))
-                print('meta_to', meta_to)
-                print('per_page', per_page)
-                print('type', type(per_page))
                 while meta_to >= per_page:
                     current_page += 1
                     querystring = {"page": str(current_page)}
@@ -184,7 +183,6 @@ class Command(BaseCommand):
 
             with tqdm(total=len(data_df)) as pbar:
                 for item in data_df:
-                    print(item)
                     m = Events(**item)
                     m.save()
                     pbar.update(1)
@@ -381,10 +379,6 @@ class Command(BaseCommand):
                 data_df.extend(data["data"])
                 per_page += data['meta']["per_page"]
                 meta_to = data['meta']["to"]
-                print('type', type(meta_to))
-                print('meta_to', meta_to)
-                print('per_page', per_page)
-                print('type', type(per_page))
                 if meta_to is None:
                     break
 
@@ -396,19 +390,31 @@ class Command(BaseCommand):
                 pbar.update(1)
 
     def match_statistics(self, options):
-        wta_leagues = list(
-            WtaTour.objects.filter(date__gte='2023-05-1').values_list('id'))
+        sportscore_ids = list(
+            WtaMatches.objects.filter(date__gte='2023-06-02').values_list('match_num')
+        )
 
-        for id in leagues:
-            id = id[0].split('-')[1]
+        with tqdm(total=len(sportscore_ids)) as pbar:
+            for id in sportscore_ids:
+                id = id[0]
+                url = "https://sportscore1.p.rapidapi.com/events/"+str(id)+"/statistics"
 
-        url = "https://sportscore1.p.rapidapi.com/events/1865330/statistics"
+                headers = {
+                    "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+                    "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+                }
 
-        headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
-            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
-        }
+                response = requests.request(
+                    "GET", url, headers=headers,
+                )
 
-        response = requests.get(url, headers=headers)
-
-        print(response.json())
+                data = response.text
+                print(data)
+                try:
+                    data = json.loads(data)
+                except json.decoder.JSONDecodeError:
+                    continue
+                print(data)
+                m = Stats(id=id, data=data)
+                m.save()
+                pbar.update(1)

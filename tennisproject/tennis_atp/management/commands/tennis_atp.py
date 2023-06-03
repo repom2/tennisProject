@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import numpy as np
 import os
 from django.conf import settings
 
@@ -54,8 +55,10 @@ class Command(BaseCommand):
         for i in range(start_year, end_year+1):
             file_name = "/app/tennis_atp/tennis_data/atp_matches_" + str(i) + ".csv"
             tmp_data = pd.read_csv(file_name, sep=',')
+            #tmp_data = tmp_data.where(pd.notnull(tmp_data), 'NULL')
+            tmp_data = tmp_data.replace(np.nan, None)
             #df.to_dict(orient='records')
-            products = [
+            matches = [
                 AtpMatches(
                     tourney_id=row['tourney_id'],
                     tourney_name=row['tourney_name'],
@@ -87,21 +90,21 @@ class Command(BaseCommand):
                     w_ace=row['w_ace'],
                     w_df=row['w_df'],
                     w_svpt=row['w_svpt'],
-                    w_1stIn=row['w_1stIn'],
-                    w_1stWon=row['w_1stWon'],
-                    w_2ndWon=row['w_2ndWon'],
-                    w_SvGms=row['w_SvGms'],
-                    w_bpSaved=row['w_bpSaved'],
-                    w_bpFaced=row['w_bpFaced'],
+                    w_firstin=row['w_1stIn'],
+                    w_firstwon=row['w_1stWon'],
+                    w_secondwon=row['w_2ndWon'],
+                    w_svgms=row['w_SvGms'],
+                    w_bpsaved=row['w_bpSaved'],
+                    w_bpfaced=row['w_bpFaced'],
                     l_ace=row['l_ace'],
                     l_df=row['l_df'],
                     l_svpt=row['l_svpt'],
-                    l_1stIn=row['l_1stIn'],
-                    l_1stWon=row['l_1stWon'],
-                    l_2ndWon=row['l_2ndWon'],
-                    l_SvGms=row['l_SvGms'],
-                    l_bpSaved=row['l_bpSaved'],
-                    l_bpFaced=row['l_bpFaced'],
+                    l_firstin=row['l_1stIn'],
+                    l_firstwon=row['l_1stWon'],
+                    l_secondwon=row['l_2ndWon'],
+                    l_svgms=row['l_SvGms'],
+                    l_bpsaved=row['l_bpSaved'],
+                    l_bpfaced=row['l_bpFaced'],
                     winner_rank=row['winner_rank'],
                     winner_rank_points=row['winner_rank_points'],
                     loser_rank=row['loser_rank'],
@@ -109,4 +112,4 @@ class Command(BaseCommand):
                 )
                 for index, row in tmp_data.iterrows()
             ]
-            AtpMatches.objects.bulk_create(products)
+            AtpMatches.objects.bulk_create(matches)

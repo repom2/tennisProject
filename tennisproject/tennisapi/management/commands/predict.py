@@ -6,8 +6,6 @@ from tennisapi.ml.rolandgarros_pred_history import predict_matches_history
 from tennisapi.ml.rolandgarros_pred_wta import predict_matches_wta
 from tennisapi.ml.rolandgarros_pred_wta_history import predict_matches_wta_history
 from tennisapi.ml.model_interact import feature_importance
-from tennisapi.ml.log_loss_wta import log_loss_wta
-from tennisapi.ml.log_loss_pred import log_loss_pred
 
 
 class Command(BaseCommand):
@@ -40,14 +38,6 @@ class Command(BaseCommand):
             subcommand=self.print_feature_importance
         )
 
-        log_loss_wta_cmd = subparsers.add_parser("log-loss")
-        log_loss_wta_cmd.set_defaults(
-            subcommand=self.log_loss_wta_predict)
-
-        log_loss_wta_pred_cmd = subparsers.add_parser("log-loss-pred")
-        log_loss_wta_pred_cmd.set_defaults(
-            subcommand=self.log_loss_wta_pred)
-
     def handle(self, *args, **options):
         options["subcommand"](options)
 
@@ -71,9 +61,3 @@ class Command(BaseCommand):
 
     def print_feature_importance(self, options):
         feature_importance()
-
-    def log_loss_wta_predict(self, options):
-        log_loss_wta()
-
-    def log_loss_wta_pred(self, options):
-        log_loss_pred()

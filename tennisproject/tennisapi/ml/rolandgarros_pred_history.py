@@ -73,7 +73,7 @@ def predict_matches_history():
     data = get_data()
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_atp_model_incl_hard"
+    file_name = "roland_garros_atp_model_gbc"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

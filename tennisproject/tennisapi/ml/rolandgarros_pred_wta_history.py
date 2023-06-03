@@ -77,7 +77,7 @@ def predict_matches_wta_history():
     #print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_wta_model"
+    file_name = "roland_garros_wta_model_gbc"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

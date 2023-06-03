@@ -10,6 +10,12 @@ import pandas as pd
 warnings.filterwarnings("ignore")
 
 
+def probability_of_winning(x):
+    l = (x) / 400
+    prob2win = 1 / (1 + 10 ** (l))
+    return 1 - prob2win
+
+
 def get_data():
     query = "select \
                 start_at, \
@@ -76,7 +82,7 @@ def predict_matches():
     print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_atp_model_incl_hard"
+    file_name = "roland_garros_atp_model_gbc"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -104,9 +110,15 @@ def predict_matches():
 
     data['home_odds'] = data['home_odds'].astype(float)
     data['away_odds'] = data['away_odds'].astype(float)
-    print(data)
-    data['yield1'] = data['y1'] * data['home_odds']
-    data['yield2'] = data['y2'] * data['away_odds']
+    data['winner_code'] = data['winner_code'].astype(int)
+    data['winner_elo'] = data['winner_elo'].astype(int)
+    data['loser_elo'] = data['loser_elo'].astype(int)
+    data['yield1'] = (data['y1'] * data['home_odds']).round(2)
+    data['yield2'] = (data['y2'] * data['away_odds']).round(2)
+
+    data['clay_prob'] = data['winner_elo'] - data[
+        'loser_elo']
+    data['clay_prob'] = data['clay_prob'].apply(probability_of_winning).round(2)
 
     data["bankroll"] = None
     data["bankroll2"] = None
@@ -142,8 +154,8 @@ def predict_matches():
                 continue
         else:
             continue
-        data.loc[index, 'bankroll'] = bankroll
-        data.loc[index, 'bankroll2'] = bankroll2
+        data.loc[index, 'bankroll'] = round(bankroll, 0)
+        data.loc[index, 'bankroll2'] = round(bankroll2, 0)
 
     columns = [
         # 'start_at',
@@ -153,13 +165,14 @@ def predict_matches():
         'away_odds',
         'winner_elo',
         #'winner_games',
-        'winner_year_games',
-        'winner_win_percent',
+        #'winner_year_games',
+        #'winner_win_percent',
+        'clay_prob',
         'loser_elo',
         #'loser_games',
-        'loser_year_games',
-        'loser_win_percent',
-        'winner_code',
+        #'loser_year_games',
+        #'loser_win_percent',
+        #'winner_code',
         'yield1',
         'yield2',
         'bankroll',

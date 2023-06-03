@@ -16,6 +16,9 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 #import matplotlib.pyplot as plt
 #from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from numpy import asarray
+from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, Normalizer,
+                                   StandardScaler)
+
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -128,10 +131,10 @@ def odds_loss(y_true, y_pred):
     
     if negative_away < 0:
         negative_away = negative_away / (close_away - 1)"""
-    gain_loss_vector = K.concatenate([win_home * (close_home - 1) + (1 - win_home) * -1/ (close_home - 1), #if (1 - win_home) * -1 > 0 else (1 - win_home) * -1 / (close_home - 1)),
-
-                                      win_away * (close_away - 1) + (1 - win_away) * -1/ (close_away - 1), #if (1 - win_away) * -1 > 0 else (1 - win_away) * -1 / (close_away - 1)),
-                                      K.zeros_like(close_home)], axis=1)
+    gain_loss_vector = K.concatenate(
+        [win_home * (close_home - 1) + (1 - win_home) * -1/ (close_home - 1), #if (1 - win_home) * -1 > 0 else (1 - win_home) * -1 / (close_home - 1)),
+        win_away * (close_away - 1) + (1 - win_away) * -1/ (close_away - 1), #if (1 - win_away) * -1 > 0 else (1 - win_away) * -1 / (close_away - 1)),
+        K.zeros_like(close_home)], axis=1)
     print(gain_loss_vector)
     print(y_pred)
     return -1 * K.mean(K.sum(gain_loss_vector * y_pred, axis=1))
@@ -146,7 +149,7 @@ def log_loss_wta():
     data = get_data()
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_wta_model2"
+    file_name = "roland_garros_wta_model_gbc"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -170,6 +173,8 @@ def log_loss_wta():
     # data['y1'] = y_pred
     data['home_odds'] = data['home_odds'].astype(float)
     data['away_odds'] = data['away_odds'].astype(float)
+    data['yield1'] = data['y1'] * data['home_odds']
+    data['yield2'] = data['y2'] * data['away_odds']
 
     i = 0
     '''
@@ -192,21 +197,23 @@ def log_loss_wta():
             continue
 
         x = [
-            #row.round_name,
-            #row.winner_elo,
-            #row.winner_hardelo,
-            #row.winner_games,
-            #row.winner_year_games,
-            #row.winner_win_percent,
-            #row.loser_elo,
-            #row.loser_hardelo,
-            #row.loser_games,
-            #row.loser_year_games,
-            #row.loser_win_percent,
+            row.round_name,
+            row.winner_elo,
+            row.winner_hardelo,
+            row.winner_games,
+            row.winner_year_games,
+            row.winner_win_percent,
+            row.loser_elo,
+            row.loser_hardelo,
+            row.loser_games,
+            row.loser_year_games,
+            row.loser_win_percent,
             row.home_odds,
             row.away_odds,
             row["y1"],
             row["y2"],
+            #row["yield1"],
+            #row["yield2"],
         ]
 
         y += [float(row.home_odds), float(row.away_odds)]
@@ -221,29 +228,31 @@ def log_loss_wta():
     # standardize dataset
     x_full = asarray(x_full)
     y_full = asarray(y_full)
-    # scaler = MinMaxScaler()
-    # x_full = scaler.fit_transform(x_full)
-    # y_full = scaler.fit_transform(y_full)
+    #scaler = MinMaxScaler()
+    #x_full = scaler.fit_transform(x_full)
+    #y_full = scaler.fit_transform(y_full)
 
     print(x_full)
     print(y_full)
 
     features = [
-        #'round_name',
-        #'winner_elo',
-        #'winner_hardelo',
-        #'winner_games',
-        #'winner_year_games',
-        #'winner_win_percent',
-        #'loser_elo',
-        #'loser_hardelo',
-        #'loser_games',
-        #'loser_year_games',
-        #'loser_win_percent',
+        'round_name',
+        'winner_elo',
+        'winner_hardelo',
+        'winner_games',
+        'winner_year_games',
+        'winner_win_percent',
+        'loser_elo',
+        'loser_hardelo',
+        'loser_games',
+        'loser_year_games',
+        'loser_win_percent',
         'home_odds',
         'away_odds',
         'y1',
         'y2',
+        #'yield1',
+        #'yield2',
     ]
 
     y_df = pd.DataFrame(y_full, columns=['home_win', 'away_win', 'even', 'close_home',
@@ -256,13 +265,13 @@ def log_loss_wta():
     # features = ['home_odds', 'away_odds', 'lin', 'lin2', 'dr', 'dr2']
     # x_df =x_df[features]
 
-    train_x, test_x, train_y, test_y = train_test_split(x_df, y_df, test_size=0.33)
+    train_x, test_x, train_y, test_y = train_test_split(x_df, y_df, test_size=0.55)
     #train_x = x_df
     #test_x = x_df
     #train_y = y_df
     #test_y = y_df
 
-    model = get_model(4, 3, 1000, 0.9, 0.7)
+    model = get_model(15, 3, 1000, 0.9, 0.7)
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
@@ -270,10 +279,10 @@ def log_loss_wta():
     file_path = local_path + file_name
 
     history = model.fit(train_x, train_y, validation_data=(test_x, test_y),
-                        epochs=100, batch_size=5,
-                        callbacks=[EarlyStopping(patience=5),
+                        epochs=100, batch_size=9,
+                        callbacks=[#EarlyStopping(patience=5),
                                    ModelCheckpoint(file_path,
-                                                   save_best_only=True,
+                                                   save_best_only=False,
                                                    save_format='tf')])
 
     print('Training Loss : {}\nValidation Loss : {}'.format(

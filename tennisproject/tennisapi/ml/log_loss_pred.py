@@ -99,7 +99,6 @@ def odds_loss(y_true, y_pred):
     gain_loss_vector = K.concatenate(
         [win_home * (close_home - 1) + (1 - win_home) * -1 / (close_home - 1),
          # if (1 - win_home) * -1 > 0 else (1 - win_home) * -1 / (close_home - 1)),
-
          win_away * (close_away - 1) + (1 - win_away) * -1 / (close_away - 1),
          # if (1 - win_away) * -1 > 0 else (1 - win_away) * -1 / (close_away - 1)),
          K.zeros_like(close_home)], axis=1)
@@ -155,21 +154,23 @@ def log_loss_pred():
         y = [0, 0, 0, 0, 0]
 
         x = [
-            #row.round_name,
-            #row.winner_elo,
-            #row.winner_hardelo,
-            #row.winner_games,
-            #row.winner_year_games,
-            #row.winner_win_percent,
-            #row.loser_elo,
-            #row.loser_hardelo,
-            #row.loser_games,
-            #row.loser_year_games,
-            #row.loser_win_percent,
+            row.round_name,
+            row.winner_elo,
+            row.winner_hardelo,
+            row.winner_games,
+            row.winner_year_games,
+            row.winner_win_percent,
+            row.loser_elo,
+            row.loser_hardelo,
+            row.loser_games,
+            row.loser_year_games,
+            row.loser_win_percent,
             row.home_odds,
             row.away_odds,
-            row["y1"],
-            row["y2"],
+            #row["y1"],
+            #row["y2"],
+            row["yield1"],
+            row["yield2"],
         ]
 
         x = np.asarray(x).astype('float32')
@@ -222,7 +223,13 @@ def log_loss_pred():
             bet2 = bankroll2 * max_bet
         else:
             pred = 'pass'
-            continue
+            bet2 = bankroll2 * max_bet
+        """if row[5] > 1 and pred ==1:
+            pass
+        elif row[6] > 1 and pred ==2:
+            pass
+        else:
+            continue"""
         limit = bankroll2 * max_bet
         if bet2 > limit:
             bet2 = limit
@@ -234,11 +241,9 @@ def log_loss_pred():
             if pred == 2:
                 bankroll += (row[3] - 1) * 100
                 bankroll2 += bet2
-        elif row[4] == 'pass':
-            continue
-        elif row[4] == 0:
-            continue
-        else:
+        elif row[4] != pred and pred != 'pass':
             bankroll -= 100
             bankroll2 -= bet2
+        else:
+            pass
         print(row, pred, bankroll, bankroll2)

@@ -94,7 +94,7 @@ def train_model(
         ])]
     )
 
-    classifier = GradientBoostingClassifier()
+    classifier = GradientBoostingClassifier(n_estimators=500)#, max_features='auto')
     #classifier = LogisticRegression()
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
@@ -196,6 +196,6 @@ def tennis_prediction_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_wta_model2"
+    file_name = "roland_garros_wta_model_gbc"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

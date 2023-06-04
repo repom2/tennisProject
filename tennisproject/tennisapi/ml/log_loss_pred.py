@@ -230,7 +230,6 @@ def log_loss_pred():
         if bet2 > limit:
             bet2 = limit
         if row[4] == pred:
-            print('win')
             if pred == 1:
                 bankroll += (row[2] - 1) * 100
                 bankroll2 += bet2

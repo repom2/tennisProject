@@ -265,7 +265,7 @@ def log_loss_wta():
     # features = ['home_odds', 'away_odds', 'lin', 'lin2', 'dr', 'dr2']
     # x_df =x_df[features]
 
-    train_x, test_x, train_y, test_y = train_test_split(x_df, y_df, test_size=0.55)
+    train_x, test_x, train_y, test_y = train_test_split(x_df, y_df, test_size=0.5)
     #train_x = x_df
     #test_x = x_df
     #train_y = y_df
@@ -279,10 +279,10 @@ def log_loss_wta():
     file_path = local_path + file_name
 
     history = model.fit(train_x, train_y, validation_data=(test_x, test_y),
-                        epochs=100, batch_size=9,
-                        callbacks=[#EarlyStopping(patience=5),
+                        epochs=200, batch_size=25,
+                        callbacks=[EarlyStopping(patience=0),
                                    ModelCheckpoint(file_path,
-                                                   save_best_only=False,
+                                                   save_best_only=True,
                                                    save_format='tf')])
 
     print('Training Loss : {}\nValidation Loss : {}'.format(

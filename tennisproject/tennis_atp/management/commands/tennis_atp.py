@@ -55,9 +55,7 @@ class Command(BaseCommand):
         for i in range(start_year, end_year+1):
             file_name = "/app/tennis_atp/tennis_data/atp_matches_" + str(i) + ".csv"
             tmp_data = pd.read_csv(file_name, sep=',')
-            #tmp_data = tmp_data.where(pd.notnull(tmp_data), 'NULL')
             tmp_data = tmp_data.replace(np.nan, None)
-            #df.to_dict(orient='records')
             matches = [
                 AtpMatches(
                     tourney_id=row['tourney_id'],

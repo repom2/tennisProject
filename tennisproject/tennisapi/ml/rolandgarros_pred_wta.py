@@ -64,9 +64,9 @@ def get_data():
                  from tennisapi_wtaelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win," \
-                "(select sum(court_time) from tennisapi_wtamatch c where name ilike '%garros%' " \
+                "(select sum(court_time) from tennisapi_wtamatch c where  a.id=c.tour_id " \
                 "and c.start_at < b.start_at and (c.home_id=b.home_id or c.away_id=b.home_id)) as home_court_time, " \
-                "(select sum(court_time) from tennisapi_wtamatch c where name ilike '%garros%' " \
+                "(select sum(court_time) from tennisapi_wtamatch c where a.id=c.tour_id " \
                 "and c.start_at < b.start_at and (c.home_id=b.away_id or c.away_id=b.away_id)) as away_court_time  \
             from tennisapi_wtatour a \
             inner join tennisapi_wtamatch b on b.tour_id=a.id \
@@ -90,7 +90,7 @@ def predict_matches_wta():
     #print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_wta_model_gbc"
+    file_name = "roland_garros_wta_model_rf_time"
     file_path = local_path + file_name
 
     model = joblib.load(file_path, 'r')
@@ -137,7 +137,7 @@ def predict_matches_wta():
     max_bet = 0.05
     for index, row in data.iterrows():
         if row["yield1"] > 1:
-            bet2 = ((row["yield1"] - 1) / (row.home_odds - 1)) * bankroll2
+            bet2 = bankroll2*max_bet#((row["yield1"] - 1) / (row.home_odds - 1)) * bankroll2
             limit = bankroll2*max_bet
             if bet2 > limit:
                 bet2 = limit
@@ -150,7 +150,7 @@ def predict_matches_wta():
             else:
                 continue
         elif row["yield2"] > 1:
-            bet2 = ((row["yield2"] - 1) / (row.away_odds - 1)) * bankroll2
+            bet2 = bankroll2 * max_bet#((row["yield2"] - 1) / (row.away_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
                 bet2 = limit

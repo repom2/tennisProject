@@ -33,7 +33,9 @@ def get_data():
                 loser_games, \
                 loser_year_games, \
                 round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent, " \
-                "1 as result \
+                "1 as result, \
+                case when home_court_time is null then 0 else home_court_time end, \
+		        case when away_court_time is null then 0 else away_court_time end \
             from ( \
             select \
                 a.date, \
@@ -57,8 +59,14 @@ def get_data():
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_wtaelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
-                 where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win \
-            from tennisapi_wtatour a \
+                 where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win," \
+                "(select sum(court_time) from tennisapi_wtamatches c " \
+                "where a.id=c.tour_id " \
+                "and c.match_num < b.match_num and (c.winner_id=b.winner_id or c.loser_id=b.winner_id)) as home_court_time, " \
+                "(select sum(court_time) from tennisapi_wtamatches c " \
+                "where a.id=c.tour_id " \
+                "and c.match_num < b.match_num and (c.winner_id=b.loser_id or c.loser_id=b.loser_id)) as away_court_time " \
+            "from tennisapi_wtatour a \
             inner join tennisapi_wtamatches b on b.tour_id=a.id \
             left join tennisapi_wtaplayers h on h.id = b.winner_id \
             left join tennisapi_wtaplayers aw on aw.id = b.loser_id \
@@ -94,11 +102,11 @@ def train_model(
         ])]
     )
 
-    classifier = GradientBoostingClassifier(n_estimators=500)#, max_features='auto')
+    #classifier = GradientBoostingClassifier(n_estimators=500)#, max_features='auto')
     #classifier = LogisticRegression()
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    #classifier = RandomForestClassifier()
+    classifier = RandomForestClassifier(n_estimators=1500)
 
     pipeline = make_pipeline(scaler, classifier)
     model = pipeline.fit(x_train, y_train.values.ravel())
@@ -138,11 +146,13 @@ def tennis_prediction_wta():
         'winner_games',
         'winner_year_games',
         'winner_win_percent',
+        'home_court_time',
         'loser_elo',
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
         'loser_win_percent',
+        'away_court_time',
         'result'
     ]
     revert_columns = [
@@ -155,11 +165,13 @@ def tennis_prediction_wta():
         'loser_games',
         'loser_year_games',
         'loser_win_percent',
+        'away_court_time',
         'winner_elo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
         'winner_win_percent',
+        'home_court_time',
         'result'
     ]
 
@@ -181,11 +193,13 @@ def tennis_prediction_wta():
         'loser_games',
         'loser_year_games',
         'loser_win_percent',
+        'away_court_time',
         'winner_elo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
         'winner_win_percent',
+        'home_court_time',
     ]
 
     model = train_model(
@@ -196,6 +210,6 @@ def tennis_prediction_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_wta_model_gbc"
+    file_name = "roland_garros_wta_model_rf_time"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

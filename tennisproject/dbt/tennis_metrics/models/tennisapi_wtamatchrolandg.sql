@@ -53,6 +53,6 @@ from (
     from sportscore_events a
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id
-    where sport_id='2' and league_id = '6879'
+    where sport_id='2' and (league_id = '6879' or league_id ='6899' or league_id='6933')
     --and status = 'notstarted'
 ) s

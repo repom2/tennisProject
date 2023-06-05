@@ -129,10 +129,10 @@ def predict_matches():
     data["bankroll2"] = None
     bankroll = 1000
     bankroll2 = 1000
-    max_bet = 0.05
+    max_bet = 0.1
     for index, row in data.iterrows():
         if row["yield1"] > 1.0:
-            bet2 = bankroll2 * max_bet#((row["yield1"] - 1) / (row.home_odds - 1)) * bankroll2
+            bet2 = ((row["yield1"] - 1) / (row.home_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
                 bet2 = limit
@@ -145,7 +145,7 @@ def predict_matches():
             else:
                 continue
         elif row["yield2"] > 1.0:
-            bet2 = bankroll2 * max_bet#((row["yield2"] - 1) / (row.away_odds - 1)) * bankroll2
+            bet2 = ((row["yield2"] - 1) / (row.away_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
                 bet2 = limit

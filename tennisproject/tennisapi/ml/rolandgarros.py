@@ -35,8 +35,8 @@ def get_data():
                 loser_year_games, \
                 round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent, " \
                 "1 as result, " \
-                "case when home_court_time is null then 0 else home_court_time end, \
-		        case when away_court_time is null then 0 else away_court_time end \
+                "case when home_court_time is null then 0 else home_court_time / 60 end as home_court_time, \
+		        case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time \
             from ( \
             select \
                 a.date, \
@@ -104,7 +104,7 @@ def train_model(
     )
 
     classifier = GradientBoostingClassifier(n_estimators=1500)
-    #classifier = LogisticRegression()
+    #classifier = LogisticRegression(max_iter=500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
     #classifier = RandomForestClassifier(n_estimators=1500)
@@ -112,9 +112,9 @@ def train_model(
     pipeline = make_pipeline(scaler, classifier)
     model = pipeline.fit(x_train, y_train.values.ravel())
     # GradientBoostingClassifier
-    model.feature_importances = model.steps[1][1].feature_importances_
+    #model.feature_importances = model.steps[1][1].feature_importances_
     # LogisticRegression
-    # model.feature_importances = model.steps[1][1].coef_[0]
+    model.feature_importances = None#model.steps[1][1].coef_[0]
     model.feature_names = features
     model.round_mapping = round_mapping
 
@@ -204,6 +204,11 @@ def tennis_prediction():
         'home_court_time',
     ]
 
+    #train_data['home_court_time'] = pd.to_datetime(train_data['home_court_time'], unit='s')
+    #train_data['away_court_time'] = pd.to_datetime(train_data['away_court_time'], unit='s')
+    #train_data['home_court_time'] = train_data['home_court_time'].dt.strftime('%M')
+    #train_data['away_court_time'] = train_data['away_court_time'].dt.strftime('%M')
+
     model = train_model(
         train_data,
         features,
@@ -212,6 +217,6 @@ def tennis_prediction():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_atp_model_gbc_time"
+    file_name = "roland_garros_atp_model_gbc_hard_time"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

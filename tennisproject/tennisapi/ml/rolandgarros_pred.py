@@ -35,8 +35,8 @@ def get_data():
                 loser_year_games, \
                 case when loser_year_games = 0 then 0 else round(loser_win::numeric / loser_year_games::numeric, 2) end as loser_win_percent, " \
                 "case when winner_code = null then 10 else winner_code end," \
-                "home_court_time," \
-                "away_court_time " \
+                "home_court_time / 60 as home_court_time," \
+                "away_court_time / 60 as away_court_time " \
             "from ( \
             select \
                 b.start_at, \
@@ -85,10 +85,9 @@ def label_team(data, mapping):
 
 def predict_matches():
     data = get_data()
-    print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "roland_garros_atp_model_rf_time"
+    file_name = "roland_garros_atp_model_gbc_nohard_time"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -96,6 +95,11 @@ def predict_matches():
     round_mapping = model.round_mapping
 
     data = label_team(data, round_mapping)
+
+    #data['home_court_time'] = pd.to_datetime(data['home_court_time'], unit='s')
+    #data['away_court_time'] = pd.to_datetime(data['away_court_time'], unit='s')
+    #data['home_court_time'] = data['home_court_time'].dt.strftime('%M')
+    #data['away_court_time'] = data['away_court_time'].dt.strftime('%M')
 
     data = data.dropna()
     x = data[features]
@@ -120,10 +124,10 @@ def predict_matches():
 
     data['clay_prob'] = data['winner_elo'] - data['loser_elo']
     data['clay_prob'] = data['clay_prob'].apply(probability_of_winning).round(2)
-    data['home_court_time'] = pd.to_datetime(data['home_court_time'], unit='s')
-    data['home_court_time'] = data['home_court_time'].dt.strftime('%H:%M')
-    data['away_court_time'] = pd.to_datetime(data['away_court_time'], unit='s')
-    data['away_court_time'] = data['away_court_time'].dt.strftime('%H:%M')
+    #data['home_court_time'] = pd.to_datetime(data['home_court_time'], unit='s')
+    #data['home_court_time'] = data['home_court_time'].dt.strftime('%H:%M')
+    #data['away_court_time'] = pd.to_datetime(data['away_court_time'], unit='s')
+    #data['away_court_time'] = data['away_court_time'].dt.strftime('%H:%M')
 
     data["bankroll"] = None
     data["bankroll2"] = None

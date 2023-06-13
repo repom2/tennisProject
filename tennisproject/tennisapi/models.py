@@ -107,6 +107,23 @@ class AtpHardElo(models.Model):
     date = models.DateField(null=True)
 
 
+class AtpGrassElo(models.Model):
+    match = models.ForeignKey(
+        'AtpMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="grassmatch",
+    )
+    player = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        related_name="grassplayer",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
 class ChElo(models.Model):
     match = models.ForeignKey(
         'ChMatches',

@@ -1,4 +1,4 @@
-from tennisapi.models import AtpHardElo, AtpElo, AtpTour, AtpMatches, Players
+from tennisapi.models import AtpHardElo, AtpElo, AtpGrassElo, AtpTour, AtpMatches, Players
 from django.db.models import Q, Exists, OuterRef
 
 
@@ -45,6 +45,10 @@ def atp_elorate(surface):
         matches = matches.filter(
             ~Exists(AtpHardElo.objects.filter(id=OuterRef('hardmatch'))))
         elo_table = AtpHardElo
+    elif surface == 'grass':
+        matches = matches.filter(
+            ~Exists(AtpGrassElo.objects.filter(id=OuterRef('grassmatch'))))
+        elo_table = AtpGrassElo
     else:
         return
 

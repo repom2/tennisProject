@@ -94,11 +94,8 @@ def get_data():
             "or name ilike '%mallorca%' " \
             "or name ilike '%notting%' " \
             "or name ilike '%newport%' " \
-            "or name ilike '%antaly%' " \
-            "or name ilike '%rosmalen%' " \
-            "or name ilike '%manchester%' " \
             ") " \
-            "and round_name not ilike 'qualification%'  ) " \
+            "and round_name not ilike 'qualification%' and a.date > '2000-1-1' ) " \
             "ss;"
 
     df = pd.read_sql(query, connection)

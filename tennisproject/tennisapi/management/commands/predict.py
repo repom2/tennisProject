@@ -1,10 +1,13 @@
 from django.core.management.base import BaseCommand
 from tennisapi.ml.rolandgarros import tennis_prediction
 from tennisapi.ml.stuttgart_hertogenbosch import tennis_prediction as grass_prediction
+from tennisapi.ml.stuttgart_herto_wta import tennis_prediction as wta_grass_prediction
 from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
 from tennisapi.ml.rolandgarros_pred import predict_matches
 from tennisapi.ml.stuttgart_hertogenbosch_pred \
     import predict_matches as predict_stutt_herto_matches
+from tennisapi.ml.stuttgart_herto_wta_pred \
+    import predict_matches as predict_stutt_herto_wta_matches
 from tennisapi.ml.rolandgarros_pred_history import predict_matches_history
 from tennisapi.ml.rolandgarros_pred_wta import predict_matches_wta
 from tennisapi.ml.rolandgarros_pred_wta_history import predict_matches_wta_history
@@ -24,6 +27,9 @@ class Command(BaseCommand):
         stutt_herto_cmd = subparsers.add_parser("stutt-herto")
         stutt_herto_cmd.set_defaults(subcommand=self.stutt_herto)
 
+        stutt_herto_wta_cmd = subparsers.add_parser("stutt-herto-wta")
+        stutt_herto_wta_cmd.set_defaults(subcommand=self.stutt_herto_wta)
+
         roland_wta_cmd = subparsers.add_parser("roland-wta")
         roland_wta_cmd.set_defaults(subcommand=self.roland_wta)
 
@@ -32,6 +38,9 @@ class Command(BaseCommand):
 
         grass_pred_cmd = subparsers.add_parser("grass-pred")
         grass_pred_cmd.set_defaults(subcommand=self.stutt_herto_predict)
+
+        grass_wta_pred_cmd = subparsers.add_parser("grass-pred-wta")
+        grass_wta_pred_cmd.set_defaults(subcommand=self.stutt_herto_wta_predict)
 
         roland_pred_history_cmd = subparsers.add_parser("roland-pred-history")
         roland_pred_history_cmd.set_defaults(subcommand=self.roland_predict_history)
@@ -56,6 +65,9 @@ class Command(BaseCommand):
     def stutt_herto(self, options):
         grass_prediction()
 
+    def stutt_herto_wta(self, options):
+        wta_grass_prediction()
+
     def roland_wta(self, options):
         tennis_prediction_wta()
 
@@ -64,6 +76,9 @@ class Command(BaseCommand):
 
     def stutt_herto_predict(self, options):
         predict_stutt_herto_matches()
+
+    def stutt_herto_wta_predict(self, options):
+        predict_stutt_herto_wta_matches()
 
     def roland_predict_history(self, options):
         predict_matches_history()

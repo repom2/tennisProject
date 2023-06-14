@@ -175,6 +175,23 @@ class WtaHardElo(models.Model):
     date = models.DateField(null=True)
 
 
+class WtaGrassElo(models.Model):
+    match = models.ForeignKey(
+        'WtaMatches',
+        on_delete=models.DO_NOTHING,
+        related_name="wtagrassmatch",
+    )
+    player = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        related_name="wtagrassplayer",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
 class AtpMatches(models.Model):
     id = models.TextField(primary_key=True)
     tour = models.ForeignKey(

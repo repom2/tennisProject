@@ -55,7 +55,10 @@ def wta_elorate(surface):
     for match in matches:
         # Get elo from database
         tour = WtaTour.objects.filter(id=match.tour_id)[0]
-        winner_id = WTAPlayers.objects.filter(id=match.winner_id)[0]
+        try:
+            winner_id = WTAPlayers.objects.filter(id=match.winner_id)[0]
+        except:
+            continue
         loser_id = WTAPlayers.objects.filter(id=match.loser_id)[0]
         winner = elo_table.objects.filter(player__id=match.winner_id).order_by('-games')
         loser = elo_table.objects.filter(player__id=match.loser_id).order_by('-games')

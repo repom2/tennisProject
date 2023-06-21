@@ -1,6 +1,6 @@
 import json
 import os
-
+import time
 import pandas as pd
 import requests
 from django.core.exceptions import ValidationError
@@ -122,6 +122,7 @@ class Command(BaseCommand):
                     print(data)
                     pass
                 pbar.update(1)
+                time.sleep(1)
 
         with tqdm(total=len(data_df)) as pbar:
             for item in data_df:
@@ -131,9 +132,9 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpTour.objects.filter(date__gte='2023-06-1').values_list('id'))
-        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-06-1').values_list('id'))
-        ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-1').values_list('id'))
+        leagues = list(AtpTour.objects.filter(date__gte='2023-06-15').values_list('id'))
+        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-06-15').values_list('id'))
+        ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues + ch_leagues
 
         for id in leagues:
@@ -174,10 +175,6 @@ class Command(BaseCommand):
                     data_df.extend(data["data"])
                     per_page += data['meta']["per_page"]
                     meta_to = data['meta']["to"]
-                    print('type', type(meta_to))
-                    print('meta_to', meta_to)
-                    print('per_page', per_page)
-                    print('type', type(per_page))
                     if meta_to is None:
                         break
 

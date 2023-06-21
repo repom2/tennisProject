@@ -88,6 +88,7 @@ def get_data():
             "and (name ilike '%stuttga%' " \
             "or name ilike '%hertogen%'" \
             "or name ilike '%queen%'" \
+            "or name ilike '%london%'" \
             "or name ilike '%halle%') " \
             "and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
@@ -184,14 +185,14 @@ def predict_matches():
         'loser_name',
         'home_odds',
         'away_odds',
-        'home_court_time',
-        'away_court_time',
-        #'winner_grasselo',
+        #'home_court_time',
+        #'away_court_time',
+        'winner_grasselo',
         #'winner_games',
         #'winner_year_games',
         #'winner_win_percent',
         'prob',
-        #'loser_grasselo',
+        'loser_grasselo',
         #'loser_games',
         #'loser_year_games',
         #'loser_win_percent',

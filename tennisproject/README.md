@@ -52,9 +52,9 @@ dbt run --select tennisapi_wtamatch
 dbt run --select tennisapi_chmatch
 
 ### Elo Rating
-poetry run python manage.py elo_rate atp 'clay'
-poetry run python manage.py elo_rate wta 'clay'
-poetry run python manage.py elo_rate wta 'hard'
+poetry run python manage.py elo_rate atp 'grass'
+poetry run python manage.py elo_rate wta 'grass'
+poetry run python manage.py elo_rate wta 'grass'
 
 
 

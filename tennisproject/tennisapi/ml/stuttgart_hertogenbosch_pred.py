@@ -89,6 +89,8 @@ def get_data():
             "or name ilike '%hertogen%'" \
             "or name ilike '%queen%'" \
             "or name ilike '%london%'" \
+            "or name ilike '%eastb%'" \
+            "or name ilike '%mallorca%'" \
             "or name ilike '%halle%') " \
             "and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
@@ -105,10 +107,10 @@ def label_round(data, mapping):
 
 def predict_matches():
     data = get_data()
-    print(data)
+
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "stuttgart_hertogenbosch_rf"
+    file_name = "stuttgart_hertogenbosch_rf2"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -121,7 +123,7 @@ def predict_matches():
     x = data[features]
 
     y_pred = model.predict_proba(x)
-    print(y_pred)
+
     # Lin
     # y_pred = model.predict(x)
 

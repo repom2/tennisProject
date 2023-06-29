@@ -11,10 +11,11 @@ from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import (GradientBoostingClassifier,
                               RandomForestClassifier, RandomForestRegressor)
 from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, Normalizer,
                                    StandardScaler)
-
+from sklearn.svm import LinearSVC
+from sklearn.feature_selection import SelectFromModel
 warnings.filterwarnings("ignore")
 
 
@@ -136,7 +137,12 @@ def train_model(
     #classifier = xgb.XGBClassifier()
     classifier = RandomForestClassifier(n_estimators=4500)
 
-    pipeline = make_pipeline(scaler, classifier)
+    #pipeline = make_pipeline(scaler, classifier)
+    pipeline = Pipeline([
+        ('preprocessor', scaler),
+        ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False))),
+        ('classifier', classifier)
+    ])
     model = pipeline.fit(x_train, y_train.values.ravel())
     # GradientBoostingClassifier
     #model.feature_importances = model.steps[1][1].feature_importances_
@@ -253,6 +259,6 @@ def tennis_prediction():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "stuttgart_hertogenbosch_wta_rf"
+    file_name = "stuttgart_hertogenbosch_wta_rf2"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

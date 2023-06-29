@@ -134,8 +134,8 @@ class Command(BaseCommand):
     def events_by_leagues(self, options):
         leagues = list(AtpTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         wta_leagues = list(WtaTour.objects.filter(date__gte='2023-06-15').values_list('id'))
-        ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
-        leagues = wta_leagues + leagues + ch_leagues
+        #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
+        leagues = wta_leagues + leagues #+ ch_leagues
 
         for id in leagues:
             id = id[0].split('-')[1]
@@ -154,6 +154,7 @@ class Command(BaseCommand):
 
             data = response.text
             data = json.loads(data)
+
             try:
                 data_df = data['data']
             except:
@@ -172,7 +173,10 @@ class Command(BaseCommand):
                     )
                     data = response.text
                     data = json.loads(data)
+                    #try:
                     data_df.extend(data["data"])
+                    #except KeyError:
+                     #   continue
                     per_page += data['meta']["per_page"]
                     meta_to = data['meta']["to"]
                     if meta_to is None:

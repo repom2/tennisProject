@@ -131,11 +131,11 @@ def train_model(
         ])]
     )
 
-    #classifier = GradientBoostingClassifier(n_estimators=1500)
+    classifier = GradientBoostingClassifier(n_estimators=1500)
     #classifier = LogisticRegression(max_iter=500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    classifier = RandomForestClassifier(n_estimators=4500)
+    #classifier = RandomForestClassifier(n_estimators=4500)
 
     #pipeline = make_pipeline(scaler, classifier)
     pipeline = Pipeline([
@@ -259,6 +259,6 @@ def tennis_prediction():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "stuttgart_hertogenbosch_wta_rf2"
+    file_name = "stuttgart_hertogenbosch_wta_gb"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

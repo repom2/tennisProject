@@ -112,7 +112,7 @@ def predict_matches():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "stuttgart_hertogenbosch_wta_rf2"
+    file_name = "stuttgart_hertogenbosch_wta_gb"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

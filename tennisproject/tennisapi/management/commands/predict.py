@@ -3,6 +3,10 @@ from tennisapi.ml.rolandgarros import tennis_prediction
 from tennisapi.ml.stuttgart_hertogenbosch import tennis_prediction as grass_prediction
 from tennisapi.ml.stuttgart_herto_wta import tennis_prediction as wta_grass_prediction
 from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
+from tennisapi.ml.wimbledon import wimbledon
+from tennisapi.ml.wimbledon_wta import wimbledon_wta
+from tennisapi.ml.wimbledon_wta import wimbledon_wta
+from tennisapi.ml.wimbledon_wta_pred import wimbledon_pred_wta
 from tennisapi.ml.rolandgarros_pred import predict_matches
 from tennisapi.ml.stuttgart_hertogenbosch_pred \
     import predict_matches as predict_stutt_herto_matches
@@ -23,6 +27,18 @@ class Command(BaseCommand):
 
         roland_cmd = subparsers.add_parser("roland")
         roland_cmd.set_defaults(subcommand=self.roland)
+
+        wimbledon_cmd = subparsers.add_parser("wimbledon")
+        wimbledon_cmd.set_defaults(subcommand=self.wimbledon_atp)
+
+        wimbledon_wta_cmd = subparsers.add_parser("wimbledon-wta")
+        wimbledon_wta_cmd.set_defaults(subcommand=self.wimbledon_wta_model)
+
+        wimbledon_pred_cmd = subparsers.add_parser("wimbledon-pred")
+        wimbledon_pred_cmd.set_defaults(subcommand=self.wimbledon_predict)
+
+        wimbledon_pred_wta_cmd = subparsers.add_parser("wimbledon-pred-wta")
+        wimbledon_pred_wta_cmd.set_defaults(subcommand=self.wimbledon_predict_wta)
 
         stutt_herto_cmd = subparsers.add_parser("stutt-herto")
         stutt_herto_cmd.set_defaults(subcommand=self.stutt_herto)
@@ -61,6 +77,18 @@ class Command(BaseCommand):
 
     def roland(self, options):
         tennis_prediction()
+
+    def wimbledon_atp(self, options):
+        wimbledon()
+
+    def wimbledon_wta_model(self, options):
+        wimbledon_wta()
+
+    def wimbledon_predict(self, options):
+        wimbledon_pred()
+
+    def wimbledon_predict_wta(self, options):
+        wimbledon_pred_wta()
 
     def stutt_herto(self, options):
         grass_prediction()

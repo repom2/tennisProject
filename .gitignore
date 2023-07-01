@@ -17,6 +17,9 @@ venv.bak/
 # IntelliJ Idea
 *.iml
 
+*.csv
+
+node_modules/
 # Mac
 .DS_Store
 

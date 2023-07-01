@@ -88,6 +88,7 @@ def predict_matches():
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "roland_garros_atp_model_gbc_nohard_time"
+    file_name = "roland_garros_atp_model_gbc_hard_time2"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

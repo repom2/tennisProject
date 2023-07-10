@@ -31,7 +31,8 @@ def get_data():
                 winner_year_games, \
                 winner_year_grass_games, \
                 round(winner_win::numeric / winner_year_games::numeric, 2) as winner_win_percent, \
-                round(winner_grass_win::numeric / winner_year_grass_games::numeric, 2) as winner_win_grass_percent, \
+                round(winner_grass_win::numeric / winner_year_grass_games::numeric, 2) as winner_win_grass_percent, " \
+                "case when home_court_time is null then 0 else home_court_time / 60 end as home_court_time, \
                 loser_grasselo - loser_change as loser_grasselo, \
                 loser_hardelo, \
                 loser_games, \
@@ -39,10 +40,9 @@ def get_data():
                 loser_year_grass_games, \
                 round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent, " \
                 "round(loser_grass_win::numeric / loser_year_grass_games::numeric, 2) as loser_win_grass_percent, " \
-                "1 as result, " \
-                "case when home_court_time is null then 0 else home_court_time / 60 end as home_court_time, \
-		        case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time \
-            from ( \
+		        "case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time, " \
+                "1 as result " \
+            "from ( \
             select \
                 a.date, \
                 h.last_name as winner_name, \
@@ -51,21 +51,21 @@ def get_data():
                 (select elo from tennisapi_atpgrasselo el where el.player_id=winner_id and el.match_id=b.id) as winner_grasselo, " \
                 "(select elo from tennisapi_atphardelo el where el.player_id=winner_id and el.date < b.date order by games desc limit 1) as winner_hardelo, \
                 (select elo_change from tennisapi_atpgrasselo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
-                (select count(*) from tennisapi_atpgrasselo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
+                (select count(*) from tennisapi_atphardelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
-                (select count(*) from tennisapi_atpgrasselo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
+                (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
                 (select elo from tennisapi_atpgrasselo el where el.player_id=loser_id and el.match_id=b.id) as loser_grasselo, \
                 (select elo from tennisapi_atphardelo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_hardelo, \
                 (select elo_change from tennisapi_atpgrasselo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
-                (select count(*) from tennisapi_atpgrasselo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
+                (select count(*) from tennisapi_atphardelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
-                (select count(*) from tennisapi_atpgrasselo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
+                (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_atphardelo c \
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_win, \
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                from tennisapi_atpgrasselo c \
+                from tennisapi_atphardelo c \
                 inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                 where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_grass_win, \
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
@@ -73,7 +73,7 @@ def get_data():
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win, " \
                 "(select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_atpgrasselo c \
+                 from tennisapi_atphardelo c \
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win, " \
                 "(select sum(court_time) from tennisapi_atpmatches c " \
@@ -86,8 +86,7 @@ def get_data():
             inner join tennisapi_atpmatches b on b.tour_id=a.id \
             left join tennisapi_players h on h.id = b.winner_id \
             left join tennisapi_players aw on aw.id = b.loser_id \
-            where surface ilike '%grass%' " \
-            "and name ilike '%wimbledon%' " \
+            where surface ilike '%grass%' and name ilike '%wimbledon%' " \
             "and round_name not ilike 'qualification%' and a.date > '2000-1-1' ) " \
             "ss;"
 
@@ -120,11 +119,11 @@ def train_model(
         ])]
     )
 
-    classifier = GradientBoostingClassifier(n_estimators=1500)
+    classifier = GradientBoostingClassifier(n_estimators=4500)
     #classifier = LogisticRegression(max_iter=500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    #classifier = RandomForestClassifier(n_estimators=4500)
+    classifier = RandomForestClassifier(n_estimators=4500)
 
     pipeline = Pipeline([
         ('preprocessor', scaler),
@@ -169,16 +168,16 @@ def wimbledon():
         'winner_name',
         'loser_name',
         'round_name',
-        'winner_hardelo',
         'winner_grasselo',
+        'winner_hardelo',
         'winner_games',
         'winner_year_games',
         'winner_year_grass_games',
         'winner_win_percent',
         'winner_win_grass_percent',
         'home_court_time',
-        'loser_hardelo',
         'loser_grasselo',
+        'loser_hardelo',
         'loser_games',
         'loser_year_games',
         'loser_year_grass_games',
@@ -192,16 +191,16 @@ def wimbledon():
         'winner_name',
         'loser_name',
         'round_name',
-        'loser_hardelo',
         'loser_grasselo',
+        'loser_hardelo',
         'loser_games',
         'loser_year_games',
         'loser_year_grass_games',
         'loser_win_percent',
         'loser_win_grass_percent',
         'away_court_time',
-        'winner_hardelo',
         'winner_grasselo',
+        'winner_hardelo',
         'winner_games',
         'winner_year_games',
         'winner_year_grass_games',
@@ -249,6 +248,6 @@ def wimbledon():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "wimbledon_gb"
+    file_name = "wimbledon_rf2"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

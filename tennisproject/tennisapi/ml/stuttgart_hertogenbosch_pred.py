@@ -118,8 +118,11 @@ def predict_matches():
     round_mapping = model.round_mapping
 
     data = label_round(data, round_mapping)
-
+    #print(data)
+    #data.loc[186, "home_odds"] = 2.38
+    #data.loc[186, "away_odds"] = 1.57
     data = data.dropna()
+
     x = data[features]
 
     y_pred = model.predict_proba(x)
@@ -150,7 +153,6 @@ def predict_matches():
     bankroll2 = 1000
     max_bet = 0.1
     for index, row in data.iterrows():
-        print(row)
         if row["yield1"] > 1.0:
             bet2 = ((row["yield1"] - 1) / (row.home_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet

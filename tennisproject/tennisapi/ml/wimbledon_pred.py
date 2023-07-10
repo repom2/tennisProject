@@ -52,20 +52,20 @@ def get_data():
                 winner_code, \
                 (select elo from tennisapi_atpgrasselo el where el.player_id=home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_grasselo, \
                 (select elo from tennisapi_atphardelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo, \
-                (select count(*) from tennisapi_atpgrasselo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
+                (select count(*) from tennisapi_atphardelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
-                (select count(*) from tennisapi_atpgrasselo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
+                (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
                 (select elo from tennisapi_atpgrasselo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo, " \
                 "(select elo from tennisapi_atphardelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,  \
-                (select count(*) from tennisapi_atpgrasselo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
+                (select count(*) from tennisapi_atphardelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
-                (select count(*) from tennisapi_atpgrasselo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
+                (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_atphardelo c \
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_win, " \
                 "(select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_atpgrasselo c \
+                 from tennisapi_atphardelo c \
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_grass_win, \
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
@@ -73,7 +73,7 @@ def get_data():
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win, " \
             "(select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_atpgrasselo c \
+                 from tennisapi_atphardelo c \
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win," \
                 "(select sum(court_time) from tennisapi_match c where a.id=c.tour_id " \
@@ -104,7 +104,7 @@ def wimbledon_pred():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "wimbledon_gb"
+    file_name = "wimbledon_rf"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

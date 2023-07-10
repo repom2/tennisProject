@@ -5,7 +5,7 @@ from tennisapi.ml.stuttgart_herto_wta import tennis_prediction as wta_grass_pred
 from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
 from tennisapi.ml.wimbledon import wimbledon
 from tennisapi.ml.wimbledon_wta import wimbledon_wta
-from tennisapi.ml.wimbledon_wta import wimbledon_wta
+from tennisapi.ml.wimbledon_pred import wimbledon_pred
 from tennisapi.ml.wimbledon_wta_pred import wimbledon_pred_wta
 from tennisapi.ml.rolandgarros_pred import predict_matches
 from tennisapi.ml.stuttgart_hertogenbosch_pred \

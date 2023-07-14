@@ -100,70 +100,9 @@ def get_data():
     return df
 
 
-def train_model(
-        df,
-        features,
-        round_mapping
-):
-    f = features + ['result']
-    df = df[f]
-    df = df.dropna()
-    x_train = df[features]
-    print("Lenght of Train Data:", len(x_train))
-    y_train = df[['result']]
-
-    scaler = ColumnTransformer(
-        remainder='passthrough',  # passthough features not listed
-        transformers=[("num_preprocess", MinMaxScaler(), [
-            "loser_hardelo",
-            "winner_hardelo",
-            "loser_games",
-            "winner_games",
-            "winner_grasselo",
-            "loser_grasselo",
-            "winner_clayelo",
-            "loser_clayelo",
-        ])]
-    )
-
-    classifier = GradientBoostingClassifier(n_estimators=4500)
-    #
-    #classifier = LogisticRegression(max_iter=1500)
-    #classifier = LinearRegression()
-    #classifier = xgb.XGBClassifier()
-    #classifier = RandomForestClassifier(n_estimators=4500)
-
-    #pipeline = make_pipeline(scaler, classifier)
-    pipeline = Pipeline([
-        ('preprocessor', scaler),
-        ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False))),
-        ('classifier', classifier)
-    ])
-    model = pipeline.fit(x_train, y_train.values.ravel())
-    # GradientBoostingClassifier
-    #model.feature_importances = model.steps[1][1].feature_importances_
-    # LogisticRegression
-    model.feature_importances = None#model.steps[1][1].coef_[0]
-    model.feature_names = features
-    model.round_mapping = round_mapping
-
-    return model
-
-
-def label_round_name(data):
-    le = LabelEncoder()
-    label = le.fit_transform(data['round_name'])
-    name_mapping = dict(zip(le.classes_, le.transform(le.classes_)))
-    data["round_name"] = label
-
-    return data, name_mapping
-
-
-def wimbledon_wta():
-    data = get_data()
+def balance_train_data(data):
     # shuffle the DataFrame rows
     data = data.sample(frac=1)
-    print(data)
     l = int(round(len(data.index) / 2, 0))
     print("split", l)
     df1 = data.iloc[:l, :]
@@ -231,6 +170,78 @@ def wimbledon_wta():
 
     print(train_data.head())
 
+    return train_data, round_mapping
+
+
+def train_model(
+        df,
+        features,
+):
+    f = features + ['result'] + ['date', 'winner_name', 'loser_name']
+    df = df[f]
+    df = df.dropna()
+    df, round_mapping = balance_train_data(df)
+    x_train = df[features]
+    print("Lenght of Train Data:", len(x_train))
+    y_train = df[['result']]
+
+    scaler = ColumnTransformer(
+        remainder='passthrough',  # passthough features not listed
+        transformers=[("num_preprocess", MinMaxScaler(), [
+            "loser_hardelo",
+            "winner_hardelo",
+            "loser_games",
+            "winner_games",
+            "winner_grasselo",
+            "loser_grasselo",
+            "winner_clayelo",
+            "loser_clayelo",
+        ])]
+    )
+
+    classifier = GradientBoostingClassifier(
+        n_estimators=6500,
+        #learning_rate=0.035,
+        #max_depth=5,
+        #warm_start=True,
+        #validation_fraction=0.2,
+    )
+    #
+    #classifier = LogisticRegression(max_iter=1500)
+    #classifier = LinearRegression()
+    #classifier = xgb.XGBClassifier()
+    classifier = RandomForestClassifier(n_estimators=4500)#, max_depth=5)
+
+    #pipeline = make_pipeline(scaler, classifier)
+    pipeline = Pipeline([
+        ('preprocessor', scaler),
+        ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False))),
+        ('classifier', classifier)
+    ])
+    model = pipeline.fit(x_train, y_train.values.ravel())
+    # GradientBoostingClassifier
+    #model.feature_importances = model.steps[1][1].feature_importances_
+    # LogisticRegression
+    model.feature_importances = None#model.steps[1][1].coef_[0]
+    model.feature_names = features
+    model.round_mapping = round_mapping
+
+    return model
+
+
+def label_round_name(data):
+    le = LabelEncoder()
+    label = le.fit_transform(data['round_name'])
+    name_mapping = dict(zip(le.classes_, le.transform(le.classes_)))
+    data["round_name"] = label
+
+    return data, name_mapping
+
+
+def wimbledon_wta():
+    data = get_data()
+    data = data.sample(frac=1)
+
     features = [
         'round_name',
         'loser_hardelo',
@@ -254,13 +265,12 @@ def wimbledon_wta():
     ]
 
     model = train_model(
-        train_data,
+        data,
         features,
-        round_mapping
     )
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "wimbledon_wta_hard"
+    file_name = "wimbledon_wta_gb4"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

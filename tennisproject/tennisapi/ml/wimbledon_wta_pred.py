@@ -108,7 +108,8 @@ def wimbledon_pred_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "wimbledon_wta_hard"
+    file_name = "wimbledon_wta_hard2"
+    file_name = "wimbledon_wta_gb3"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -138,7 +139,9 @@ def wimbledon_pred_wta():
     data['yield2'] = (data['y2'] * data['away_odds']).round(2)
 
     data['prob'] = data['winner_grasselo'] - data['loser_grasselo']
+    data['prob_hard'] = data['winner_hardelo'] - data['loser_hardelo']
     data['prob'] = data['prob'].apply(probability_of_winning).round(2)
+    data['prob_hard'] = data['prob_hard'].apply(probability_of_winning).round(2)
 
     data["bankroll"] = None
     data["bankroll2"] = None
@@ -185,12 +188,15 @@ def wimbledon_pred_wta():
         'away_odds',
         #'home_court_time',
         #'away_court_time',
-        'winner_grasselo',
+        #'winner_grasselo',
         #'winner_games',
         #'winner_year_games',
         #'winner_win_percent',
         'prob',
-        'loser_grasselo',
+        'prob_hard',
+        'y1',
+        'y2',
+        #'loser_grasselo',
         #'loser_games',
         #'loser_year_games',
         #'loser_win_percent',

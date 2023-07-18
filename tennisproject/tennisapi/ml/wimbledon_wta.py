@@ -240,7 +240,6 @@ def label_round_name(data):
 
 def wimbledon_wta():
     data = get_data()
-    data = data.sample(frac=1)
 
     features = [
         'round_name',

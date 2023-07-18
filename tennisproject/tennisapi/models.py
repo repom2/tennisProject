@@ -59,6 +59,13 @@ class AtpTour(models.Model):
     surface = models.TextField(null=True)
 
 
+class AtpTourTest(models.Model):
+    id = models.TextField(primary_key=True)
+    name = models.TextField(null=True)
+    date = models.DateField(null=True)
+    surface = models.TextField(null=True)
+
+
 class ChTour(models.Model):
     id = models.TextField(primary_key=True)
     name = models.TextField(null=True)
@@ -336,6 +343,38 @@ class Match(models.Model):
         null=True,
         blank=True,
         related_name="away",
+    )
+    start_at = models.DateTimeField(null=True)
+    round_name = models.TextField(null=True)
+    match_num = models.IntegerField(null=True)
+    home_odds = models.TextField(null=True)
+    away_odds = models.TextField(null=True)
+    winner_code = models.IntegerField(null=True)
+    court_time = models.IntegerField(null=True)
+
+
+class MatchTest(models.Model):
+    id = models.TextField(primary_key=True)
+    tour = models.ForeignKey(
+        to=AtpTour,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="matchestest",
+    )
+    home = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="hometest",
+    )
+    away = models.ForeignKey(
+        to=Players,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="awaytest",
     )
     start_at = models.DateTimeField(null=True)
     round_name = models.TextField(null=True)

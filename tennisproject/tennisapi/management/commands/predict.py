@@ -4,8 +4,12 @@ from tennisapi.ml.stuttgart_hertogenbosch import tennis_prediction as grass_pred
 from tennisapi.ml.stuttgart_herto_wta import tennis_prediction as wta_grass_prediction
 from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
 from tennisapi.ml.wimbledon import wimbledon
+from tennisapi.ml.gstaad import gstaad
+from tennisapi.ml.bastad import bastad
 from tennisapi.ml.wimbledon_wta import wimbledon_wta
 from tennisapi.ml.wimbledon_pred import wimbledon_pred
+from tennisapi.ml.bastad_pred import bastad_pred
+from tennisapi.ml.gstaad_pred import gstaad_pred
 from tennisapi.ml.wimbledon_wta_pred import wimbledon_pred_wta
 from tennisapi.ml.rolandgarros_pred import predict_matches
 from tennisapi.ml.stuttgart_hertogenbosch_pred \
@@ -31,11 +35,23 @@ class Command(BaseCommand):
         wimbledon_cmd = subparsers.add_parser("wimbledon")
         wimbledon_cmd.set_defaults(subcommand=self.wimbledon_atp)
 
+        gstaad_cmd = subparsers.add_parser("gstaad")
+        gstaad_cmd.set_defaults(subcommand=self.gstaad_atp)
+
+        bastad_cmd = subparsers.add_parser("bastad")
+        bastad_cmd.set_defaults(subcommand=self.bastad_atp)
+
         wimbledon_wta_cmd = subparsers.add_parser("wimbledon-wta")
         wimbledon_wta_cmd.set_defaults(subcommand=self.wimbledon_wta_model)
 
         wimbledon_pred_cmd = subparsers.add_parser("wimbledon-pred")
         wimbledon_pred_cmd.set_defaults(subcommand=self.wimbledon_predict)
+
+        bastad_pred_cmd = subparsers.add_parser("bastad-pred")
+        bastad_pred_cmd.set_defaults(subcommand=self.bastad_predict)
+
+        gstaad_pred_cmd = subparsers.add_parser("gstaad-pred")
+        gstaad_pred_cmd.set_defaults(subcommand=self.gstaad_predict)
 
         wimbledon_pred_wta_cmd = subparsers.add_parser("wimbledon-pred-wta")
         wimbledon_pred_wta_cmd.set_defaults(subcommand=self.wimbledon_predict_wta)
@@ -81,11 +97,23 @@ class Command(BaseCommand):
     def wimbledon_atp(self, options):
         wimbledon()
 
+    def gstaad_atp(self, options):
+        gstaad()
+
+    def bastad_atp(self, options):
+        bastad()
+
     def wimbledon_wta_model(self, options):
         wimbledon_wta()
 
     def wimbledon_predict(self, options):
         wimbledon_pred()
+
+    def bastad_predict(self, options):
+        bastad_pred()
+
+    def gstaad_predict(self, options):
+        gstaad_pred()
 
     def wimbledon_predict_wta(self, options):
         wimbledon_pred_wta()

@@ -55,13 +55,13 @@ from (
 	    (replace(periods_time, '''', '"')::json ->> 'period_2_time')::integer as time2,
 	    (replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer as time3
     from (
-        select *,
-            case when league_id = '6965' then '466'
-            when league_id = '6925' then '2036'
-            else league_id
-            end as league_idd
+        select *
+            --,case when league_id = '6965' then '466'
+            --when league_id = '6925' then '2036'
+            --else league_id
+            --end as league_idd
         from sportscore_events ) a inner join tennisapi_wtatour t
-    on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_idd)
+    on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_id)
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id
     where start_at::timestamp > '2022-05-1'

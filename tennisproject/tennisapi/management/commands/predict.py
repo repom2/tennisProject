@@ -6,12 +6,16 @@ from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
 from tennisapi.ml.wimbledon import wimbledon
 from tennisapi.ml.gstaad import gstaad
 from tennisapi.ml.bastad import bastad
+from tennisapi.ml.hamburg import hamburg
 from tennisapi.ml.newport import newport
 from tennisapi.ml.wimbledon_wta import wimbledon_wta
+from tennisapi.ml.hamburg_lausanne_wta import hamburg_wta
+from tennisapi.ml.hamburg_pred_wta import hamburg_pred_wta
 from tennisapi.ml.wimbledon_pred import wimbledon_pred
 from tennisapi.ml.newport_pred import newport_pred
 from tennisapi.ml.bastad_pred import bastad_pred
 from tennisapi.ml.gstaad_pred import gstaad_pred
+from tennisapi.ml.hamburg_pred import hamburg_pred
 from tennisapi.ml.wimbledon_wta_pred import wimbledon_pred_wta
 from tennisapi.ml.palermo_wta import palermo_wta
 from tennisapi.ml.palermo_pred_wta import palermo_pred_wta
@@ -45,6 +49,9 @@ class Command(BaseCommand):
         bastad_cmd = subparsers.add_parser("bastad")
         bastad_cmd.set_defaults(subcommand=self.bastad_atp)
 
+        hamburg_cmd = subparsers.add_parser("hamburg")
+        hamburg_cmd.set_defaults(subcommand=self.hamburg_atp)
+
         newport_cmd = subparsers.add_parser("newport")
         newport_cmd.set_defaults(subcommand=self.newport_atp)
 
@@ -53,6 +60,12 @@ class Command(BaseCommand):
 
         palermo_pred_wta_cmd = subparsers.add_parser("palermo-wta-pred")
         palermo_pred_wta_cmd.set_defaults(subcommand=self.palermo_prediction_wta)
+
+        hamburg_wta_cmd = subparsers.add_parser("hamburg-wta")
+        hamburg_wta_cmd.set_defaults(subcommand=self.hamburg_wta)
+
+        hamburg_pred_wta_cmd = subparsers.add_parser("hamburg-wta-pred")
+        hamburg_pred_wta_cmd.set_defaults(subcommand=self.hamburg_prediction_wta)
 
         palermo_wta_cmd = subparsers.add_parser("palermo-wta")
         palermo_wta_cmd.set_defaults(subcommand=self.palermo_wta)
@@ -65,6 +78,9 @@ class Command(BaseCommand):
 
         bastad_pred_cmd = subparsers.add_parser("bastad-pred")
         bastad_pred_cmd.set_defaults(subcommand=self.bastad_predict)
+
+        hamburg_pred_cmd = subparsers.add_parser("hamburg-pred")
+        hamburg_pred_cmd.set_defaults(subcommand=self.hamburg_predict)
 
         gstaad_pred_cmd = subparsers.add_parser("gstaad-pred")
         gstaad_pred_cmd.set_defaults(subcommand=self.gstaad_predict)
@@ -116,11 +132,17 @@ class Command(BaseCommand):
     def palermo_wta(self, options):
         palermo_wta()
 
+    def hamburg_wta(self, options):
+        hamburg_wta()
+
     def gstaad_atp(self, options):
         gstaad()
 
     def bastad_atp(self, options):
         bastad()
+
+    def hamburg_atp(self, options):
+        hamburg()
 
     def newport_atp(self, options):
         newport()
@@ -131,6 +153,9 @@ class Command(BaseCommand):
     def palermo_prediction_wta(self, options):
         palermo_pred_wta()
 
+    def hamburg_prediction_wta(self, options):
+        hamburg_pred_wta()
+
     def wimbledon_predict(self, options):
         wimbledon_pred()
 
@@ -139,6 +164,9 @@ class Command(BaseCommand):
 
     def bastad_predict(self, options):
         bastad_pred()
+
+    def hamburg_predict(self, options):
+        hamburg_pred()
 
     def gstaad_predict(self, options):
         gstaad_pred()

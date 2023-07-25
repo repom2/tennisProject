@@ -95,4 +95,7 @@ from tennis_atp_wtamatches) a right join (select * from (
 	where section_slug like '%wta%'
 ) b on tourney_name ilike '%' || slug || '%' and (start_date::timestamp - '11 day'::interval) < tourney_date
 and (start_date::timestamp + '11 day'::interval) > tourney_date order by tourney_name
-) ) a ) ss where date is not null
+) ) a ) ss where date is not null;
+
+--insert into tennisapi_wtatour(id, name, date, surface)
+--values('2023-10739', 'warsaw', '2023-7-24', 'Hard');

@@ -62,8 +62,8 @@ from (
 	    (replace(periods_time, '''', '"')::json ->> 'period_5_time')::integer as time5
     from (
         select *
-            --, case when league_id = '7181' then '0439'
-            --when league_id = '7160' then '0414'
+            --, case when league_id = '6116' then '7201'
+            --, case when league_id = '7201' then '6116'
             --else league_id
             --end as league_idd
         from sportscore_events ) a inner join tennisapi_atptour t

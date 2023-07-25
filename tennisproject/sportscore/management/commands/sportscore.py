@@ -132,8 +132,8 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpTour.objects.filter(date__gte='2023-07-15').values_list('id'))
-        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-07-15').values_list('id'))
+        leagues = list(AtpTour.objects.filter(date__gte='2023-07-22').values_list('id'))
+        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-07-22').values_list('id'))
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues #+ ch_leagues
 

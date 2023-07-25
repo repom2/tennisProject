@@ -6,14 +6,18 @@ from tennisapi.ml.rolandgarros_wta import tennis_prediction_wta
 from tennisapi.ml.wimbledon import wimbledon
 from tennisapi.ml.gstaad import gstaad
 from tennisapi.ml.bastad import bastad
+from tennisapi.ml.atlanta import atlanta
 from tennisapi.ml.hamburg import hamburg
 from tennisapi.ml.newport import newport
 from tennisapi.ml.wimbledon_wta import wimbledon_wta
 from tennisapi.ml.hamburg_lausanne_wta import hamburg_wta
+from tennisapi.ml.warsaw_wta import warsaw_wta
 from tennisapi.ml.hamburg_pred_wta import hamburg_pred_wta
+from tennisapi.ml.warsaw_wta_pred import warsaw_pred_wta
 from tennisapi.ml.wimbledon_pred import wimbledon_pred
 from tennisapi.ml.newport_pred import newport_pred
 from tennisapi.ml.bastad_pred import bastad_pred
+from tennisapi.ml.atlanta_pred import atlanta_pred
 from tennisapi.ml.gstaad_pred import gstaad_pred
 from tennisapi.ml.hamburg_pred import hamburg_pred
 from tennisapi.ml.wimbledon_wta_pred import wimbledon_pred_wta
@@ -91,11 +95,23 @@ class Command(BaseCommand):
         stutt_herto_cmd = subparsers.add_parser("stutt-herto")
         stutt_herto_cmd.set_defaults(subcommand=self.stutt_herto)
 
+        atlanta_cmd = subparsers.add_parser("atlanta")
+        atlanta_cmd.set_defaults(subcommand=self.atlanta_atp)
+
+        atlanta_pred_cmd = subparsers.add_parser("atlanta-pred")
+        atlanta_pred_cmd.set_defaults(subcommand=self.atlanta_pred)
+
         stutt_herto_wta_cmd = subparsers.add_parser("stutt-herto-wta")
         stutt_herto_wta_cmd.set_defaults(subcommand=self.stutt_herto_wta)
 
         roland_wta_cmd = subparsers.add_parser("roland-wta")
         roland_wta_cmd.set_defaults(subcommand=self.roland_wta)
+
+        warsaw_wta_cmd = subparsers.add_parser("warsaw-wta")
+        warsaw_wta_cmd.set_defaults(subcommand=self.warsaw_wta)
+
+        warsaw_pred_cmd = subparsers.add_parser("warsaw-pred")
+        warsaw_pred_cmd.set_defaults(subcommand=self.warsaw_predict)
 
         roland_pred_cmd = subparsers.add_parser("roland-pred")
         roland_pred_cmd.set_defaults(subcommand=self.roland_predict)
@@ -138,6 +154,12 @@ class Command(BaseCommand):
     def gstaad_atp(self, options):
         gstaad()
 
+    def atlanta_atp(self, options):
+        atlanta()
+
+    def atlanta_pred(self, options):
+        atlanta_pred()
+
     def bastad_atp(self, options):
         bastad()
 
@@ -165,6 +187,9 @@ class Command(BaseCommand):
     def bastad_predict(self, options):
         bastad_pred()
 
+    def warsaw_predict(self, options):
+        warsaw_pred_wta()
+
     def hamburg_predict(self, options):
         hamburg_pred()
 
@@ -173,6 +198,9 @@ class Command(BaseCommand):
 
     def wimbledon_predict_wta(self, options):
         wimbledon_pred_wta()
+
+    def warsaw_wta(self, options):
+        warsaw_wta()
 
     def stutt_herto(self, options):
         grass_prediction()

@@ -95,8 +95,10 @@ def get_data():
             "name ilike '%prague%' " \
             "or name ilike '%washington%' " \
             "or name ilike '%san%jose%'" \
-            "or name ilike '%toronto%' ) "  \
-            " and a.date > '1990-1-1' ) " \
+            "or name ilike '%toronto%' " \
+            "or name ilike '%warsaw%' " \
+            "or name ilike '%los%cab%' ) "  \
+            " and a.date < '2024-1-1' ) " \
             "ss;"
 
     df = pd.read_sql(query, connection)
@@ -214,7 +216,7 @@ def train_model(
     #classifier = LogisticRegression(max_iter=7500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    #classifier = RandomForestClassifier(n_estimators=4500)#, max_depth=5)
+    classifier = RandomForestClassifier(n_estimators=1500)#, max_depth=5)
 
     #pipeline = make_pipeline(scaler, classifier)
     pipeline = Pipeline([
@@ -274,6 +276,6 @@ def warsaw_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "warsaw_wta"
+    file_name = "warsaw_wta_rf"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

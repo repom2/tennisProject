@@ -71,11 +71,15 @@ def get_data():
             inner join tennisapi_wtamatches b on b.tour_id=a.id \
             left join tennisapi_wtaplayers h on h.id = b.winner_id \
             left join tennisapi_wtaplayers aw on aw.id = b.loser_id \
-            where (name ilike '%palermo%' " \
+            where surface ilike '%clay%' and " \
+            "(name ilike '%palermo%' " \
             "or name ilike '%budapest%' " \
             "or name ilike '%hamburg%' " \
-            "or name ilike '%lausanne%' ) " \
-            "and round_name not ilike 'qualification%'  ) " \
+            "or name ilike '%lausanne%' " \
+            "or name ilike '%prague%' " \
+            "or name ilike '%warsaw%' ) " \
+            "and round_name not ilike 'qualification%' " \
+            "and a.date < '2023-1-1' ) " \
             "ss;"
 
     df = pd.read_sql(query, connection)
@@ -167,11 +171,11 @@ def train_model(
         ])]
     )
 
-    classifier = GradientBoostingClassifier(n_estimators=7500)#, max_features='auto')
+    #classifier = GradientBoostingClassifier(n_estimators=7500)#, max_features='auto')
     #classifier = LogisticRegression()
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    #classifier = RandomForestClassifier(n_estimators=1500)
+    classifier = RandomForestClassifier(n_estimators=1500)
 
     #pipeline = make_pipeline(scaler, classifier)
     pipeline = Pipeline([
@@ -223,6 +227,6 @@ def hamburg_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "hamburg_wta"
+    file_name = "hamburg_wta_rf_test"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

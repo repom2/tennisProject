@@ -72,7 +72,10 @@ def get_data():
             left join tennisapi_players aw on aw.id = b.away_id \
             where ( " \
             "name ilike '%umag%' " \
-            "or name ilike '%hamburg%' ) and " \
+            "or name ilike '%hamburg%' " \
+            "or name ilike '%kitz%' " \
+            "or name ilike '%gstaad%' " \
+            "or name ilike '%bastad%') and " \
             "round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -91,6 +94,8 @@ def hamburg_pred():
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "hamburg_atp"
+    file_name = "hamburg_atp_rf"
+    file_name = "hamburg_atp_rf_test"
     #file_name = "gstaad_atp"
     file_path = local_path + file_name
 
@@ -166,7 +171,7 @@ def hamburg_pred():
         data.loc[index, 'bankroll2'] = round(bankroll2, 0)
 
     columns = [
-        # 'start_at',
+        'start_at',
         'winner_name',
         'loser_name',
         'home_odds',

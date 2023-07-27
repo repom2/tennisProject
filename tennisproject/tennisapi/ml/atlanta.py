@@ -88,9 +88,10 @@ def get_data():
             left join tennisapi_players aw on aw.id = b.loser_id \
             where surface ilike '%hard%' and " \
             "(name ilike '%atlanta%' " \
-            "or name ilike '%cabos%' " \
-            "or name ilike '%washington%' ) " \
-            "and round_name not ilike 'qualification%' and a.date > '1995-1-1' ) " \
+            " " \
+            "or name ilike '%washington%' " \
+            ") " \
+            "and round_name not ilike 'qualification%' and a.date > '1915-1-1' ) " \
             "ss;"
 
     df = pd.read_sql(query, connection)
@@ -111,7 +112,7 @@ def balance_train_data(data):
         'winner_name',
         'loser_name',
         'round_name',
-        'winner_grasselo',
+        #'winner_grasselo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
@@ -119,7 +120,7 @@ def balance_train_data(data):
         'winner_win_percent',
         'winner_win_grass_percent',
         'home_court_time',
-        'loser_grasselo',
+        #'loser_grasselo',
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
@@ -134,7 +135,7 @@ def balance_train_data(data):
         'winner_name',
         'loser_name',
         'round_name',
-        'loser_grasselo',
+        #'loser_grasselo',
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
@@ -142,7 +143,7 @@ def balance_train_data(data):
         'loser_win_percent',
         'loser_win_grass_percent',
         'away_court_time',
-        'winner_grasselo',
+        #'winner_grasselo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
@@ -185,8 +186,8 @@ def train_model(
             "winner_hardelo",
             "loser_games",
             "winner_games",
-            "winner_grasselo",
-            "loser_grasselo",
+            #"winner_grasselo",
+            #"loser_grasselo",
         ])]
     )
 
@@ -200,7 +201,7 @@ def train_model(
     #classifier = LogisticRegression(max_iter=500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    #classifier = RandomForestClassifier(n_estimators=4500)
+    classifier = RandomForestClassifier(n_estimators=1500)
 
     pipeline = Pipeline([
         ('preprocessor', scaler),
@@ -235,7 +236,7 @@ def atlanta():
     features = [
         'round_name',
         'loser_hardelo',
-        'loser_grasselo',
+        #'loser_grasselo',
         'loser_games',
         'loser_year_games',
         'loser_year_grass_games',
@@ -243,7 +244,7 @@ def atlanta():
         'loser_win_grass_percent',
         'away_court_time',
         'winner_hardelo',
-        'winner_grasselo',
+        #'winner_grasselo',
         'winner_games',
         'winner_year_games',
         'winner_year_grass_games',
@@ -259,6 +260,6 @@ def atlanta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "atlanta"
+    file_name = "atlanta_rf"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

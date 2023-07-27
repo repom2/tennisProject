@@ -104,7 +104,7 @@ def newport_pred():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "stuttgart_hertogenbosch_gb"
+    #file_name = "stuttgart_hertogenbosch_gb"
     file_name = "newport"
     file_path = local_path + file_name
 

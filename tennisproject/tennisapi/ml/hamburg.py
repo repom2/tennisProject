@@ -76,7 +76,9 @@ def get_data():
             where (name ilike '%bastad%' " \
             "or name ilike '%gstaad%' " \
             "or name ilike '%umag%'" \
-            "or name ilike '%hamburg%') and round_name not ilike 'qualification%'  ) " \
+            "or name ilike '%kitz%'" \
+            "or name ilike '%hamburg%') and round_name not ilike 'qualification%'  " \
+            "and a.date < '2023-1-1') " \
             "ss;"
 
     df = pd.read_sql(query, connection)
@@ -168,11 +170,11 @@ def train_model(
         ])]
     )
 
-    classifier = GradientBoostingClassifier(n_estimators=7500)
+    #classifier = GradientBoostingClassifier(n_estimators=7500)
     #classifier = LogisticRegression(max_iter=500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    #classifier = RandomForestClassifier(n_estimators=1500)
+    classifier = RandomForestClassifier(n_estimators=1500)
 
     #pipeline = make_pipeline(scaler, classifier)
     pipeline = Pipeline([
@@ -226,6 +228,6 @@ def hamburg():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "hamburg_atp"
+    file_name = "hamburg_atp_rf_test"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

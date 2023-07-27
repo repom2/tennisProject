@@ -89,7 +89,12 @@ def get_data():
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
             where surface ilike '%hard%' " \
-            "and name ilike '%warsaw%' " \
+            "and (name ilike '%warsaw%' " \
+            "or name ilike '%prague%' " \
+            "or name ilike '%san%jose%'" \
+            "or name ilike '%toronto%' " \
+            "or name ilike '%washington%'" \
+            "or name ilike '%los%cab%' )" \
             "and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -109,6 +114,7 @@ def warsaw_pred_wta():
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "warsaw_wta"
+    file_name = "warsaw_wta_rf"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

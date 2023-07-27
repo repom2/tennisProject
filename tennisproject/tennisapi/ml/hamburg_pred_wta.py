@@ -72,9 +72,14 @@ def get_data():
             inner join tennisapi_wtamatch b on b.tour_id=a.id \
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
-            where (name ilike '%hamburg%' " \
+            where surface ilike '%clay%' and " \
+            "(name ilike '%hamburg%' " \
             "or name ilike '%lausanne%'" \
-            "or name ilike '%poland%' ) and round_name not ilike 'qualification%' ) " \
+            "or name ilike '%poland%' " \
+            "or name ilike '%prague%' " \
+            "or name ilike '%budapest%' " \
+            "or name ilike '%warsaw%' " \
+            "or name ilike '%palermo%' ) and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
     df = pd.read_sql(query, connection)
@@ -93,6 +98,8 @@ def hamburg_pred_wta():
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "hamburg_wta"
+    file_name = "hamburg_wta_rf"
+    file_name = "hamburg_wta_rf_test"
     file_path = local_path + file_name
 
     model = joblib.load(file_path, 'r')
@@ -170,7 +177,7 @@ def hamburg_pred_wta():
         data.loc[index, 'bankroll2'] = round(bankroll2, 0)
 
     columns = [
-        # 'start_at',
+        'start_at',
         'winner_name',
         'loser_name',
         'home_odds',

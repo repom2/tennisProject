@@ -63,21 +63,21 @@ from (
     from (
         select *
             , case when league_id = '8846' then '2042'
-            --when league_id = '7181' then '0439' --umag
+            when league_id = '7181' then '0439' --umag
             when league_id = '7171' then '0314' --gstaad
             when league_id = '7168' then '0316' --bastad
-            --when league_id = '7201' then '6116' --atlanta
-            when league_id = '7250' then '0319' --kitz
-            when league_id = '7124' then '7480' --los cabos
-            --when league_id = '7160' then '0414' --hamburg
-            when league_id = '7123' then '0418' --washington
+            when league_id = '7201' then '6116' --atlanta
+            --when league_id = '7250' then '0319' --kitz
+            --when league_id = '7124' then '7480' --los cabos
+            when league_id = '7160' then '0414' --hamburg
+            --when league_id = '7123' then '0418' --washington
             else league_id
             end as league_idd
         from sportscore_events ) a inner join tennisapi_atptour t
     on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_idd)
     left join tennisapi_players b on home_team_id::integer = b.sportscore_id
     left join tennisapi_players c on away_team_id::integer = c.sportscore_id
-    where start_at::timestamp > '2018-05-1'
+    where start_at::timestamp > '2020-05-1'
     and sport_id='2'
     --and status = 'notstarted'
 ) s

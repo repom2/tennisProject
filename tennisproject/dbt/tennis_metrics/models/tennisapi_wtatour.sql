@@ -99,3 +99,5 @@ and (start_date::timestamp + '11 day'::interval) > tourney_date order by tourney
 
 --insert into tennisapi_wtatour(id, name, date, surface)
 --values('2023-10739', 'warsaw', '2023-7-24', 'Hard');
+
+--update tennisapi_wtatour set surface='Hard' where id='2023-6920'

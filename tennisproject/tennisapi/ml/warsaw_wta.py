@@ -81,24 +81,21 @@ def get_data():
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win, " \
                 "(select sum(court_time) from tennisapi_wtamatches c " \
-                "where a.id=c.tour_id and " \
-                "c.match_num < b.match_num and (c.winner_id=b.winner_id or c.loser_id=b.winner_id)) as home_court_time, " \
+                "where c.date between (b.date - interval '14 days') and b.date and " \
+                " (c.winner_id=b.winner_id or c.loser_id=b.winner_id)) as home_court_time, " \
                 "(select sum(court_time) from tennisapi_wtamatches c " \
-                "where a.id=c.tour_id and " \
-                "c.match_num < b.match_num and (c.winner_id=b.loser_id or c.loser_id=b.loser_id)) as away_court_time " \
+                "where c.date between (b.date - interval '14 days') and b.date and " \
+                " (c.winner_id=b.loser_id or c.loser_id=b.loser_id)) as away_court_time " \
             "from tennisapi_wtatour a \
             inner join tennisapi_wtamatches b on b.tour_id=a.id \
             left join tennisapi_wtaplayers h on h.id = b.winner_id \
             left join tennisapi_wtaplayers aw on aw.id = b.loser_id \
             where surface ilike '%hard%' " \
-            " and (" \
-            "name ilike '%prague%' " \
-            "or name ilike '%washington%' " \
-            "or name ilike '%san%jose%'" \
-            "or name ilike '%toronto%' " \
-            "or name ilike '%warsaw%' " \
-            "or name ilike '%los%cab%' ) "  \
-            " and a.date < '2024-1-1' ) " \
+            "and EXTRACT(MONTH FROM a.date) = 7 " \
+            "and name not ilike '%open%' " \
+            "and name not ilike '%cinc%' " \
+            "and name not ilike '%montre%' and round_name not ilike 'qualification%' " \
+            " and a.date between '1995-1-1' and '2024-1-1' ) " \
             "ss;"
 
     df = pd.read_sql(query, connection)
@@ -206,7 +203,7 @@ def train_model(
     )
 
     classifier = GradientBoostingClassifier(
-        n_estimators=7500,
+        n_estimators=1500,
         #learning_rate=0.035,
         #max_depth=5,
         #warm_start=True,
@@ -269,6 +266,19 @@ def warsaw_wta():
         'winner_clayelo',
     ]
 
+    data = data[data['winner_clayelo'] > 1200]
+    data = data[data['loser_clayelo'] > 1200]
+    data = data[data['winner_year_games'] > 1]
+    data = data[data['loser_year_games'] > 1]
+    data = data[data['loser_hardelo'] > 1391]
+    data = data[data['loser_hardelo'] < 2195]
+    data = data[data['winner_hardelo'] > 1391]
+    data = data[data['winner_hardelo'] < 2195]
+    data = data[data['winner_clayelo'] < 2274]
+    data = data[data['loser_clayelo'] < 2274]
+    data = data[data['loser_games'] > 1]
+    data = data[data['winner_games'] > 1]
+
     model = train_model(
         data,
         features,
@@ -276,6 +286,6 @@ def warsaw_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "warsaw_wta_rf"
+    file_name = "warsaw_wta_rf_t"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

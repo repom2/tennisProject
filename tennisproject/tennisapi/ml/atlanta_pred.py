@@ -28,6 +28,7 @@ def get_data():
                 winner_hardelo, \
                 winner_games, \
                 winner_year_games, \
+                winner_year_elo, \
                 winner_year_grass_games, \
                 case when winner_year_games = 0 then 0 else round(winner_win::numeric / winner_year_games::numeric, 2) end as winner_win_percent, \
                 case when winner_year_grass_games = 0 then 0 else round(winner_grass_win::numeric / winner_year_grass_games::numeric, 2) end as winner_win_grass_percent, \
@@ -35,6 +36,7 @@ def get_data():
                 loser_hardelo, \
                 loser_games, \
                 loser_year_games, \
+                loser_year_elo, \
                 loser_year_grass_games, \
                 case when loser_year_games = 0 then 0 else round(loser_win::numeric / loser_year_games::numeric, 2) end as loser_win_percent, " \
                 "case when loser_year_grass_games = 0 then 0 else round(loser_grass_win::numeric / loser_year_grass_games::numeric, 2) end as loser_win_grass_percent, " \
@@ -54,11 +56,13 @@ def get_data():
                 (select elo from tennisapi_atphardelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo, \
                 (select count(*) from tennisapi_atphardelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select sum(elo_change) from tennisapi_atphardelo c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
                 (select elo from tennisapi_atpgrasselo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo, " \
                 "(select elo from tennisapi_atphardelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,  \
                 (select count(*) from tennisapi_atphardelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select sum(elo_change) from tennisapi_atphardelo c where c.player_id=b.away_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
                 (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_atphardelo c \
@@ -76,10 +80,12 @@ def get_data():
                  from tennisapi_atphardelo c \
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win," \
-                "(select sum(court_time) from tennisapi_match c where a.id=c.tour_id " \
-                "and c.start_at < b.start_at and (c.home_id=b.home_id or c.away_id=b.home_id)) as home_court_time, " \
-                "(select sum(court_time) from tennisapi_match c where a.id=c.tour_id " \
-                "and c.start_at < b.start_at and (c.home_id=b.away_id or c.away_id=b.away_id)) as away_court_time  \
+                "(select sum(court_time) from tennisapi_match c " \
+                "where c.start_at between (b.start_at - interval '14 days') and c.start_at and " \
+                "c.start_at < b.start_at and (c.home_id=b.home_id or c.away_id=b.home_id)) as home_court_time, " \
+                "(select sum(court_time) from tennisapi_match c " \
+                "where c.start_at between (b.start_at - interval '14 days') and c.start_at and " \
+                "c.start_at < b.start_at and (c.home_id=b.away_id or c.away_id=b.away_id)) as away_court_time  \
             from tennisapi_atptour a \
             inner join tennisapi_match b on b.tour_id=a.id \
             left join tennisapi_players h on h.id = b.home_id \
@@ -106,9 +112,12 @@ def atlanta_pred():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "atlanta"
+    #file_name = "atlanta"
     file_name = "atlanta_rf"
-    #file_name = "atlanta_rf_grass"
+    file_name = "atlanta_gra"
+    #file_name = "atlanta_gra2"
+    #file_name = "atlanta_rf2"
+
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -116,10 +125,10 @@ def atlanta_pred():
     round_mapping = model.round_mapping
 
     data = label_round(data, round_mapping)
-    data.at[1, 'home_odds'] = 1.4
-    data.at[3, 'home_odds'] = 4.0
-    data.at[1, 'away_odds'] = 3.0
-    data.at[3, 'away_odds'] = 1.25
+    #data.at[250, 'home_odds'] = 1.2
+    #data.at[3, 'home_odds'] = 4.0
+    #data.at[250, 'away_odds'] = 5
+    #data.at[3, 'away_odds'] = 1.25
     data = data.dropna()
     x = data[features]
 
@@ -184,7 +193,7 @@ def atlanta_pred():
         data.loc[index, 'bankroll2'] = round(bankroll2, 0)
 
     columns = [
-        # 'start_at',
+        'start_at',
         'winner_name',
         'loser_name',
         'home_odds',

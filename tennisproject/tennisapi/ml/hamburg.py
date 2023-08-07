@@ -30,15 +30,21 @@ def get_data():
                 winner_hardelo, \
                 winner_games, \
                 winner_year_games, \
+                winner_year_elo, \
                 round(winner_win::numeric / winner_year_games::numeric, 2) as winner_win_percent, \
                 loser_elo - loser_change as loser_elo, \
                 loser_hardelo, \
                 loser_games, \
                 loser_year_games, \
+                loser_year_elo, \
                 round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent, " \
                 "1 as result, " \
-                "case when home_court_time is null then 0 else home_court_time / 60 end as home_court_time, \
-		        case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time \
+                "case when home_court_time is null then 0 " \
+                "when home_court_time < 0 then 0 " \
+                "else home_court_time / 60 end as home_court_time, \
+		        case when away_court_time is null then 0 " \
+		        "when away_court_time < 0 then 0 " \
+                "else away_court_time / 60 end as away_court_time \
             from ( \
             select \
                 a.date, \
@@ -50,11 +56,13 @@ def get_data():
                 (select elo_change from tennisapi_atpelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
                 (select count(*) from tennisapi_atpelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
                 (select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select sum(elo_change) from tennisapi_atpelo c where c.player_id=winner_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
                 (select elo from tennisapi_atpelo el where el.player_id=loser_id and el.match_id=b.id) as loser_elo, \
                 (select elo from tennisapi_atphardelo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_hardelo, \
                 (select elo_change from tennisapi_atpelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
                 (select count(*) from tennisapi_atpelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
                 (select count(*) from tennisapi_atpelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select sum(elo_change) from tennisapi_atpelo c where c.player_id=loser_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_atpelo c \
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
@@ -64,21 +72,18 @@ def get_data():
                  inner join tennisapi_atpmatches aa on aa.id=c.match_id \
                  where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win, " \
                 "(select sum(court_time) from tennisapi_atpmatches c " \
-                "where a.id=c.tour_id and " \
-                "c.match_num < b.match_num and (c.winner_id=b.winner_id or c.loser_id=b.winner_id)) as home_court_time, " \
+                "where c.date between (b.date - interval '14 days') and b.date and " \
+                " (c.winner_id=b.winner_id or c.loser_id=b.winner_id)) as home_court_time, " \
                 "(select sum(court_time) from tennisapi_atpmatches c " \
-                "where a.id=c.tour_id and " \
-                "c.match_num < b.match_num and (c.winner_id=b.loser_id or c.loser_id=b.loser_id)) as away_court_time " \
+                "where c.date between (b.date - interval '14 days') and b.date and " \
+                " (c.winner_id=b.loser_id or c.loser_id=b.loser_id)) as away_court_time " \
             "from tennisapi_atptour a \
             inner join tennisapi_atpmatches b on b.tour_id=a.id \
             left join tennisapi_players h on h.id = b.winner_id \
             left join tennisapi_players aw on aw.id = b.loser_id \
-            where (name ilike '%bastad%' " \
-            "or name ilike '%gstaad%' " \
-            "or name ilike '%umag%'" \
-            "or name ilike '%kitz%'" \
-            "or name ilike '%hamburg%') and round_name not ilike 'qualification%'  " \
-            "and a.date < '2023-1-1') " \
+            where (name ilike '%gstaad%' " \
+            "or name ilike '%kitz%') and round_name not ilike 'qualification%'  " \
+            "and a.date < '2024-1-1') " \
             "ss;"
 
     df = pd.read_sql(query, connection)
@@ -103,12 +108,14 @@ def balance_train_data(data):
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_win_percent',
         'home_court_time',
         'loser_elo',
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_win_percent',
         'away_court_time',
         'result'
@@ -122,12 +129,14 @@ def balance_train_data(data):
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_win_percent',
         'away_court_time',
         'winner_elo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_win_percent',
         'home_court_time',
         'result'
@@ -170,7 +179,7 @@ def train_model(
         ])]
     )
 
-    #classifier = GradientBoostingClassifier(n_estimators=7500)
+    classifier = GradientBoostingClassifier(n_estimators=1500)
     #classifier = LogisticRegression(max_iter=500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
@@ -211,12 +220,14 @@ def hamburg():
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_win_percent',
         'away_court_time',
         'winner_elo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_win_percent',
         'home_court_time',
     ]
@@ -228,6 +239,6 @@ def hamburg():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "hamburg_atp_rf_test"
+    file_name = "hamburg_atp_rf2"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

@@ -30,11 +30,13 @@ def get_data():
                 winner_hardelo, \
                 winner_games, \
                 winner_year_games, \
+                winner_year_elo, \
                 case when winner_year_games = 0 then 0 else round(winner_win::numeric / winner_year_games::numeric, 2) end as winner_win_percent, \
                 loser_elo, \
                 loser_hardelo, \
                 loser_games, \
                 loser_year_games, \
+                loser_year_elo, \
                 case when loser_year_games = 0 then 0 else round(loser_win::numeric / loser_year_games::numeric, 2) end as loser_win_percent, " \
                 "case when winner_code = null then 10 else winner_code end, " \
                 "case when home_court_time is null then 0 else home_court_time end, \
@@ -52,10 +54,12 @@ def get_data():
                 (select elo from tennisapi_wtahardelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo, \
                 (select count(*) from tennisapi_wtaelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
                 (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select sum(elo_change) from tennisapi_wtaelo c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
                 (select elo from tennisapi_wtaelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_elo,  \
                 (select elo from tennisapi_wtahardelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,  \
                 (select count(*) from tennisapi_wtaelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
                 (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select sum(elo_change) from tennisapi_wtaelo c where c.player_id=b.away_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_wtaelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
@@ -73,13 +77,13 @@ def get_data():
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
             where surface ilike '%clay%' and " \
-            "(name ilike '%hamburg%' " \
-            "or name ilike '%lausanne%'" \
-            "or name ilike '%poland%' " \
-            "or name ilike '%prague%' " \
+            "(name ilike '%palermo%' " \
             "or name ilike '%budapest%' " \
-            "or name ilike '%warsaw%' " \
-            "or name ilike '%palermo%' ) and round_name not ilike 'qualification%' ) " \
+            "or name ilike '%hamburg%' " \
+            "or name ilike '%lausanne%' " \
+            "or name ilike '%prague%' " \
+            "or name ilike '%warsaw%' ) " \
+            " and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
     df = pd.read_sql(query, connection)
@@ -97,8 +101,8 @@ def hamburg_pred_wta():
     #print(data)
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "hamburg_wta"
-    file_name = "hamburg_wta_rf"
+    #file_name = "hamburg_wta"
+    #file_name = "hamburg_wta_rf"
     file_name = "hamburg_wta_rf_test"
     file_path = local_path + file_name
 
@@ -109,14 +113,16 @@ def hamburg_pred_wta():
     data = label_team(data, round_mapping)
     #print(features)
 
+    #data.at[249, 'home_odds'] = 2.1
+    #data.at[3, 'home_odds'] = 4.0
+    #data.at[249, 'away_odds'] = 1.8
+    # data.at[3, 'away_odds'] = 1.25
+
     data = data.dropna()
     x = data[features]
-    #print(x.head())
 
     y_pred = model.predict_proba(x)
     #y_pred = model.predict(x)
-
-    #print(y_pred)
 
     data['y2'] = y_pred[:, 0]
     data['y1'] = y_pred[:, 1]

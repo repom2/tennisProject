@@ -57,11 +57,11 @@ from (
     from (
         select *
             , case
-            --when league_id = '8846' then '2042' --hamburg
-            --when league_id = '10739' then '2037' --warsaw
-            when league_id = '6979' then '1045' --washington
-            when league_id = '6920' then '1082' --prague
-            --when league_id = '7090' then '1094' --lausanne
+            when league_id = '8846' then '2042' --hamburg
+            when league_id = '10739' then '2037' --warsaw
+            --when league_id = '6979' then '1045' --washington
+            --when league_id = '6920' then '1082' --prague
+            when league_id = '7090' then '1094' --lausanne
             when league_id = '6925' then '2036' --budapest
             when league_id = '6965' then '466' --palermo
             else league_id

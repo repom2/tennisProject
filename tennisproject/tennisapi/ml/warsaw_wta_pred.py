@@ -80,10 +80,12 @@ def get_data():
                  from tennisapi_wtahardelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win," \
-                "(select sum(court_time) from tennisapi_wtamatch c where a.id=c.tour_id " \
-                "and c.start_at < b.start_at and (c.home_id=b.home_id or c.away_id=b.home_id)) as home_court_time, " \
-                "(select sum(court_time) from tennisapi_wtamatch c where a.id=c.tour_id " \
-                "and c.start_at < b.start_at and (c.home_id=b.away_id or c.away_id=b.away_id)) as away_court_time  \
+                "(select sum(court_time) from tennisapi_wtamatch c " \
+                "where c.start_at between (b.start_at - interval '14 days') and b.start_at and " \
+                " (c.home_id=b.home_id or c.away_id=b.home_id)) as home_court_time, " \
+                "(select sum(court_time) from tennisapi_wtamatch c " \
+                "where c.start_at between (b.start_at - interval '14 days') and b.start_at and " \
+                " (c.home_id=b.away_id or c.away_id=b.away_id)) as away_court_time  \
             from tennisapi_wtatour a \
             inner join tennisapi_wtamatch b on b.tour_id=a.id \
             left join tennisapi_wtaplayers h on h.id = b.home_id \
@@ -95,7 +97,7 @@ def get_data():
             "or name ilike '%toronto%' " \
             "or name ilike '%washington%'" \
             "or name ilike '%los%cab%' )" \
-            "and round_name not ilike 'qualification%' ) " \
+            " ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
     df = pd.read_sql(query, connection)
@@ -110,11 +112,13 @@ def label_round(data, mapping):
 
 def warsaw_pred_wta():
     data = get_data()
-
+    print(data.head(300))
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "warsaw_wta"
-    file_name = "warsaw_wta_rf"
+    file_name = "warsaw_wta_rf_t"
+    #file_name = "warsaw_wta_gra_t"
+    #file_name = "warsaw_wta_rf"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -122,7 +126,8 @@ def warsaw_pred_wta():
     round_mapping = model.round_mapping
 
     data = label_round(data, round_mapping)
-
+    #data.at[98, 'home_odds'] = 1.9
+    #data.at[98, 'away_odds'] = 1.9
     data = data.dropna()
     x = data[features]
 
@@ -186,7 +191,7 @@ def warsaw_pred_wta():
         data.loc[index, 'bankroll2'] = round(bankroll2, 0)
 
     columns = [
-        # 'start_at',
+        'start_at',
         'winner_name',
         'loser_name',
         'home_odds',

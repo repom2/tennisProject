@@ -28,11 +28,13 @@ def get_data():
                 winner_hardelo, \
                 winner_games, \
                 winner_year_games, \
+                winner_year_elo, \
                 round(winner_win::numeric / winner_year_games::numeric, 2) as winner_win_percent, \
                 loser_elo - loser_change as loser_elo, \
                 loser_hardelo, \
                 loser_games, \
                 loser_year_games, \
+                loser_year_elo, \
                 round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent, " \
                 "1 as result, \
                 case when home_court_time is null then 0 else home_court_time end, \
@@ -48,11 +50,13 @@ def get_data():
                 (select elo_change from tennisapi_wtaelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
                 (select count(*) from tennisapi_wtaelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
                 (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select sum(elo_change) from tennisapi_wtaelo c where c.player_id=b.winner_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
                 (select elo from tennisapi_wtaelo el where el.player_id=loser_id and el.match_id=b.id) as loser_elo, \
                 (select elo from tennisapi_wtahardelo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_hardelo, \
                 (select elo_change from tennisapi_wtaelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
                 (select count(*) from tennisapi_wtaelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
                 (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select sum(elo_change) from tennisapi_wtaelo c where c.player_id=b.loser_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_wtaelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
@@ -77,7 +81,11 @@ def get_data():
             "or name ilike '%hamburg%' " \
             "or name ilike '%lausanne%' " \
             "or name ilike '%prague%' " \
-            "or name ilike '%warsaw%' ) " \
+            "or name ilike '%warsaw%' " \
+            "or name ilike '%strasb%' " \
+            "or name ilike '%rabat%' " \
+            "or name ilike '%bogot%' " \
+            "or name ilike '%charl%' ) " \
             "and round_name not ilike 'qualification%' " \
             "and a.date < '2023-1-1' ) " \
             "ss;"
@@ -104,12 +112,14 @@ def balance_train_data(data):
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_win_percent',
         'home_court_time',
         'loser_elo',
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_win_percent',
         'away_court_time',
         'result'
@@ -123,12 +133,14 @@ def balance_train_data(data):
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_win_percent',
         'away_court_time',
         'winner_elo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_win_percent',
         'home_court_time',
         'result'
@@ -171,11 +183,11 @@ def train_model(
         ])]
     )
 
-    #classifier = GradientBoostingClassifier(n_estimators=7500)#, max_features='auto')
+    classifier = GradientBoostingClassifier(n_estimators=1500)#, max_features='auto')
     #classifier = LogisticRegression()
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    classifier = RandomForestClassifier(n_estimators=1500)
+    #classifier = RandomForestClassifier(n_estimators=1500)
 
     #pipeline = make_pipeline(scaler, classifier)
     pipeline = Pipeline([
@@ -210,16 +222,30 @@ def hamburg_wta():
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_win_percent',
         'away_court_time',
         'winner_elo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_win_percent',
         'home_court_time',
     ]
 
+    """data = data[data['winner_elo'] > 1200]
+    data = data[data['winner_year_games'] > 1]
+    data = data[data['loser_year_games'] > 1]
+    data = data[data['loser_elo'] > 1200]
+    data = data[data['loser_hardelo'] > 1391]
+    data = data[data['loser_hardelo'] < 2195]
+    data = data[data['winner_hardelo'] > 1391]
+    data = data[data['winner_hardelo'] < 2195]
+    data = data[data['winner_elo'] < 2274]
+    data = data[data['loser_elo'] < 2274]
+    data = data[data['loser_games'] > 1]
+    data = data[data['winner_games'] > 1]"""
     model = train_model(
         data,
         features,

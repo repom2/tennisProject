@@ -23,7 +23,7 @@ for f in /docker-entrypoint.d/*; do
 done
 
 if [ "$1" = 'server' ]; then
-	exec '/app/tennisproject'
+	exec '/app/tennis-project'
 else
   echo "hello"
 	exec "$@"

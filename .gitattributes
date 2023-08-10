@@ -4,7 +4,7 @@
 # Ensure shell scripts use LF.
 Dockerfile       eol=lf
 Makefile         eol=lf
-metrics-service  eol=lf
+tennis-project   eol=lf
 *.sh text        eol=lf
 *.conf text      eol=lf
 

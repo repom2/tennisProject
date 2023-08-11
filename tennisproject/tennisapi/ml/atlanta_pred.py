@@ -91,9 +91,9 @@ def get_data():
             left join tennisapi_players h on h.id = b.home_id \
             left join tennisapi_players aw on aw.id = b.away_id \
             where surface ilike '%hard%' " \
-            "and (name ilike '%atlanta%' " \
-            "or name ilike '%washington%' " \
-            "or name ilike '%los%cab%' )" \
+            "and ( " \
+            " " \
+            "name ilike '%toronto%' )" \
             "and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -114,9 +114,11 @@ def atlanta_pred():
 
     #file_name = "atlanta"
     file_name = "atlanta_rf"
-    file_name = "atlanta_gra"
+    #file_name = "atlanta_gra"
     #file_name = "atlanta_gra2"
     #file_name = "atlanta_rf2"
+    file_name = "toronto_gra"
+    #file_name = "toronto_rf"
 
     file_path = local_path + file_name
 

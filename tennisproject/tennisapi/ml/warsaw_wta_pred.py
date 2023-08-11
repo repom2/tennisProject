@@ -28,6 +28,7 @@ def get_data():
                 winner_hardelo, \
                 winner_games, \
                 winner_year_games, \
+                winner_year_elo, \
                 winner_year_grass_games, \
                 case when winner_year_games = 0 then 0 else round(winner_win::numeric / winner_year_games::numeric, 2) end as winner_win_percent, \
                 case when winner_year_grass_games = 0 then 0 else round(winner_grass_win::numeric / winner_year_grass_games::numeric, 2) end as winner_win_grass_percent, " \
@@ -37,6 +38,7 @@ def get_data():
                 loser_hardelo, \
                 loser_games, \
                 loser_year_games, \
+                loser_year_elo, \
                 loser_year_grass_games, \
                 case when loser_year_games = 0 then 0 else round(loser_win::numeric / loser_year_games::numeric, 2) end as loser_win_percent, " \
                 "case when loser_year_grass_games = 0 then 0 else round(loser_grass_win::numeric / loser_year_grass_games::numeric, 2) end as loser_win_grass_percent, " \
@@ -57,12 +59,14 @@ def get_data():
                 (select elo from tennisapi_wtaelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_clayelo, \
                 (select count(*) from tennisapi_wtahardelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select sum(elo_change) from tennisapi_wtahardelo c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
                 (select elo from tennisapi_wtagrasselo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo, " \
                 "(select elo from tennisapi_wtahardelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,  \
                 (select elo from tennisapi_wtaelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_clayelo,  \
                 (select count(*) from tennisapi_wtahardelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select sum(elo_change) from tennisapi_wtahardelo c where c.player_id=b.away_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_wtahardelo c \
@@ -91,12 +95,7 @@ def get_data():
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
             where surface ilike '%hard%' " \
-            "and (name ilike '%warsaw%' " \
-            "or name ilike '%prague%' " \
-            "or name ilike '%san%jose%'" \
-            "or name ilike '%toronto%' " \
-            "or name ilike '%washington%'" \
-            "or name ilike '%los%cab%' )" \
+            "and name ilike '%montreal%' " \
             " ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -119,6 +118,7 @@ def warsaw_pred_wta():
     file_name = "warsaw_wta_rf_t"
     #file_name = "warsaw_wta_gra_t"
     #file_name = "warsaw_wta_rf"
+    file_name = "montreal_wta_rf"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

@@ -29,6 +29,7 @@ def get_data():
                 winner_grasselo, \
                 winner_games, \
                 winner_year_games, \
+                winner_year_elo, \
                 winner_year_grass_games, \
                 round(winner_win::numeric / winner_year_games::numeric, 2) as winner_win_percent, \
                 round(winner_grass_win::numeric / winner_year_grass_games::numeric, 2) as winner_win_grass_percent, " \
@@ -38,7 +39,8 @@ def get_data():
                 loser_grasselo, \
                 loser_games, \
                 loser_year_games, " \
-                "loser_year_grass_games, \
+                "loser_year_elo, \
+                loser_year_grass_games, \
                 round(loser_win::numeric / loser_year_games::numeric, 2) as loser_win_percent, " \
                     "round(loser_grass_win::numeric / loser_year_grass_games::numeric, 2) as loser_win_grass_percent, " \
                     "case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time," \
@@ -56,6 +58,7 @@ def get_data():
                 (select elo_change from tennisapi_wtahardelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
                 (select count(*) from tennisapi_wtahardelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select sum(elo_change) from tennisapi_wtahardelo c where c.player_id=b.winner_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
                 (select elo from tennisapi_wtahardelo el where el.player_id=loser_id and el.match_id=b.id) as loser_hardelo, \
                 (select elo from tennisapi_wtagrasselo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_grasselo, \
@@ -63,6 +66,7 @@ def get_data():
                 (select elo_change from tennisapi_wtahardelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
                 (select count(*) from tennisapi_wtahardelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select sum(elo_change) from tennisapi_wtahardelo c where c.player_id=b.loser_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_wtahardelo c \
@@ -90,12 +94,11 @@ def get_data():
             inner join tennisapi_wtamatches b on b.tour_id=a.id \
             left join tennisapi_wtaplayers h on h.id = b.winner_id \
             left join tennisapi_wtaplayers aw on aw.id = b.loser_id \
-            where surface ilike '%hard%' " \
-            "and EXTRACT(MONTH FROM a.date) = 7 " \
-            "and name not ilike '%open%' " \
-            "and name not ilike '%cinc%' " \
-            "and name not ilike '%montre%' and round_name not ilike 'qualification%' " \
-            " and a.date between '1995-1-1' and '2024-1-1' ) " \
+            where surface ilike '%hard%' and " \
+            "( name ilike '%toronto%' " \
+            "or name ilike '%montreal%' )" \
+            " and round_name not ilike 'qualification%' " \
+            " and a.date between '1990-1-1' and '2023-8-6' ) " \
             "ss;"
 
     df = pd.read_sql(query, connection)
@@ -117,22 +120,24 @@ def balance_train_data(data):
         'winner_name',
         'loser_name',
         'round_name',
-        'winner_grasselo',
+        #'winner_grasselo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_year_grass_games',
         'winner_win_percent',
-        'winner_win_grass_percent',
+        #'winner_win_grass_percent',
         'home_court_time',
         'winner_clayelo',
-        'loser_grasselo',
+        #'loser_grasselo',
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_year_grass_games',
         'loser_win_percent',
-        'loser_win_grass_percent',
+        #'loser_win_grass_percent',
         'away_court_time',
         'loser_clayelo',
         'result'
@@ -142,22 +147,24 @@ def balance_train_data(data):
         'winner_name',
         'loser_name',
         'round_name',
-        'loser_grasselo',
+        #'loser_grasselo',
         'loser_hardelo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_year_grass_games',
         'loser_win_percent',
-        'loser_win_grass_percent',
+        #'loser_win_grass_percent',
         'away_court_time',
         'loser_clayelo',
-        'winner_grasselo',
+        #'winner_grasselo',
         'winner_hardelo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_year_grass_games',
         'winner_win_percent',
-        'winner_win_grass_percent',
+        #'winner_win_grass_percent',
         'home_court_time',
         'winner_clayelo',
         'result'
@@ -195,10 +202,10 @@ def train_model(
             "winner_hardelo",
             "loser_games",
             "winner_games",
-            "winner_grasselo",
-            "loser_grasselo",
             "winner_clayelo",
             "loser_clayelo",
+            "winner_year_elo",
+            "loser_year_elo",
         ])]
     )
 
@@ -247,21 +254,23 @@ def warsaw_wta():
     features = [
         'round_name',
         'loser_hardelo',
-        'loser_grasselo',
+        #'loser_grasselo',
         'loser_games',
         'loser_year_games',
+        'loser_year_elo',
         'loser_year_grass_games',
         'loser_win_percent',
-        'loser_win_grass_percent',
+        #'loser_win_grass_percent',
         'away_court_time',
         'loser_clayelo',
         'winner_hardelo',
-        'winner_grasselo',
+        #'winner_grasselo',
         'winner_games',
         'winner_year_games',
+        'winner_year_elo',
         'winner_year_grass_games',
         'winner_win_percent',
-        'winner_win_grass_percent',
+        #'winner_win_grass_percent',
         'home_court_time',
         'winner_clayelo',
     ]
@@ -286,6 +295,6 @@ def warsaw_wta():
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
-    file_name = "warsaw_wta_rf_t"
+    file_name = "montreal_wta_rf"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

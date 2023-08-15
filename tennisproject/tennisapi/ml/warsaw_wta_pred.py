@@ -95,7 +95,8 @@ def get_data():
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
             where surface ilike '%hard%' " \
-            "and name ilike '%montreal%' " \
+            "and (name ilike '%montreal%' or name ilike '%toronto%' " \
+            "or name ilike '%washingotn%' or name ilike '%cincin%' )" \
             " ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -111,7 +112,7 @@ def label_round(data, mapping):
 
 def warsaw_pred_wta():
     data = get_data()
-    print(data.head(300))
+    #print(data.head(300))
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "warsaw_wta"
@@ -119,6 +120,7 @@ def warsaw_pred_wta():
     #file_name = "warsaw_wta_gra_t"
     #file_name = "warsaw_wta_rf"
     file_name = "montreal_wta_rf"
+    file_name = "cincin_wta_rf"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

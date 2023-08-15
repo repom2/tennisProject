@@ -93,7 +93,7 @@ def get_data():
             where surface ilike '%hard%' " \
             "and ( " \
             " " \
-            "name ilike '%toronto%' )" \
+            "(name ilike '%toronto%' or name ilike '%washing%' or name ilike '%cinci%' ))" \
             "and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -114,11 +114,11 @@ def atlanta_pred():
 
     #file_name = "atlanta"
     file_name = "atlanta_rf"
-    #file_name = "atlanta_gra"
-    #file_name = "atlanta_gra2"
-    #file_name = "atlanta_rf2"
-    file_name = "toronto_gra"
-    #file_name = "toronto_rf"
+
+    file_name = "toronto_gra" # only canada tournament
+    file_name = "toronto_rf" # only canada tournament
+    file_name = "cinci_gra"
+    file_name = "cinci_rf"
 
     file_path = local_path + file_name
 
@@ -134,7 +134,7 @@ def atlanta_pred():
     data = data.dropna()
     x = data[features]
 
-    print(data.head())
+    #print(data.head())
     y_pred = model.predict_proba(x)
 
     # Lin

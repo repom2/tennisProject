@@ -91,7 +91,9 @@ def get_data():
             left join tennisapi_players h on h.id = b.winner_id \
             left join tennisapi_players aw on aw.id = b.loser_id \
             where surface ilike '%hard%' " \
-            "and name ilike '%canada%' and round_name not ilike 'qualification%' and " \
+            "and (name ilike '%canada%' " \
+            "or name ilike '%toronto%' " \
+            "or name ilike '%washing%' )and round_name not ilike 'qualification%' and " \
             "a.date between '1995-1-1' and '2023-1-1' ) " \
             "ss;"
 
@@ -206,7 +208,7 @@ def train_model(
     #classifier = LogisticRegression(max_iter=500)
     #classifier = LinearRegression()
     #classifier = xgb.XGBClassifier()
-    classifier = RandomForestClassifier(n_estimators=1500)
+    #classifier = RandomForestClassifier(n_estimators=1500)
 
     pipeline = Pipeline([
         ('preprocessor', scaler),
@@ -282,6 +284,6 @@ def atlanta():
 
     file_name = "atlanta_rf2"
     file_name = "toronto_gra"
-    #file_name = "toronto_rf"
+    file_name = "cinci_gra"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

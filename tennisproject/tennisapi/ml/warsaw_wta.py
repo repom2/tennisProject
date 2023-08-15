@@ -96,11 +96,11 @@ def get_data():
             left join tennisapi_wtaplayers aw on aw.id = b.loser_id \
             where surface ilike '%hard%' and " \
             "( name ilike '%toronto%' " \
-            "or name ilike '%montreal%' )" \
+            "or name ilike '%montreal%' or name ilike '%cincin%' )" \
             " and round_name not ilike 'qualification%' " \
-            " and a.date between '1990-1-1' and '2023-8-6' ) " \
+            " and a.date between '1990-1-1' and '2023-9-6' ) " \
             "ss;"
-
+    #montreal,toronto
     df = pd.read_sql(query, connection)
 
     return df
@@ -296,5 +296,6 @@ def warsaw_wta():
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "montreal_wta_rf"
+    file_name = "cincin_wta_rf"
     file_path = local_path + file_name
     joblib.dump(model, file_path)

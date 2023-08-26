@@ -60,20 +60,20 @@ def get_data():
                 (select count(*) from tennisapi_wtahardelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
                 (select sum(elo_change) from tennisapi_wtahardelo c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
-                (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
+                (select count(*) from tennisapi_wtagrasselo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
                 (select elo from tennisapi_wtagrasselo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo, " \
                 "(select elo from tennisapi_wtahardelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,  \
                 (select elo from tennisapi_wtaelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_clayelo,  \
                 (select count(*) from tennisapi_wtahardelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
                 (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
                 (select sum(elo_change) from tennisapi_wtahardelo c where c.player_id=b.away_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
-                (select count(*) from tennisapi_wtahardelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
+                (select count(*) from tennisapi_wtagrasselo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
                  from tennisapi_wtahardelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_win, " \
                 "(select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_wtahardelo c \
+                 from tennisapi_wtagrasselo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_grass_win, \
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
@@ -81,7 +81,7 @@ def get_data():
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win, " \
             "(select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_wtahardelo c \
+                 from tennisapi_wtagrasselo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win," \
                 "(select sum(court_time) from tennisapi_wtamatch c " \
@@ -95,8 +95,7 @@ def get_data():
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
             where surface ilike '%hard%' " \
-            "and (name ilike '%montreal%' or name ilike '%toronto%' " \
-            "or name ilike '%washingotn%' or name ilike '%cincin%' )" \
+            "and name ilike '%cleve%' " \
             " ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -121,6 +120,9 @@ def warsaw_pred_wta():
     #file_name = "warsaw_wta_rf"
     file_name = "montreal_wta_rf"
     file_name = "cincin_wta_rf"
+    #file_name = "cincin_wta_lin"
+    #file_name = "cincin_wta_lin2"
+    #file_name = "cincin_wta_gra"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -128,19 +130,25 @@ def warsaw_pred_wta():
     round_mapping = model.round_mapping
 
     data = label_round(data, round_mapping)
+    print(data.loc[[45]].T)
     #data.at[98, 'home_odds'] = 1.9
-    #data.at[98, 'away_odds'] = 1.9
+    #data.at[42, 'loser_year_elo'] = 200
+    #data.at[42, 'loser_year_games'] = 32
+    #data.at[42, 'loser_games'] = 79
+    #data.at[42, 'away_court_time'] = 1100
+    #data.at[42, 'loser_win_percent'] = 0.65
     data = data.dropna()
     x = data[features]
 
-    y_pred = model.predict_proba(x)
-    data['y2'] = y_pred[:, 0]
-    data['y1'] = y_pred[:, 1]
-
-    # Lin
-    #y_pred = model.predict(x)
-    #data['y2'] = y_pred - 1
-    #data['y1'] = y_pred
+    try:
+        y_pred = model.predict_proba(x)
+        data['y2'] = y_pred[:, 0]
+        data['y1'] = y_pred[:, 1]
+    except:
+        # Lin
+        y_pred = model.predict(x)
+        data['y1'] = y_pred
+        data['y2'] = 1 - data['y1']
 
     data['home_odds'] = data['home_odds'].astype(float)
     data['away_odds'] = data['away_odds'].astype(float)
@@ -149,8 +157,10 @@ def warsaw_pred_wta():
     data['loser_grasselo'] = data['loser_grasselo'].astype(int)
     data['yield1'] = (data['y1'] * data['home_odds']).round(2)
     data['yield2'] = (data['y2'] * data['away_odds']).round(2)
+    data['y2'] = data['y2'].round(2)
+    data['y1'] = data['y1'].round(2)
 
-    data['prob'] = data['winner_grasselo'] - data['loser_grasselo']
+    data['prob'] = data['winner_hardelo'] - data['loser_hardelo']
     data['prob_hard'] = data['winner_hardelo'] - data['loser_hardelo']
     data['prob'] = data['prob'].apply(probability_of_winning).round(2)
     data['prob_hard'] = data['prob_hard'].apply(probability_of_winning).round(2)
@@ -161,8 +171,10 @@ def warsaw_pred_wta():
     bankroll2 = 1000
     max_bet = 0.1
     for index, row in data.iterrows():
-        if row["yield1"] > 1.0:
-            bet2 = ((row["yield1"] - 1) / (row.home_odds - 1)) * bankroll2
+        yield1 = row["yield1"] - 0
+        yield2 = row["yield2"] - 0
+        if yield1 > 1:
+            bet2 = ((yield1 - 1) / (row.home_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
                 bet2 = limit
@@ -174,8 +186,8 @@ def warsaw_pred_wta():
                 bankroll2 += (bet2 * (row.home_odds - 1))
             else:
                 continue
-        elif row["yield2"] > 1.0:
-            bet2 = ((row["yield2"] - 1) / (row.away_odds - 1)) * bankroll2
+        elif yield2 > 1:
+            bet2 = ((yield2 - 1) / (row.away_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
                 bet2 = limit
@@ -205,7 +217,7 @@ def warsaw_pred_wta():
         #'winner_year_games',
         #'winner_win_percent',
         'prob',
-        'prob_hard',
+        #'prob_hard',
         'y1',
         'y2',
         #'loser_grasselo',

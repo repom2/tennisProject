@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from sportscore.models import Leagues, Events, Players, Teams, Stats
-from tennisapi.models import AtpTour, ChTour, WtaTour, WtaMatches
+from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 
 pd.set_option('display.max_columns', None)
@@ -392,7 +392,7 @@ class Command(BaseCommand):
 
     def match_statistics(self, options):
         sportscore_ids = list(
-            WtaMatches.objects.filter(date__gte='2023-06-02').values_list('match_num')
+            AtpMatches.objects.filter(date__gte='2023-06-02').values_list('match_num')
         )
 
         with tqdm(total=len(sportscore_ids)) as pbar:

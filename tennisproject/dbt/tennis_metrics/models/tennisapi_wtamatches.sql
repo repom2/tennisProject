@@ -55,7 +55,9 @@ select
     l_secondwon,
     l_svgms,
     l_bpsaved,
-    l_bpfaced
+    l_bpfaced,
+    event_id,
+    winner_code
 from (
     select distinct
         match_num,
@@ -82,7 +84,9 @@ from (
         l_secondwon::integer,
         l_svgms::integer,
         l_bpsaved::integer,
-        l_bpfaced::integer
+        l_bpfaced::integer,
+        null as event_id,
+        null as winner_code
     from tennis_atp_wtamatches a left join tennisapi_wtaplayers b on winner_id = b.player_id::text
     left join tennisapi_wtaplayers c on loser_id = c.player_id::text
     inner join tennisapi_wtatour t on a.tourney_id=t.id where date <= '2023-02-27'
@@ -114,7 +118,9 @@ from (
         null as l_2ndwon,
         null as l_svgms,
         null as l_bpsaved,
-        null as l_bpfaced
+        null as l_bpfaced,
+        a.id as event_id,
+        winner_code
     from sportscore_events a inner join tennisapi_wtatour t
     on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_id)
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id

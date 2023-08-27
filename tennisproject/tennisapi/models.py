@@ -244,6 +244,8 @@ class AtpMatches(models.Model):
     l_svgms = models.IntegerField(null=True)
     l_bpsaved = models.IntegerField(null=True)
     l_bpfaced = models.IntegerField(null=True)
+    event_id = models.TextField(null=True)
+    winner_code = models.TextField(null=True)
 
 
 class ChMatches(models.Model):
@@ -319,6 +321,8 @@ class WtaMatches(models.Model):
     l_svgms = models.IntegerField(null=True)
     l_bpsaved = models.IntegerField(null=True)
     l_bpfaced = models.IntegerField(null=True)
+    event_id = models.TextField(null=True)
+    winner_code = models.TextField(null=True)
 
 
 class Match(models.Model):

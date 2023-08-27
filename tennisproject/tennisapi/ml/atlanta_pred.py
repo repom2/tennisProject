@@ -5,7 +5,7 @@ from django.db import connection
 import os
 
 import joblib
-import pandas as pd
+from tennisapi.ml.player_stats import player_stats
 
 warnings.filterwarnings("ignore")
 
@@ -18,6 +18,8 @@ def probability_of_winning(x):
 
 def get_data():
     query = "select \
+                home_id, \
+                away_id, \
                 start_at, \
                 winner_name, \
                 loser_name, \
@@ -44,7 +46,9 @@ def get_data():
                 "case when home_court_time is null then 0 else home_court_time / 60 end as home_court_time, \
 		        case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time \
             from ( \
-            select \
+            select " \
+                "home_id, \
+                away_id, \
                 b.start_at, \
                 home_odds, \
                 away_odds, \
@@ -160,6 +164,8 @@ def atlanta_pred():
     data['y1'] = data['y1'].round(2)
     data['prob'] = data['winner_hardelo'] - data['loser_hardelo']
     data['prob'] = data['prob'].apply(probability_of_winning).round(2)
+    data['dr1'] = data['home_id'].apply(player_stats).round(2)
+    data['dr2'] = data['away_id'].apply(player_stats).round(2)
 
     data["bankroll"] = None
     data["bankroll2"] = None
@@ -224,7 +230,9 @@ def atlanta_pred():
         'yield2',
         'bankroll',
         'bankroll2',
+        'dr',
     ]
 
     print(data[columns])
     data.to_csv('grass-atp.csv', index=False)
+    player_stats('df')

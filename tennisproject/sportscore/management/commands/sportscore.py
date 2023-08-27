@@ -6,6 +6,7 @@ import requests
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.models import Q
 from sportscore.models import Leagues, Events, Players, Teams, Stats
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
@@ -390,32 +391,50 @@ class Command(BaseCommand):
                 m.save()
                 pbar.update(1)
 
+
     def match_statistics(self, options):
         sportscore_ids = list(
-            AtpMatches.objects.filter(date__gte='2023-06-02').values_list('match_num')
+            AtpMatches.objects.filter(Q(date__gte='2023-08-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list('event_id')
         )
+        sportscore_wta_ids = list(
+            WtaMatches.objects.filter(
+                Q(date__gte='2023-08-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list(
+                'event_id')
+        )
+
+        sportscore_ids += sportscore_wta_ids
+
+        def fetch_date(id):
+
+            url = "https://sportscore1.p.rapidapi.com/events/" + str(id) + "/statistics"
+
+            headers = {
+                "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+            }
+
+            response = requests.request(
+                "GET", url, headers=headers,
+            )
+
+            data = response.text
+
+            return data
 
         with tqdm(total=len(sportscore_ids)) as pbar:
             for id in sportscore_ids:
                 id = id[0]
-                url = "https://sportscore1.p.rapidapi.com/events/"+str(id)+"/statistics"
-
-                headers = {
-                    "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
-                    "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
-                }
-
-                response = requests.request(
-                    "GET", url, headers=headers,
-                )
-
-                data = response.text
-                print(data)
+                data = fetch_date(id)
+                if "rate limit per second" in data:
+                    time.sleep(0.5)
+                    data = fetch_date(id)
+                if "rate limit per second" in data:
+                    time.sleep(0.5)
+                    data = fetch_date(id)
                 try:
                     data = json.loads(data)
                 except json.decoder.JSONDecodeError:
                     continue
-                print(data)
                 m = Stats(id=id, data=data)
                 m.save()
                 pbar.update(1)

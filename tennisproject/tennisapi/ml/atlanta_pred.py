@@ -25,7 +25,7 @@ def get_data():
                 loser_name, \
                 home_odds, \
                 away_odds, \
-                round_name, \
+                'R32' as round_name, \
                 winner_grasselo, \
                 winner_hardelo, \
                 winner_games, \
@@ -97,7 +97,7 @@ def get_data():
             where surface ilike '%hard%' " \
             "and ( " \
             " " \
-            "(name ilike '%winston%' ))" \
+            "(name ilike '%us%pen%' ))" \
             "and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -113,6 +113,11 @@ def label_round(data, mapping):
 
 def atlanta_pred():
     data = get_data()
+
+    l = len(data.index)
+    print(l)
+    if l == 0:
+        return
 
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
@@ -134,6 +139,7 @@ def atlanta_pred():
     round_mapping = model.round_mapping
 
     data = label_round(data, round_mapping)
+    print(data.describe())
     #print(data.loc[[238]].T)
     #data.at[250, 'home_odds'] = 1.2
     #data.at[3, 'home_odds'] = 4.0
@@ -141,7 +147,8 @@ def atlanta_pred():
     #data.at[3, 'away_odds'] = 1.25
     data = data.dropna()
     x = data[features]
-
+    l = len(x)
+    print(l)
     #print(data.head())
     try:
         y_pred = model.predict_proba(x)
@@ -230,7 +237,8 @@ def atlanta_pred():
         'yield2',
         'bankroll',
         'bankroll2',
-        'dr',
+        'dr1',
+        'dr2',
     ]
 
     print(data[columns])

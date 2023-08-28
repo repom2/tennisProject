@@ -216,7 +216,7 @@ from (
         SELECT arr.position,arr.item_object
         FROM sportscore_stats,
         jsonb_array_elements((data ->> 'data')::jsonb) with ordinality arr(item_object, position)
-        ) s ) a inner join tennisapi_atpmatches b on b.event_id=a.events_id
+        ) s ) a inner join tennisapi_wtamatches b on b.event_id=a.events_id
         ) c where period = 'all'
         ) aa where stat_name != 'other'
         ) stats

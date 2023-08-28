@@ -5,7 +5,7 @@ from django.db import connection
 import os
 
 import joblib
-import pandas as pd
+from tennisapi.ml.player_stats import player_stats_wta
 
 warnings.filterwarnings("ignore")
 
@@ -18,12 +18,14 @@ def probability_of_winning(x):
 
 def get_data():
     query = "select \
+                home_id, \
+                away_id, \
                 start_at, \
                 winner_name, \
                 loser_name, \
                 home_odds, \
                 away_odds, \
-                round_name, \
+                'R32' as round_name, \
                 winner_grasselo, \
                 winner_hardelo, \
                 winner_games, \
@@ -47,6 +49,8 @@ def get_data():
             "loser_clayelo  \
             from ( \
             select \
+                home_id, \
+                away_id, \
                 b.start_at, \
                 home_odds, \
                 away_odds, \
@@ -95,8 +99,8 @@ def get_data():
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
             where surface ilike '%hard%' " \
-            "and name ilike '%cleve%' " \
-            " ) " \
+            "and name ilike '%us%open%' " \
+            "and round_name not ilike 'qualification%') " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
     df = pd.read_sql(query, connection)
@@ -130,7 +134,7 @@ def warsaw_pred_wta():
     round_mapping = model.round_mapping
 
     data = label_round(data, round_mapping)
-    print(data.loc[[45]].T)
+    #print(data.loc[[45]].T)
     #data.at[98, 'home_odds'] = 1.9
     #data.at[42, 'loser_year_elo'] = 200
     #data.at[42, 'loser_year_games'] = 32
@@ -164,6 +168,8 @@ def warsaw_pred_wta():
     data['prob_hard'] = data['winner_hardelo'] - data['loser_hardelo']
     data['prob'] = data['prob'].apply(probability_of_winning).round(2)
     data['prob_hard'] = data['prob_hard'].apply(probability_of_winning).round(2)
+    data['dr1'] = data['home_id'].apply(player_stats_wta).round(2)
+    data['dr2'] = data['away_id'].apply(player_stats_wta).round(2)
 
     data["bankroll"] = None
     data["bankroll2"] = None
@@ -229,6 +235,8 @@ def warsaw_pred_wta():
         'yield2',
         'bankroll',
         'bankroll2',
+        'dr1',
+        'dr2',
     ]
     print(data[columns])
     data.to_csv('grass-wta.csv', index=False)

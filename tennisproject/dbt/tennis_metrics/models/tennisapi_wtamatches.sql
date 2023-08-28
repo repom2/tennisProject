@@ -66,7 +66,6 @@ from (
         case when c.id is null then winner_id else c.id end as loser_id,
         to_date(tourney_date, 'YYYYMMDD') as date,
         round as round_name,
-        minutes::integer * 60 as court_time,
         w_ace,
         w_df,
         w_svpt,
@@ -86,7 +85,8 @@ from (
         l_bpsaved,
         l_bpfaced,
         null as event_id,
-        null as winner_code
+        null as winner_code,
+        minutes::integer * 60 as court_time
     from tennis_atp_wtamatches a left join tennisapi_wtaplayers b on winner_id = b.player_id::text
     left join tennisapi_wtaplayers c on loser_id = c.player_id::text
     inner join tennisapi_wtatour t on a.tourney_id=t.id where date <= '2023-02-27'
@@ -100,7 +100,6 @@ from (
 	    case when winner_code = '2' then b.id else c.id end loser_id,
         date(start_at) as date,
         round_info ->> 'name' as round_name,
-        court_time,
         w_ace,
         w_df,
         w_svpt,
@@ -120,7 +119,12 @@ from (
         l_bpsaved,
         l_bpfaced,
         a.id as event_id,
-        winner_code
+        winner_code,
+        coalesce((replace(periods_time, '''', '"')::json ->> 'period_1_time')::integer, 0)
+	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_2_time')::integer, 0)
+	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer, 0)
+	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_4_time')::integer, 0)
+	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_5_time')::integer, 0) as court_time
     from sportscore_events a inner join tennisapi_wtatour t
     on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_id)
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
@@ -145,8 +149,7 @@ from (
             sum(l_bpsaved) + sum(w_bpfaced) as l_bpfaced,
             sum(l_bpsaved) as l_bpsaved,
             sum(l_firstwon) as l_firstwon,
-            sum(l_secondwon) as l_secondwon,
-            0 as court_time
+            sum(l_secondwon) as l_secondwon
         from (
         select
             stat_name,

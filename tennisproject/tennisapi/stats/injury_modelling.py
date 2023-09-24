@@ -11,43 +11,48 @@ def injury_score(params):
             select 
                 s.*,
                 case when (
-                    loser_id = 'bdfffb65d7c7683a9c85c8b1e1fe39c2' 
+                    loser_id = %(player_id)s 
                     and w_svgms is null
                     ) then 1 else 0 end as walkover,
-                1 + pow(1.02, EXTRACT(DAY from now() - date)) as injury_score
-                
+                round((1 + pow(1.02, EXTRACT(DAY from now() - date)))::numeric, 2) as injury_score
             from (
                 select
                 a.date,
                 t.name,
-                d.last_name, 
-                e.last_name, 
                 w_svgms,
                 l_svgms,
                 winner_code,
                 loser_id
-                from %(matches_table)s a inner join %(tour_table) t on a.tour_id=t.id 
+                from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
                 where 
                 (winner_id = %(player_id)s
                 or loser_id = %(player_id)s)
                 and a.date < %(date)s
                 order by a.date desc
-            ) s;
+            ) s
         """
 
     df = pd.read_sql(query, connection, params=params)
 
-    print(df)
+    if df.empty:
+        walkover = None
+        score = None
+    else:
+        walkover = df.iloc[0]['walkover']
+        score = df.iloc[0]['injury_score']
 
-    return df
+    return [walkover, score]
 
 
-def fatigue_modelling(date, player_id):
+def injury_modelling(date, player_id, tour_table, matches_table):
+
     params = {
-        'tour_table': AsIs('tennisapi_wtatour'),
-        'matches_table': AsIs('tennisapi_wtamatches'),
+        'tour_table': AsIs(tour_table),
+        'matches_table': AsIs(matches_table),
         'player_id': player_id,
         'date': date,
     }
 
-    fatigue_score(params)
+    score = injury_score(params)
+
+    return score

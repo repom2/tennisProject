@@ -9,7 +9,7 @@ def fatigue_score(params):
     # alternative 1 / 1 + 0.75*days
     query = \
         """
-            select sum(court_time * pow(0.75 ,days)) / 3600 as fatigue_score from (
+            select round((sum(court_time * pow(0.75 ,days)) / 3600)::numeric, 2) as fatigue_score from (
             select 
             court_time, EXTRACT(DAY from now() - a.date) as days, a.date
             from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
@@ -25,19 +25,18 @@ def fatigue_score(params):
 
     df = pd.read_sql(query, connection, params=params)
 
-    print(df)
+    score = df.iloc[0]['fatigue_score']
 
-    return df
+    return score
 
-def fatigue_modelling():
 
-    #f1643cdd078cb77d173c609bd72a32 kenin
-    #a8225539ce9e7f4aab1b2d0f55fa01d4
+def fatigue_modelling(player_id, tour_table, matches_table):
 
     params = {
-        'tour_table': AsIs('tennisapi_wtatour'),
-        'matches_table': AsIs('tennisapi_wtamatches'),
-        'player_id': 'a8225539ce9e7f4aab1b2d0f55fa01d4',
+        'tour_table': AsIs(tour_table),
+        'matches_table': AsIs(matches_table),
+        'player_id': player_id,
     }
 
-    fatigue_score(params)
+    score = fatigue_score(params)
+    return score

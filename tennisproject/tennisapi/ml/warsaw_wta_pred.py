@@ -5,7 +5,7 @@ from django.db import connection
 import os
 
 import joblib
-from tennisapi.ml.player_stats import player_stats_wta, player_stats_wta_rpw
+from tennisapi.stats.player_stats import player_stats
 from tennisapi.stats.prob_by_serve.winning_match import matchProb
 warnings.filterwarnings("ignore")
 

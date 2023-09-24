@@ -1,0 +1,58 @@
+import pandas as pd
+from django.db import connection
+
+
+def player_stats(player_id, params):
+    params['player_id'] = player_id
+    query = \
+        """
+        select
+           round(avg(SPW), 2) as SPW,
+	       round(avg(RPW), 2) as RPW,
+           round(avg(RPW)/(1-avg(SPW)),2) as DR
+       from (
+       select
+           (firstwon + secondwon) / nullif(service_points::numeric, 0) as SPW,
+           (opponen_service_points - opponen_firstwon - opponen_secondwon) / nullif(opponen_service_points::numeric, 0) as RPW,
+           service_points - firstwon - secondwon as service_points_lost,
+           opponen_service_points - opponen_firstwon - opponen_secondwon as return_points_won
+       from (
+       select
+           t.date,
+           case when winner_id = %(player_id)s
+           then w_svpt
+           else l_svpt end as service_points,
+           case when winner_id = %(player_id)s
+           then w_firstwon
+           else l_firstwon end as firstwon,
+           case when winner_id = %(player_id)s
+           then w_secondwon
+           else l_secondwon end as secondwon,
+           case when winner_id = %(player_id)s
+           then l_svpt
+           else w_svpt end as opponen_service_points,
+           case when winner_id = %(player_id)s
+           then l_firstwon
+           else w_firstwon end as opponen_firstwon,
+           case when winner_id = %(player_id)s
+           then l_secondwon
+           else w_secondwon end as opponen_secondwon
+       from %(matches_table)s t inner join %(tour_table)s e on t.tour_id=e.id
+       where (winner_id=%(player_id)s or loser_id=%(player_id)s)
+           and surface ilike '%%hard%%'
+           and round_name not ilike 'qualification%%'
+           ) a order by date desc limit 22
+       ) s
+        """
+    df = pd.read_sql(query, connection, params=params)
+    spw = df.iloc[0]['spw']
+    rpw = df.iloc[0]['rpw']
+
+    #all_spw = 0.632475
+    #all_rpw = 0.367525
+    #open_spw = 0.625
+    #if spw == None:
+    #    return
+    #result = open_spw + (spw - all_spw) - (rpw - all_rpw)
+
+    return [spw, rpw]

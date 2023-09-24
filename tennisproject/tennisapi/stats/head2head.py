@@ -8,7 +8,9 @@ warnings.filterwarnings("ignore")
 def head_to_head_win_percentage(params):
     query = \
         """
-        select sum(player_1_won)::numeric / count(*)::numeric as player_1_won_percentage 
+        select 
+            round(sum(player_1_won)::numeric / count(*)::numeric, 2) as player_1_won_percentage,
+            count(*) as count 
         from (
             select 
                 case when winner_id = %(player1)s then  1 else 0 end player_1_won,
@@ -24,21 +26,20 @@ def head_to_head_win_percentage(params):
 
     df = pd.read_sql(query, connection, params=params)
 
-    print(df)
+    score = df.iloc[0]['player_1_won_percentage']
+    count = df.iloc[0]['count']
 
-    return df
+    return [score, count]
 
 
-def head2head():
-    player1 = 'ef4d3319eb3a6a2e9fdc8841752450b1'
-    player2 = 'fa6be5d12f49f59ebc105e3fad1e171d'
+def head2head(player1, player2, tour_table, matches_table):
     params = {
-        'tour_table': AsIs('tennisapi_wtatour'),
-        'matches_table': AsIs('tennisapi_wtamatches'),
+        'tour_table': AsIs(tour_table),
+        'matches_table': AsIs(matches_table),
         'player1': player1,
         'player2': player2,
     }
 
-    head_to_head_win_percentage(params)
+    score = head_to_head_win_percentage(params)
 
-
+    return score

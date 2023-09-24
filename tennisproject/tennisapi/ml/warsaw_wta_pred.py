@@ -5,8 +5,8 @@ from django.db import connection
 import os
 
 import joblib
-from tennisapi.ml.player_stats import player_stats_wta
-
+from tennisapi.ml.player_stats import player_stats_wta, player_stats_wta_rpw
+from tennisapi.stats.prob_by_serve.winning_match import matchProb
 warnings.filterwarnings("ignore")
 
 
@@ -99,7 +99,7 @@ def get_data():
             left join tennisapi_wtaplayers h on h.id = b.home_id \
             left join tennisapi_wtaplayers aw on aw.id = b.away_id \
             where surface ilike '%hard%' " \
-            "and name ilike '%us%open%' " \
+            "and name ilike '%guad%' " \
             "and round_name not ilike 'qualification%') " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -115,7 +115,7 @@ def label_round(data, mapping):
 
 def warsaw_pred_wta():
     data = get_data()
-    #print(data.head(300))
+
     local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
 
     file_name = "warsaw_wta"
@@ -125,8 +125,9 @@ def warsaw_pred_wta():
     file_name = "montreal_wta_rf"
     file_name = "cincin_wta_rf"
     #file_name = "cincin_wta_lin"
-    #file_name = "cincin_wta_lin2"
+    file_name = "cincin_wta_lin2"
     #file_name = "cincin_wta_gra"
+    #file_name = "usopen_wta"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)
@@ -141,8 +142,16 @@ def warsaw_pred_wta():
     #data.at[42, 'loser_games'] = 79
     #data.at[42, 'away_court_time'] = 1100
     #data.at[42, 'loser_win_percent'] = 0.65
-    data = data.dropna()
-    x = data[features]
+    data['dr1'] = data['home_id'].apply(player_stats_wta).round(2)
+    data['rpw1'] = data['home_id'].apply(player_stats_wta_rpw).round(2)
+    data['dr2'] = data['away_id'].apply(player_stats_wta).round(2)
+    data['rpw2'] = data['away_id'].apply(player_stats_wta_rpw).round(2)
+    data['win'] = data.apply(
+        lambda x: matchProb(x.dr1, 1 - x.dr2, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0,
+                            sets=5), axis=1).round(
+        2)
+    #data = data.dropna()
+    """x = data[features]
 
     try:
         y_pred = model.predict_proba(x)
@@ -154,32 +163,37 @@ def warsaw_pred_wta():
         data['y1'] = y_pred
         data['y2'] = 1 - data['y1']
 
+    # data['yield1'] = (data['y1'] * data['home_odds']).round(2)
+    data['yield1'] = (data['win'] * data['home_odds']).round(2)
+    # data['yield2'] = (data['y2'] * data['away_odds']).round(2)
+    data['yield2'] = ((1 - data['win']) * data['away_odds']).round(2)
+    data['y2'] = data['y2'].round(2)
+    data['y1'] = data['y1'].round(2)"""
+
     data['home_odds'] = data['home_odds'].astype(float)
     data['away_odds'] = data['away_odds'].astype(float)
-    data['winner_code'] = data['winner_code'].astype(int)
-    data['winner_grasselo'] = data['winner_grasselo'].astype(int)
-    data['loser_grasselo'] = data['loser_grasselo'].astype(int)
-    data['yield1'] = (data['y1'] * data['home_odds']).round(2)
-    data['yield2'] = (data['y2'] * data['away_odds']).round(2)
-    data['y2'] = data['y2'].round(2)
-    data['y1'] = data['y1'].round(2)
+    #data['winner_code'] = data['winner_code'].astype(int)
+    #data['winner_grasselo'] = data['winner_grasselo'].astype(int)
+    #data['loser_grasselo'] = data['loser_grasselo'].astype(int)
 
     data['prob'] = data['winner_hardelo'] - data['loser_hardelo']
-    data['prob_hard'] = data['winner_hardelo'] - data['loser_hardelo']
+    data['prob_year'] = data['winner_year_elo'] - data['loser_year_elo']
     data['prob'] = data['prob'].apply(probability_of_winning).round(2)
-    data['prob_hard'] = data['prob_hard'].apply(probability_of_winning).round(2)
-    data['dr1'] = data['home_id'].apply(player_stats_wta).round(2)
-    data['dr2'] = data['away_id'].apply(player_stats_wta).round(2)
+    data['prob_year'] = data['prob_year'].apply(probability_of_winning).round(2)
 
     data["bankroll"] = None
     data["bankroll2"] = None
     bankroll = 1000
     bankroll2 = 1000
     max_bet = 0.1
-    for index, row in data.iterrows():
-        yield1 = row["yield1"] - 0
-        yield2 = row["yield2"] - 0
-        if yield1 > 1:
+    """for index, row in data.iterrows():
+        yield1 = (row["yield1"] - 0) #/ (row.home_odds - 1)
+        yield2 = (row["yield2"] - 0) #/ (row.away_odds - 1)
+
+        data.loc[index, 'yield1'] = round(yield1, 2)
+        data.loc[index, 'yield2'] = round(yield2, 2)
+        
+        if yield1 > 1.07 and row.home_odds < 4 and row.home_odds > 1.5:
             bet2 = ((yield1 - 1) / (row.home_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
@@ -192,7 +206,7 @@ def warsaw_pred_wta():
                 bankroll2 += (bet2 * (row.home_odds - 1))
             else:
                 continue
-        elif yield2 > 1:
+        elif yield2 > 1.07 and row.away_odds < 3.5 and row.away_odds > 1.5:
             bet2 = ((yield2 - 1) / (row.away_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
@@ -208,7 +222,7 @@ def warsaw_pred_wta():
         else:
             continue
         data.loc[index, 'bankroll'] = round(bankroll, 0)
-        data.loc[index, 'bankroll2'] = round(bankroll2, 0)
+        data.loc[index, 'bankroll2'] = round(bankroll2, 0)"""
 
     columns = [
         'start_at',
@@ -223,20 +237,24 @@ def warsaw_pred_wta():
         #'winner_year_games',
         #'winner_win_percent',
         'prob',
+        'prob_year',
         #'prob_hard',
-        'y1',
-        'y2',
+        #'y1',
+        #'y2',
         #'loser_grasselo',
         #'loser_games',
         #'loser_year_games',
         #'loser_win_percent',
         #'winner_code',
-        'yield1',
-        'yield2',
-        'bankroll',
-        'bankroll2',
+        #'yield1',
+        #'yield2',
+        #'bankroll',
+        #'bankroll2',
         'dr1',
+        'rpw1',
         'dr2',
+        'rpw2',
+        'win',
     ]
     print(data[columns])
     data.to_csv('grass-wta.csv', index=False)

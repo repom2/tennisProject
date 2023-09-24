@@ -1,0 +1,305 @@
+import warnings
+
+import pandas as pd
+from django.db import connection
+import os
+
+import joblib
+import pandas as pd
+import xgboost as xgb
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import (GradientBoostingClassifier,
+                              RandomForestClassifier, RandomForestRegressor)
+from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, Normalizer,
+                                   StandardScaler)
+from sklearn.svm import LinearSVC
+from sklearn.feature_selection import SelectFromModel
+from tennisapi.ml.player_stats import player_stats2
+warnings.filterwarnings("ignore")
+
+
+def get_data():
+    query = "select winner_id, \
+                loser_id, \
+                date, \
+                winner_name, \
+                loser_name, \
+                round_name, \
+                winner_hardelo + winner_change as winner_hardelo, \
+                winner_grasselo, \
+                winner_games, \
+                winner_year_games, \
+                winner_year_elo, \
+                winner_year_grass_games, \
+                case when winner_year_games = 0 then 0 else round(winner_win::numeric / winner_year_games::numeric, 2) end as winner_win_percent, \
+                case when winner_year_grass_games = 0 then 0 else round(winner_grass_win::numeric / winner_year_grass_games::numeric, 2) end as winner_win_grass_percent, " \
+                "case when home_court_time is null then 0 else home_court_time / 60 end as home_court_time, \
+                loser_grasselo - loser_change as loser_grasselo, \
+                loser_hardelo, \
+                loser_games, \
+                loser_year_games, \
+                loser_year_elo, \
+                loser_year_grass_games, \
+                case when loser_year_games = 0 then 0 else round(loser_win::numeric / loser_year_games::numeric, 2) end as loser_win_percent, " \
+                "case when loser_year_grass_games = 0 then 0 else round(loser_grass_win::numeric / loser_year_grass_games::numeric, 2) end as loser_win_grass_percent, " \
+		        "case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time, " \
+                "1 as result " \
+            "from ( \
+            select \
+                b.winner_id, \
+                b.loser_id, \
+                b.date, \
+                h.last_name as winner_name, \
+                aw.last_name as loser_name, \
+                round_name, \
+                (select elo from tennisapi_atphardelo el where el.player_id=winner_id and el.date < b.date order by games desc limit 1) as winner_hardelo, " \
+                "(select elo from tennisapi_atpgrasselo el where el.player_id=winner_id and el.date < b.date order by games desc limit 1) as winner_grasselo, \
+                (select elo_change from tennisapi_atphardelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
+                (select count(*) from tennisapi_atphardelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
+                (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.date < b.date and c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select sum(elo_change) from tennisapi_atphardelo c where c.date < b.date and c.player_id=b.winner_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo, \
+                (select count(*) from tennisapi_atpgrasselo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.date < b.date and c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games, \
+                (select elo from tennisapi_atphardelo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_hardelo, \
+                (select elo from tennisapi_atpgrasselo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_grasselo, \
+                (select elo_change from tennisapi_atphardelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
+                (select count(*) from tennisapi_atphardelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
+                (select count(*) from tennisapi_atphardelo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.date < b.date and c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select sum(elo_change) from tennisapi_atphardelo c where c.date < b.date and c.player_id=b.loser_id and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo, \
+                (select count(*) from tennisapi_atpgrasselo c inner join tennisapi_atpmatches aa on aa.id=c.match_id where c.date < b.date and c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games, \
+                (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
+                 from tennisapi_atphardelo c \
+                 inner join tennisapi_atpmatches aa on aa.id=c.match_id \
+                 where c.date < b.date and c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_win, \
+                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
+                from tennisapi_atpgrasselo c \
+                inner join tennisapi_atpmatches aa on aa.id=c.match_id \
+                where c.date < b.date and c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_grass_win, \
+                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
+                 from tennisapi_atphardelo c \
+                 inner join tennisapi_atpmatches aa on aa.id=c.match_id \
+                 where c.date < b.date and c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win, " \
+                "(select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
+                 from tennisapi_atpgrasselo c \
+                 inner join tennisapi_atpmatches aa on aa.id=c.match_id \
+                 where c.date < b.date and c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win, " \
+                "(select sum(court_time) from tennisapi_atpmatches c " \
+                "where c.date between (b.date - interval '14 days') and b.date and " \
+                " (c.winner_id=b.winner_id or c.loser_id=b.winner_id)) as home_court_time, " \
+                "(select sum(court_time) from tennisapi_atpmatches c " \
+                "where c.date between (b.date - interval '14 days') and b.date and " \
+                " (c.winner_id=b.loser_id or c.loser_id=b.loser_id)) as away_court_time " \
+            "from tennisapi_atptour a \
+            inner join tennisapi_atpmatches b on b.tour_id=a.id \
+            left join tennisapi_players h on h.id = b.winner_id \
+            left join tennisapi_players aw on aw.id = b.loser_id \
+            where surface ilike '%hard%' " \
+            "and name ilike '%us%open%' " \
+            "and round_name not ilike 'qualification%' and " \
+            "a.date between '1995-1-1' and '2023-8-19' ) " \
+            "ss;"
+
+    df = pd.read_sql(query, connection)
+
+    return df
+
+def balance_train_data(data):
+    # shuffle the DataFrame rows
+    data = data.sample(frac=1)
+    l = int(round(len(data.index) / 2, 0))
+    print("split", l)
+    df1 = data.iloc[:l, :]
+    df2 = data.iloc[l:, :]
+
+    # Dont change because have to match with sql
+    columns = [
+        'winner_id',
+        'loser_id',
+        'date',
+        'winner_name',
+        'loser_name',
+        'round_name',
+        #'winner_grasselo',
+        'winner_hardelo',
+        #'winner_games',
+        'winner_year_games',
+        'winner_year_elo',
+        #'winner_year_grass_games',
+        #'winner_win_percent',
+        #'winner_win_grass_percent',
+        'home_court_time',
+        'dr1',
+        #'loser_grasselo',
+        'loser_hardelo',
+        #'loser_games',
+        'loser_year_games',
+        'loser_year_elo',
+        #'loser_year_grass_games',
+        #'loser_win_percent',
+        #'loser_win_grass_percent',
+        'away_court_time',
+        'dr2',
+        'result'
+    ]
+    revert_columns = [
+        'winner_id',
+        'loser_id',
+        'date',
+        'winner_name',
+        'loser_name',
+        'round_name',
+        #'loser_grasselo',
+        'loser_hardelo',
+        #'loser_games',
+        'loser_year_games',
+        'loser_year_elo',
+        #'loser_year_grass_games',
+        #'loser_win_percent',
+        #'loser_win_grass_percent',
+        'away_court_time',
+        'dr2',
+        #'winner_grasselo',
+        'winner_hardelo',
+        #'winner_games',
+        'winner_year_games',
+        'winner_year_elo',
+        #'winner_year_grass_games',
+        #'winner_win_percent',
+        #'winner_win_grass_percent',
+        'home_court_time',
+        'dr1',
+        'result'
+    ]
+
+    df2 = df2[revert_columns]
+    df2["result"] = 0
+    df2.columns = columns
+
+    merge_df = pd.concat([df1, df2])
+
+    train_data, round_mapping = label_round_name(merge_df)
+
+    print(train_data.head())
+
+    return train_data, round_mapping
+
+
+def train_model(
+        df,
+        features,
+):
+    f = features + ['result'] + ['winner_id', 'loser_id', 'date', 'winner_name', 'loser_name']
+    df = df[f]
+    df = df.dropna()
+    df, round_mapping = balance_train_data(df)
+    df = df.dropna()
+    x_train = df[features]
+    print("Lenght of Train Data:", len(x_train))
+    y_train = df[['result']]
+
+    scaler = ColumnTransformer(
+        remainder='passthrough',  # passthough features not listed
+        transformers=[("num_preprocess", MinMaxScaler(), [
+            "loser_hardelo",
+            "winner_hardelo",
+            #"loser_games",
+            #"winner_games",
+            "winner_year_elo",
+            "loser_year_elo",
+        ])]
+    )
+
+    classifier = GradientBoostingClassifier(
+        n_estimators=1500,
+        #learning_rate=0.05,
+        #max_depth=6,
+        #warm_start=True,
+        #validation_fraction=0.1,
+    )
+    classifier = LogisticRegression(max_iter=500)
+    #classifier = LinearRegression()
+    #classifier = xgb.XGBClassifier()
+    #classifier = RandomForestClassifier(n_estimators=1500)
+
+    pipeline = Pipeline([
+        ('preprocessor', scaler),
+        ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False))),
+        ('classifier', classifier)
+    ])
+
+    #pipeline = make_pipeline(scaler, classifier)
+    model = pipeline.fit(x_train, y_train.values.ravel())
+    # GradientBoostingClassifier
+    #model.feature_importances = model.steps[1][1].feature_importances_
+    # LogisticRegression
+    model.feature_importances = None#model.steps[1][1].coef_[0]
+    model.feature_names = features
+    model.round_mapping = round_mapping
+
+    return model
+
+
+def label_round_name(data):
+    le = LabelEncoder()
+    label = le.fit_transform(data['round_name'])
+    name_mapping = dict(zip(le.classes_, le.transform(le.classes_)))
+    data["round_name"] = label
+
+    return data, name_mapping
+
+
+def usopen():
+    data = get_data()
+
+    features = [
+        'round_name',
+        'loser_hardelo',
+        #'loser_grasselo',
+        #'loser_games',
+        'loser_year_games',
+        'loser_year_elo',
+        #'loser_year_grass_games',
+        #'loser_win_percent',
+        #'loser_win_grass_percent',
+        'away_court_time',
+        'winner_hardelo',
+        #'winner_grasselo',
+        #'winner_games',
+        'winner_year_games',
+        'winner_year_elo',
+        #'winner_year_grass_games',
+        #'winner_win_percent',
+        #'winner_win_grass_percent',
+        'home_court_time',
+        'dr1',
+        'dr2',
+    ]
+
+    #data = data[data['winner_elo'] > 1200]
+    data = data[data['winner_year_games'] > 11]
+    data = data[data['loser_year_games'] > 11]
+    #data = data[data['loser_elo'] > 1200]
+    data = data[data['loser_hardelo'] > 1391]
+    data = data[data['loser_hardelo'] < 2195]
+    data = data[data['winner_hardelo'] > 1391]
+    data = data[data['winner_hardelo'] < 2195]
+    #data = data[data['winner_elo'] < 2274]
+    #data = data[data['loser_elo'] < 2274]
+    data = data[data['loser_games'] > 1]
+    data = data[data['winner_games'] > 1]
+
+    data['dr1'] = data.apply(lambda x: player_stats2(x.winner_id, x.date), axis=1).round(2)
+    data['dr2'] = data.apply(lambda x: player_stats2(x.loser_id, x.date), axis=1).round(2)
+
+    model = train_model(
+        data,
+        features,
+    )
+
+    local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
+
+    file_name = "usopen_log"
+
+    file_path = local_path + file_name
+    joblib.dump(model, file_path)

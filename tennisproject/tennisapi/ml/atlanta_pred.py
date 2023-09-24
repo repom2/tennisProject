@@ -5,7 +5,8 @@ from django.db import connection
 import os
 
 import joblib
-from tennisapi.ml.player_stats import player_stats
+from tennisapi.ml.player_stats import player_stats, player_stats_rpw
+from tennisapi.stats.prob_by_serve.winning_match import matchProb
 
 warnings.filterwarnings("ignore")
 
@@ -25,7 +26,7 @@ def get_data():
                 loser_name, \
                 home_odds, \
                 away_odds, \
-                'R32' as round_name, \
+                round_name, \
                 winner_grasselo, \
                 winner_hardelo, \
                 winner_games, \
@@ -97,7 +98,7 @@ def get_data():
             where surface ilike '%hard%' " \
             "and ( " \
             " " \
-            "(name ilike '%us%pen%' ))" \
+            "(name ilike '%chen%' ))" \
             "and round_name not ilike 'qualification%' ) " \
             "ss where winner_name is not null and loser_name is not null order by start_at;"
 
@@ -130,7 +131,9 @@ def atlanta_pred():
     #file_name = "cinci_rf"
     file_name = "cinci_lin2"
     file_name = "winston_lin2"
-    #file_name = "cinci_lin"
+    file_name = "usopen_lin"
+    file_name = "usopen_lin2"
+    file_name = "usopen_log"
 
     file_path = local_path + file_name
 
@@ -139,14 +142,21 @@ def atlanta_pred():
     round_mapping = model.round_mapping
 
     data = label_round(data, round_mapping)
-    print(data.describe())
+
     #print(data.loc[[238]].T)
     #data.at[250, 'home_odds'] = 1.2
     #data.at[3, 'home_odds'] = 4.0
     #data.at[250, 'away_odds'] = 5
     #data.at[3, 'away_odds'] = 1.25
-    data = data.dropna()
-    x = data[features]
+    data['dr1'] = data['home_id'].apply(player_stats).round(2)
+    data['rpw1'] = data['home_id'].apply(player_stats_rpw).round(2)
+    data['dr2'] = data['away_id'].apply(player_stats).round(2)
+    data['rpw2'] = data['away_id'].apply(player_stats_rpw).round(2)
+    data['win'] = data.apply(lambda x: matchProb(x.dr1, 1-x.dr2, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=5), axis=1).round(
+        2)
+
+    #data = data.dropna()
+    """x = data[features]
     l = len(x)
     print(l)
     #print(data.head())
@@ -160,19 +170,28 @@ def atlanta_pred():
         data['y1'] = y_pred
         data['y2'] = 1 - data['y1']
 
-    data['home_odds'] = data['home_odds'].astype(float)
-    data['away_odds'] = data['away_odds'].astype(float)
-    data['winner_code'] = data['winner_code'].astype(int)
-    data['winner_grasselo'] = data['winner_grasselo'].astype(int)
-    data['loser_grasselo'] = data['loser_grasselo'].astype(int)
-    data['yield1'] = (data['y1'] * data['home_odds']).round(2)
-    data['yield2'] = (data['y2'] * data['away_odds']).round(2)
     data['y2'] = data['y2'].round(2)
     data['y1'] = data['y1'].round(2)
+    data['yield1'] = (data['y1'] * data['home_odds']).round(2)
+    # data['yield1'] = (data['win'] * data['home_odds']).round(2)
+    data['yield1'] = (data['prob'] * data['home_odds']).round(2)
+    data['yield2'] = ((1 - data['prob']) * data['home_odds']).round(2)"""
+
+    data['home_odds'] = data['home_odds'].astype(float)
+    data['away_odds'] = data['away_odds'].astype(float)
+    #data['winner_code'] = data['winner_code'].astype(int)
+    #data['winner_grasselo'] = data['winner_grasselo'].astype(int)
+    #data['loser_grasselo'] = data['loser_grasselo'].astype(int)
+
     data['prob'] = data['winner_hardelo'] - data['loser_hardelo']
     data['prob'] = data['prob'].apply(probability_of_winning).round(2)
-    data['dr1'] = data['home_id'].apply(player_stats).round(2)
-    data['dr2'] = data['away_id'].apply(player_stats).round(2)
+
+    data['prob_year'] = data['winner_year_elo'] - data['loser_year_elo']
+    data['prob_year'] = data['prob_year'].apply(probability_of_winning).round(2)
+
+    #data['yield2'] = (data['y2'] * data['away_odds']).round(2)
+    #data['yield2'] = ((1 - data['win']) * data['away_odds']).round(2)
+    #data['yield2'] = ((1 - data['prob']) * data['away_odds']).round(2)
 
     data["bankroll"] = None
     data["bankroll2"] = None
@@ -180,10 +199,15 @@ def atlanta_pred():
     bankroll2 = 1000
     max_bet = 0.1
     for index, row in data.iterrows():
-        yield1 = row["yield1"] - 0.0
-        yield2 = row["yield2"] - 0.0
-        if yield1 > 1.0:
-            bet2 = (( yield1 - 1) / (row.home_odds - 1)) * bankroll2
+        continue
+        try:
+            yield1 = row["yield1"] - 0.0
+            yield2 = row["yield2"] - 0.0
+        except:
+            continue
+
+        if yield1 > 1.0:# and row.home_odds < 4 and row.home_odds > 1:
+            bet2 = ((yield1 - 1) / (row.home_odds - 1)) * bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
                 bet2 = limit
@@ -195,8 +219,11 @@ def atlanta_pred():
                 bankroll2 += (bet2 * (row.home_odds - 1))
             else:
                 continue
-        elif yield2 > 1.0:
-            bet2 = ((yield2 - 1) / (row.away_odds - 1)) * bankroll2
+        elif yield2 > 1.0:# and row.away_odds < 4 and row.away_odds > 1:
+            try:
+                bet2 = ((yield2 - 1) / (row.away_odds - 1)) * bankroll2
+            except:
+                bet2 = 0.05*bankroll2
             limit = bankroll2 * max_bet
             if bet2 > limit:
                 bet2 = limit
@@ -226,19 +253,24 @@ def atlanta_pred():
         #'winner_year_games',
         #'winner_win_percent',
         'prob',
+        'prob_year',
         #'loser_grasselo',
         #'loser_games',
         #'loser_year_games',
         #'loser_win_percent',
         #'winner_code',
-        'y1',
-        'y2',
-        'yield1',
-        'yield2',
-        'bankroll',
-        'bankroll2',
+        #'y1',
+        #'y2',
+        #'yield1',
+        #'yield2',
+        #'bankroll',
+        #'bankroll2',
         'dr1',
+        'rpw1',
         'dr2',
+        'rpw2',
+        'win',
+
     ]
 
     print(data[columns])

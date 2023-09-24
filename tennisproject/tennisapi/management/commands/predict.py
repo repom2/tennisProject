@@ -7,6 +7,8 @@ from tennisapi.ml.wimbledon import wimbledon
 from tennisapi.ml.gstaad import gstaad
 from tennisapi.ml.bastad import bastad
 from tennisapi.ml.atlanta import atlanta
+from tennisapi.ml.usopen import usopen
+from tennisapi.ml.usopen_wta import usopen_wta
 from tennisapi.ml.hamburg import hamburg
 from tennisapi.ml.newport import newport
 from tennisapi.ml.wimbledon_wta import wimbledon_wta
@@ -98,6 +100,12 @@ class Command(BaseCommand):
         atlanta_cmd = subparsers.add_parser("atlanta")
         atlanta_cmd.set_defaults(subcommand=self.atlanta_atp)
 
+        usopen_cmd = subparsers.add_parser("usopen")
+        usopen_cmd.set_defaults(subcommand=self.usopen_atp)
+
+        usopen_wta_cmd = subparsers.add_parser("usopen-wta")
+        usopen_wta_cmd.set_defaults(subcommand=self.usopen_wta)
+
         atlanta_pred_cmd = subparsers.add_parser("atlanta-pred")
         atlanta_pred_cmd.set_defaults(subcommand=self.atlanta_pred)
 
@@ -156,6 +164,12 @@ class Command(BaseCommand):
 
     def atlanta_atp(self, options):
         atlanta()
+
+    def usopen_atp(self, options):
+        usopen()
+
+    def usopen_wta(self, options):
+        usopen_wta()
 
     def atlanta_pred(self, options):
         atlanta_pred()

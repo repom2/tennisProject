@@ -12,6 +12,7 @@ from tennisapi.stats.fatigue_modelling import fatigue_modelling
 from tennisapi.stats.injury_modelling import injury_modelling
 from tennisapi.stats.head2head import head2head
 from psycopg2.extensions import AsIs
+from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 warnings.filterwarnings("ignore")
 
 
@@ -104,7 +105,7 @@ def get_data(params):
             where surface ilike '%%hard%%' 
             and (
             (name ilike '%%%(tour)s%%' ))
-            and round_name not ilike 'qualification%%' )
+            )
             ss where winner_name is not null and loser_name is not null order by start_at
     """
 
@@ -151,8 +152,19 @@ def predict(level, tour):
         print("No data")
         return
 
-    date = timezone.now()
+    date = timezone.now() - timedelta(hours=8)
     data = data[data['start_at'] > date]
+
+    tour_spw, tour_rpw = 0.645, 0.355
+
+    date = '2015-1-1'
+    params = {
+        'event': AsIs(tour),
+        'tour_table': AsIs(tour_table),
+        'matches_table': AsIs(matches_table),
+        'date': date,
+    }
+    event_spw, event_rpw = event_stats(params)
 
     data[['spw1', 'rpw1']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], params)),
@@ -160,9 +172,12 @@ def predict(level, tour):
     data[['spw2', 'rpw2']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], params)),
         index=data.index)
+    data['player1'] = data.apply(lambda x: event_spw + (x.spw1 - tour_spw) - (x.rpw2 - tour_rpw) if (x.rpw2 and x.spw1) else None, axis=1)
+    data['player2'] = data.apply(lambda x: event_spw + (x.spw2 - tour_spw) - (x.rpw1 - tour_rpw) if (x.rpw1 and x.spw2) else None, axis=1)
+
     data['win'] = data.apply(
         lambda x: matchProb(
-            x.spw1 if x.spw1 else 0.55,  1-x.spw2 if x.spw2 else 0.55, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=5
+            x.player1 if x.player1 else 0.55,  1-x.player2 if x.player2 else 0.55, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
         ), axis=1).round(2)
 
     data['f1'] = pd.DataFrame(
@@ -240,7 +255,8 @@ def predict(level, tour):
         'inj',
         'wo2',
         'inj2',
-
+        'player1',
+        'player2',
     ]
 
     print(data[columns])

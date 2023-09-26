@@ -100,6 +100,3 @@ def serve_points():
     win = matchProb(0.6221, 1-0.6199, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=5)
 
     print(win)
-
-
-

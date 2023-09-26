@@ -22,10 +22,11 @@ def fatigue_score(params):
             order by a.date desc limit 14
                 ) s;
         """
-
-    df = pd.read_sql(query, connection, params=params)
-
-    score = df.iloc[0]['fatigue_score']
+    try:
+        df = pd.read_sql(query, connection, params=params)
+        score = df.iloc[0]['fatigue_score']
+    except:
+        score = None
 
     return score
 

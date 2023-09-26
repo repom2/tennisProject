@@ -155,7 +155,10 @@ def predict(level, tour):
     date = timezone.now() - timedelta(hours=8)
     data = data[data['start_at'] > date]
 
-    tour_spw, tour_rpw = 0.645, 0.355
+    if level == 'atp':
+        tour_spw, tour_rpw = 0.645, 0.355
+    else:
+        tour_spw, tour_rpw = 0.565, 0.435
 
     date = '2015-1-1'
     params = {
@@ -261,3 +264,5 @@ def predict(level, tour):
 
     print(data[columns])
     print(date)
+    print('tour', tour_spw, tour_rpw)
+    print('event', event_spw, event_rpw)

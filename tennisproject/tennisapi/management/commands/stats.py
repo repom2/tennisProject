@@ -47,9 +47,10 @@ class Command(BaseCommand):
 
     def match_prob(self, options):
         tour_table = 'tennisapi_atptour'
-        matches_table = 'tennisapi_atpmatches'
+        tour_table = 'tennisapi_wtatour'
+        matches_table = 'tennisapi_wtamatches'
         event = 'nur%%sult'
-        date = '2018-1-1'
+        date = '2010-1-1'
         params = {
             'event': AsIs(event),
             'tour_table': AsIs(tour_table),

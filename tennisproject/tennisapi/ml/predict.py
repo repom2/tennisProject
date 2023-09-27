@@ -13,6 +13,7 @@ from tennisapi.stats.injury_modelling import injury_modelling
 from tennisapi.stats.head2head import head2head
 from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
+from tennisapi.stats.common_opponent import common_opponent
 warnings.filterwarnings("ignore")
 
 
@@ -180,7 +181,27 @@ def predict(level, tour):
 
     data['win'] = data.apply(
         lambda x: matchProb(
-            x.player1 if x.player1 else 0.55,  1-x.player2 if x.player2 else 0.55, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
+            x.player1 if x.player1 else 0.55,
+            1-x.player2 if x.player2 else 0.55,
+            gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
+        ), axis=1).round(2)
+
+    # Common opponent
+    data[['spw1_c', 'spw2_c', 'count']] = pd.DataFrame(
+        np.row_stack(np.vectorize(common_opponent, otypes=['O'])(
+            params,
+            data['home_id'],
+            data['away_id'],
+            event_spw,
+            '2022-1-1'
+        )
+        ), index=data.index)
+
+    data['win_c'] = data.apply(
+        lambda x: matchProb(
+            x.spw1_c,
+            1 - x.spw2_c,
+            gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
         ), axis=1).round(2)
 
     data['f1'] = pd.DataFrame(
@@ -260,6 +281,10 @@ def predict(level, tour):
         'inj2',
         'player1',
         'player2',
+        'win_c',
+        'count',
+        #'spw1_c',
+        #'spw2_c',
     ]
 
     print(data[columns])

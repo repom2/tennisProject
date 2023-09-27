@@ -48,11 +48,4 @@ def player_stats(player_id, params):
     spw = df.iloc[0]['spw']
     rpw = df.iloc[0]['rpw']
 
-    #all_spw = 0.632475
-    #all_rpw = 0.367525
-    #open_spw = 0.625
-    #if spw == None:
-    #    return
-    #result = open_spw + (spw - all_spw) - (rpw - all_rpw)
-
     return [spw, rpw]

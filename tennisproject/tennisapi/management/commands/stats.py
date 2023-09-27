@@ -5,6 +5,7 @@ from tennisapi.stats.head2head import head2head
 from tennisapi.stats.surface_weighting.sipko_surface_weighting import surface_weighting
 from tennisapi.stats.prob_by_serve.winning_match import matchProb
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
+from tennisapi.stats.common_opponent import common_opponent
 from psycopg2.extensions import AsIs
 
 
@@ -29,6 +30,9 @@ class Command(BaseCommand):
 
         match_prob_cmd = subparsers.add_parser("match-prob")
         match_prob_cmd.set_defaults(subcommand=self.match_prob)
+
+        common_opponent_cmd = subparsers.add_parser("common-opponent")
+        common_opponent_cmd.set_defaults(subcommand=self.commonn_opponent_stats)
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -71,3 +75,24 @@ class Command(BaseCommand):
         print(player1, player2)
         win = matchProb(player1, 1-player2, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3)
         print(win)
+
+    def commonn_opponent_stats(self, options):
+        tour_table = 'tennisapi_wtatour'
+        matches_table = 'tennisapi_wtamatches'
+        date = '2022-1-1'
+        player1 = 'd9e7a540b10d3c355d7753b595a4daee'
+        player2 = 'c6e64405c62f77042e7287ab19c923ab'
+        params = {
+            'tour_table': AsIs(tour_table),
+            'matches_table': AsIs(matches_table),
+        }
+        event_spw = 0.57
+        stats = common_opponent(params, player1, player2, event_spw, date)
+        print(stats)
+
+        data = matchProb(
+                stats[0] if stats[0] else 0.55,
+                1 - stats[1] if stats[1] else 0.55,
+                gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
+            )
+        print(data)

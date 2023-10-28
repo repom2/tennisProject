@@ -26,10 +26,10 @@ def head_to_head_win_percentage(params):
 
     df = pd.read_sql(query, connection, params=params)
 
-    score = df.iloc[0]['player_1_won_percentage']
+    won = df.iloc[0]['player_1_won_percentage']
     count = df.iloc[0]['count']
 
-    return [score, count]
+    return [won, count]
 
 
 def head2head(player1, player2, tour_table, matches_table):

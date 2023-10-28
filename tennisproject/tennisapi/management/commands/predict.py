@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from tennisapi.ml.atlanta import atlanta
+from tennisapi.ml.ml_model import train_model
 from tennisapi.ml.predict import predict
 from tennisapi.ml.warsaw_wta import warsaw_wta
 from tennisapi.ml.warsaw_wta_pred import warsaw_pred_wta
@@ -25,6 +26,9 @@ class Command(BaseCommand):
 
         warsaw_pred_cmd = subparsers.add_parser("warsaw-pred")
         warsaw_pred_cmd.set_defaults(subcommand=self.warsaw_predict)
+
+        train_ml_model_cmd = subparsers.add_parser("train")
+        train_ml_model_cmd.set_defaults(subcommand=self.train_ml_model)
 
         predict_matches_cmd = subparsers.add_parser("pred")
         predict_matches_cmd.set_defaults(subcommand=self.predict_matches)
@@ -58,3 +62,6 @@ class Command(BaseCommand):
 
     def print_feature_importance(self, options):
         feature_importance()
+
+    def train_ml_model(self, options):
+        train_model()

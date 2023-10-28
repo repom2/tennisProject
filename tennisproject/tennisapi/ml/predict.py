@@ -6,6 +6,8 @@ import os
 from datetime import datetime, timedelta
 from django.utils import timezone
 import joblib
+import logging
+import sys
 from tennisapi.stats.player_stats import player_stats
 from tennisapi.stats.prob_by_serve.winning_match import matchProb
 from tennisapi.stats.fatigue_modelling import fatigue_modelling
@@ -15,6 +17,21 @@ from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 warnings.filterwarnings("ignore")
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.DEBUG)
+stdout_handler.setFormatter(formatter)
+
+file_handler = logging.FileHandler('logs.log')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stdout_handler)
 
 
 def probability_of_winning(x):
@@ -169,6 +186,8 @@ def predict(level, tour):
         'date': date,
     }
     event_spw, event_rpw = event_stats(params)
+    if event_spw is None:
+        event_spw, event_rpw = 0.565, 0.435
 
     data[['spw1', 'rpw1']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], params)),
@@ -249,23 +268,23 @@ def predict(level, tour):
         ),
         index=data.index)
 
-    data['home_odds'] = data['home_odds'].astype(float)
-    data['away_odds'] = data['away_odds'].astype(float)
+    data['odds1'] = data['home_odds'].astype(float)
+    data['odds2'] = data['away_odds'].astype(float)
 
     data['prob'] = data['winner_hardelo'] - data['loser_hardelo']
     data['prob'] = data['prob'].apply(probability_of_winning).round(2)
 
     data['prob_year'] = data['winner_year_elo'] - data['loser_year_elo']
-    data['prob_year'] = data['prob_year'].apply(probability_of_winning).round(2)
+    data['prob_y'] = data['prob_year'].apply(probability_of_winning).round(2)
 
     columns = [
         #'start_at',
         'winner_name',
         'loser_name',
-        'home_odds',
-        'away_odds',
+        'odds1',
+        'odds2',
         'prob',
-        'prob_year',
+        'prob_y',
         'spw1',
         'rpw1',
         'spw2',
@@ -277,10 +296,10 @@ def predict(level, tour):
         'c',
         'wo',
         'inj',
-        'wo2',
+        #'wo2',
         'inj2',
-        'player1',
-        'player2',
+        #'player1',
+        #'player2',
         'win_c',
         'count',
         #'spw1_c',

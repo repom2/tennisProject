@@ -10,6 +10,7 @@ from django.db.models import Q
 from sportscore.models import Leagues, Events, Players, Teams, Stats
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
+from django.conf import settings
 
 pd.set_option('display.max_columns', None)
 
@@ -58,9 +59,9 @@ class Command(BaseCommand):
     # NO NEED
     def list_sports(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports"
-        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
@@ -75,9 +76,9 @@ class Command(BaseCommand):
     # SECTION ID
     def list_sections(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/sections"
-        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
@@ -92,9 +93,9 @@ class Command(BaseCommand):
 
     def list_leagues(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/leagues"
-        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
@@ -137,13 +138,13 @@ class Command(BaseCommand):
         wta_leagues = list(WtaTour.objects.filter(date__gte='2023-09-21').values_list('id'))
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues #+ ch_leagues
-
+        sport_score_key = settings.SPORT_SCORE_KEY
         for id in leagues:
             id = id[0].split('-')[1]
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
 
             headers = {
-                "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+                "X-RapidAPI-Key": sport_score_key,
                 "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
             }
 
@@ -193,9 +194,9 @@ class Command(BaseCommand):
     # FIX TO PAGE
     def list_events(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/events"
-        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
@@ -233,9 +234,9 @@ class Command(BaseCommand):
 
     def list_players(self, options):
         url = "https://sportscore1.p.rapidapi.com/players"
-        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
@@ -286,13 +287,13 @@ class Command(BaseCommand):
         in_second_but_not_in_first = in_second - in_first
 
         result = qs + list(in_second_but_not_in_first)
-
+        sport_score_key = settings.SPORT_SCORE_KEY
         with tqdm(total=len(qs)) as pbar:
             for id in result[0:1]:
                 url = "https://sportscore1.p.rapidapi.com/players/" + str(id)
 
                 headers = {
-                    "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+                    "X-RapidAPI-Key": sport_score_key,
                     "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
                 }
 
@@ -305,9 +306,9 @@ class Command(BaseCommand):
 
     def list_teams(self, options):
         url = "https://sportscore1.p.rapidapi.com/teams"
-        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
@@ -348,9 +349,9 @@ class Command(BaseCommand):
 
     def events_by_section_id(self, options):
         url = "https://sportscore1.p.rapidapi.com/sections/143/events"
-        sport_score_key = os.getenv('SPORT_SCORE_KEY')
+        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
-            "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+            "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
@@ -405,11 +406,11 @@ class Command(BaseCommand):
         sportscore_ids += sportscore_wta_ids
 
         def fetch_date(id):
-
+            sport_score_key = settings.SPORT_SCORE_KEY
             url = "https://sportscore1.p.rapidapi.com/events/" + str(id) + "/statistics"
 
             headers = {
-                "X-RapidAPI-Key": "a4d03aeecbmsh56ecc366e6cbecbp1d03c0jsn366ab7c0dc51",
+                "X-RapidAPI-Key": sport_score_key,
                 "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
             }
 

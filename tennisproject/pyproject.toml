@@ -22,10 +22,12 @@ djangorestframework = "^3.14.0"
 django-cors-headers = "^4.0.0"
 joblib = "^1.2.0"
 xgboost = "^1.7.5"
-sklearn = "^0.0.post5"
 scikit-learn = "^1.2.2"
 gradio = "^3.32.0"
 tensorflow = "^2.12.0"
+django-environ = "^0.11.2"
+langchain = "^0.0.331"
+openai = "0.28.1"
 
 
 [build-system]

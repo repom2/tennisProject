@@ -16,6 +16,7 @@ from tennisapi.stats.head2head import head2head
 from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
+from tennisapi.stats.analysis import match_analysis
 warnings.filterwarnings("ignore")
 
 logger = logging.getLogger()
@@ -47,6 +48,8 @@ def get_data(params):
                 home_id,
                 away_id,
                 start_at,
+                winner_first_name,
+                loser_first_name,
                 winner_name,
                 loser_name,
                 home_odds,
@@ -78,6 +81,8 @@ def get_data(params):
                 b.start_at,
                 home_odds,
                 away_odds,
+                h.first_name as winner_first_name,
+                aw.first_name as loser_first_name,
                 h.last_name as winner_name,
                 aw.last_name as loser_name,
                 round_name,
@@ -170,7 +175,7 @@ def predict(level, tour):
         print("No data")
         return
 
-    date = timezone.now() - timedelta(hours=8)
+    date = timezone.now() - timedelta(hours=18)
     data = data[data['start_at'] > date]
 
     if level == 'atp':
@@ -310,3 +315,6 @@ def predict(level, tour):
     print(date)
     print('tour', tour_spw, tour_rpw)
     print('event', event_spw, event_rpw)
+
+    for index, row in data.iterrows():
+        match_analysis(row)

@@ -23,6 +23,7 @@ services:
       - RUN_MIGRATIONS=true
       - GUNICORN=true
       - SPORT_SCORE_KEY
+      - OPENAI_API_KEY
 
   db:
     image: postgres:13-alpine
@@ -41,6 +42,7 @@ services:
       target: development
     environment:
       IAM_APP_BASE_URL: http://localhost:4000
+      CHOKIDAR_USEPOLLING: true
     volumes:
       - ./tennis-app:/app
     deploy:

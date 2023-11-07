@@ -16,7 +16,7 @@ WORKDIR /app
 # Cache and Install dependencies
 COPY package.json .
 COPY yarn.lock .
-RUN yarn install --frozen-lockfile
+RUN yarn install --prefer-offline --frozen-lockfile
 
 
 # Copy app files

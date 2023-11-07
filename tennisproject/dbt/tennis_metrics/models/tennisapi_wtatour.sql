@@ -100,5 +100,6 @@ and (start_date::timestamp + '11 day'::interval) > tourney_date order by tourney
 --insert into tennisapi_wtatour(id, name, date, surface)
 --values('2023-10739', 'warsaw', '2023-7-24', 'Hard');
 --values('2023-10987', 'WTA Ningbo, China Women Singles', '2023-9-24', 'Hard');
+--2023-8866                                | WTA Cluj Napoca, Romania Women Singles        | 2023-10-14 | Clay --> Hard
 
 --update tennisapi_wtatour set surface='Hard' where id='2023-6920'

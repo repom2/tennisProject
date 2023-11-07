@@ -1,0 +1,9 @@
+node_modules/**
+.vscode/**
+.idea/**
+src/data/openapi/**
+src/data/iam-openapi/**
+.devcontainer/**
+openapi/**
+package.json
+src/data/temporaryData.js

@@ -11,6 +11,26 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+
+env = environ.FileAwareEnv(
+    # set casting, default value
+    DEBUG=(bool, False),
+    ALLOWED_HOSTS=(list, []),
+    USE_X_FORWARDED_HOST=(bool, False),
+    TEST_OUTPUT_DIR=(str, "build/test"),
+    DJANGO_LOG_LEVEL=(str, "INFO"),
+    DJANGO_DB_LOG_LEVEL=(str, "INFO"),
+    DJANGO_LOG_FORMATTER=(str, "json"),
+    AZURE_LOG_LEVEL=(str, "WARNING"),
+    DATALAB_VIEWS_LOG_LEVEL=(str, "INFO"),
+    ZENDESK_INITIAL_SYNC_DAYS=(int, 180),
+    IS_GUNICORN_WORKER=(bool, False),
+    OPENAI_API_KEY=(str, None),
+    SPORT_SCORE_KEY=(str, None),
+    DATABASE_REPLICA_URL=(str, None),
+    ENVIRONMENT=(str, "production"),
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -140,3 +160,6 @@ REST_FRAMEWORK = {
 }
 
 CORS_ORIGIN_WHITELIST = ["http://localhost:3000"]
+
+OPENAI_API_KEY = env("OPENAI_API_KEY")
+SPORT_SCORE_KEY = env("SPORT_SCORE_KEY")

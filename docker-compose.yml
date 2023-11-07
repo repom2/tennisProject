@@ -24,6 +24,9 @@ services:
       - GUNICORN=true
       - SPORT_SCORE_KEY
       - OPENAI_API_KEY
+      - ALLOWED_HOSTS=*
+      - ENVIRONMENT=development
+      - DJANGO_SETTINGS_MODULE
 
   db:
     image: postgres:13-alpine
@@ -43,6 +46,8 @@ services:
     environment:
       IAM_APP_BASE_URL: http://localhost:4000
       CHOKIDAR_USEPOLLING: true
+      UPSTREAM_URL: http://tennis-app:3000
+      TENNIS_API_URL: http://tennisproject:8000
     volumes:
       - ./tennis-app:/app
     deploy:

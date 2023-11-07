@@ -30,7 +30,7 @@ export class PlayersService {
                 'level': level,
             },
             errors: {
-                404: `Team not found`,
+                404: `Players not found`,
             },
         });
     }

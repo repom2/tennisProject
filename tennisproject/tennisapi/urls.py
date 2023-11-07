@@ -9,7 +9,7 @@ urlpatterns = [
     path(
         'players/',
         ListAPIView.as_view(
-            queryset=Players.objects.all(),
+            queryset=Players.objects.all()[:1],
             serializer_class=PlayerSerializer
         ),
         name='player-list'),

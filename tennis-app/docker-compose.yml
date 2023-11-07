@@ -26,8 +26,7 @@ services:
       - ./docker/openresty/tennis-app.dev.conf.template:/etc/nginx/templates/default.conf.template
     environment:
       SESSION_SECRET: supersecretsession
-      TENNIS_API_URL: http://tennisproject-dev:8000
-      TENNIS_API_URL: http://tennisproject-apigw-dev
+      TENNIS_API_URL: http://tennisproject:8000
       #OIDC_DISCOVERY_URL: https://dev.dex.surveypal-test.dev/.well-known/openid-configuration
       OIDC_CLIENT_ID: tennis-dev
       OIDC_CLIENT_SECRET: tennis-dev
@@ -49,7 +48,7 @@ services:
       - ./docker/openresty/tennis-app.dev.noauth.conf.template:/etc/nginx/templates/default.conf.template
     environment:
       SESSION_SECRET: supersecretsession
-      TENNIS_API_URL: http://tennisproject-dev:8000
+      TENNIS_API_URL: http://tennisproject:8000
       HARDCODED_AUTH_EMAIL: admin@example.com
       HARDCODED_AUTH_ROLE: GlobalAdmin
       #HARDCODED_AUTH_ROLE: OrganizationAdmin

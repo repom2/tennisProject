@@ -43,9 +43,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-bo3g0ho-d1mm371p^w%@*sir(imgzhe38^y_mndtqfepff&c89"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ['*']
+CORS_ORIGIN_ALLOW_ALL = True
+
+ALLOWED_HOSTS = ['*']# env("ALLOWED_HOSTS")
+USE_X_FORWARDED_HOST = env("USE_X_FORWARDED_HOST")
+
+ENVIRONMENT = env("ENVIRONMENT")
 
 
 # Application definition
@@ -159,7 +164,7 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ORIGIN_WHITELIST = ["http://localhost:3000"]
-
 OPENAI_API_KEY = env("OPENAI_API_KEY")
 SPORT_SCORE_KEY = env("SPORT_SCORE_KEY")
+
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000']

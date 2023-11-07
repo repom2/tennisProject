@@ -1,7 +1,9 @@
 ###########################################################
 # Develoment image
-ARG VARIANT="16-bullseye"
+ARG VARIANT="18-bullseye"
 FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT} as development
+
+ENV ENVIRONMENT=development
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends gettext-base
@@ -15,9 +17,8 @@ WORKDIR /app
 
 # Cache and Install dependencies
 COPY package.json .
-COPY yarn.lock .
-RUN yarn install --prefer-offline --frozen-lockfile
-
+COPY package*.json ./
+RUN npm install
 
 # Copy app files
 COPY . .

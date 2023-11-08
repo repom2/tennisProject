@@ -21,7 +21,7 @@ server {
     set $session_cookie_samesite   Lax;
     set $session_secret $SESSION_SECRET;
     # cannot use __Host because lack of tls
-    set $session_name _Host-metrics-app-localdev;
+    set $session_name _Host-tennis-app-localdev;
 
     location / {
         proxy_pass $UPSTREAM_URL;

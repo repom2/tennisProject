@@ -1,26 +1,39 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
 import "./index.css";
-import App from './App';
-import { QueryClientProvider } from 'react-query';
+
+import App from "pages/App/App";
+import React from "react";
+import {createRoot} from "react-dom/client";
+import TagManager from "react-gtm-module";
+import {QueryClientProvider} from "react-query";
+//import {ReactQueryDevtools} from "react-query/devtools";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+
 import queryClient from "./data/queryClient";
 
-const rootElement = document.getElementById('root');
-
-if (!rootElement) {
-    throw new Error("Root element not found");
+declare global {
+    interface Window {
+        config: any;
+    }
 }
 
-const root = ReactDOM.createRoot(rootElement);
+if (window.config.GTM_ID.startsWith("GTM-")) {
+    TagManager.initialize({gtmId: window.config.GTM_ID});
+}
 
-root.render(
-  <React.StrictMode>
-  <QueryClientProvider client={queryClient}>
-    <App />
-   </QueryClientProvider>
-  </React.StrictMode>
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const root = createRoot(document.getElementById("tennis-app")!);
+const app = (
+    <BrowserRouter>
+        <React.StrictMode>
+            <QueryClientProvider client={queryClient}>
+                    <Routes>
+                        <Route path="/*" element={<App />} />
+                    </Routes>
+                {/*<ReactQueryDevtools position={"top-right"} />*/}
+            </QueryClientProvider>
+        </React.StrictMode>
+    </BrowserRouter>
 );
+root.render(app);
 
-if(module.hot){
-    module.hot.accept()
-}

@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import {getPlayers} from "data/DataFetch";
-import { useQuery, QueryClientProvider } from 'react-query'
-import queryClient from "./data/queryClient";
+import React from 'react';
 
 function App() {
 

@@ -134,8 +134,8 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpTour.objects.filter(date__gte='2023-09-21').values_list('id'))
-        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-09-21').values_list('id'))
+        leagues = list(AtpTour.objects.filter(date__gte='2023-11-01').values_list('id'))
+        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-11-01').values_list('id'))
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues #+ ch_leagues
         sport_score_key = settings.SPORT_SCORE_KEY
@@ -155,8 +155,11 @@ class Command(BaseCommand):
             )
 
             data = response.text
-            data = json.loads(data)
 
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                continue
             try:
                 data_df = data['data']
             except:
@@ -175,10 +178,10 @@ class Command(BaseCommand):
                     )
                     data = response.text
                     data = json.loads(data)
-                    #try:
-                    data_df.extend(data["data"])
-                    #except KeyError:
-                     #   continue
+                    try:
+                        data_df.extend(data["data"])
+                    except json.JSONDecodeError:
+                        continue
                     per_page += data['meta']["per_page"]
                     meta_to = data['meta']["to"]
                     if meta_to is None:
@@ -395,11 +398,11 @@ class Command(BaseCommand):
 
     def match_statistics(self, options):
         sportscore_ids = list(
-            AtpMatches.objects.filter(Q(date__gte='2023-08-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list('event_id')
+            AtpMatches.objects.filter(Q(date__gte='2023-01-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list('event_id')
         )
         sportscore_wta_ids = list(
             WtaMatches.objects.filter(
-                Q(date__gte='2023-08-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list(
+                Q(date__gte='2023-01-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list(
                 'event_id')
         )
 

@@ -26,6 +26,7 @@ poetry run python manage.py sportscore leagues
 poetry run python manage.py sportscore events
 
 ### DBT
+poetry run dbt deps
 
 crosstab function
 CREATE EXTENSION IF NOT EXISTS tablefunc;

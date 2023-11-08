@@ -17,8 +17,8 @@ WORKDIR /app
 
 # Cache and Install dependencies
 COPY package.json .
-COPY package*.json ./
-RUN npm install
+COPY yarn.lock .
+RUN yarn install --frozen-lockfile
 
 # Copy app files
 COPY . .

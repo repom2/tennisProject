@@ -22,10 +22,7 @@ export const MyComponent: React.FC = () => {
   } else if (data) {
     return (
       <div>
-
-          // Render your data here.
           data?.0.last_name
-
       </div>
     );
   } else {

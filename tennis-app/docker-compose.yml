@@ -35,7 +35,7 @@ services:
     depends_on:
       - app
     networks:
-      - metrics
+      - tennis
     ports:
       - 3000:80
 
@@ -57,9 +57,9 @@ services:
       - app
       - openresty
     networks:
-      - metrics
+      - tennis
     ports:
       - 3001:80
 networks:
-  metrics:
-    name: metrics
+  tennis:
+    name: tennis

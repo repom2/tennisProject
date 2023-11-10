@@ -38,28 +38,32 @@ services:
       POSTGRES_USER: tennis
       POSTGRES_PASSWORD: tennis
       POSTGRES_DB: tennis
+
   tennis-app:
-    image: tennis-app-dev:20230310
+    image: tennis-app-dev:20230807
     build:
       context: tennis-app
       target: development
-    environment:
-      IAM_APP_BASE_URL: http://localhost:4000
-      CHOKIDAR_USEPOLLING: true
     volumes:
       - ./tennis-app:/app
+    environment:
+      IAM_APP_BASE_URL: http://localhost:4000
+      NODE_OPTIONS: --max-old-space-size=1536
     deploy:
       resources:
         limits:
           cpus: "2.00"
-          memory: 2048M
+          memory: ${TENNIS_APP_MEMORY_LIMIT:-2048M}
+    ports:
+      - 2999:3000
+
   tennis-app-bff:
     build:
       context: tennis-app
       dockerfile: docker/openresty/Dockerfile
     image: tennis-app-openresty:20230405
     volumes:
-      - ./tennis-app/docker/openresty/tennis-app.dev.noauth.conf.template:/etc/nginx/templates/default.conf.template
+      - ./tennis-app/docker/openresty/tennis-app.dev.conf.template:/etc/nginx/templates/default.conf.template
     environment:
       SESSION_SECRET: supersecretsession
       UPSTREAM_URL: http://tennis-app:3000
@@ -71,5 +75,26 @@ services:
       - tennis-app
     ports:
       - 3000:80
+
+  tennis-app-bff-noauth:
+    build:
+      context: tennis-app
+      dockerfile: docker/openresty/Dockerfile
+    image: tennis-app-openresty:20230405
+    volumes:
+      - ./tennis-app/docker/openresty/tennis-app.dev.noauth.conf.template:/etc/nginx/templates/default.conf.template
+    environment:
+      SESSION_SECRET: supersecretsession
+      UPSTREAM_URL: http://tennis-app:3000
+      TENNIS_API_URL: http://tennisproject:8000
+      HARDCODED_AUTH_USER_ID: local-dev-user
+      HARDCODED_AUTH_EMAIL: admin@example.com
+      HARDCODED_AUTH_ROLE: OrganizationAdmin
+    restart: unless-stopped
+    depends_on:
+      - tennis-app
+    ports:
+      - 3001:80
+
 volumes:
   postgres_data:

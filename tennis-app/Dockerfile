@@ -10,7 +10,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /
 COPY docker/dev/docker-entrypoint.sh /
-#COPY docker/docker-entrypoint.d /docker-entrypoint.d
+COPY docker/docker-entrypoint.d /docker-entrypoint.d
 
 # Add a work directory
 WORKDIR /app
@@ -22,6 +22,7 @@ RUN yarn install --frozen-lockfile
 
 # Copy app files
 COPY . .
+
 
 # Expose port
 EXPOSE 3000

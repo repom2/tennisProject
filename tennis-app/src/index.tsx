@@ -5,8 +5,7 @@ import React from "react";
 import {createRoot} from "react-dom/client";
 import TagManager from "react-gtm-module";
 import {QueryClientProvider} from "react-query";
-//import {ReactQueryDevtools} from "react-query/devtools";
-import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 
 import queryClient from "./data/queryClient";
 
@@ -23,17 +22,17 @@ if (window.config.GTM_ID.startsWith("GTM-")) {
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById("tennis-app")!);
-const app = (
-    <BrowserRouter>
+const appi = (
+    <Router>
         <React.StrictMode>
             <QueryClientProvider client={queryClient}>
-                    <Routes>
-                        <Route path="/*" element={<App />} />
-                    </Routes>
-                {/*<ReactQueryDevtools position={"top-right"} />*/}
+            <Routes>
+                    <Route path="/app" element={<App />}>
+                    </Route>
+            </Routes>
             </QueryClientProvider>
         </React.StrictMode>
-    </BrowserRouter>
+    </Router>
 );
-root.render(app);
+root.render(appi);
 

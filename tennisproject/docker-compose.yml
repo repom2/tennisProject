@@ -1,0 +1,90 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: tennisproject-dev
+    # to force a new build, bump the image tag
+    image: tennisproject-dev:20220513
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/app
+    networks:
+      - metrics
+    depends_on:
+      - db
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_URL=postgres://metrics_service_dev:metrics_service_dev@db:5432/metrics_service_dev?connect_timeout=3
+      - DBT_HOST=db
+      - DBT_NAME=metrics_service_dev
+      - DBT_USER=metrics_service_dev
+      - DBT_PASSWORD=metrics_service_dev
+      - SECRET_KEY=django-insecure-not-random-key
+      - RUN_MIGRATIONS=true
+      - CREATE_SUPERUSER=true
+      - DJANGO_LOG_FORMATTER=console
+      #- DJANGO_LOG_LEVEL=debug
+      - ALLOWED_HOSTS=localhost,127.0.0.1,tennisproject-dev
+      - ZENDESK_INITIAL_SYNC_DAYS=60
+      - AZURE_ZENDESK_KEY_VAULT_URL
+      - AZURE_CLIENT_ID
+      - AZURE_TENANT_ID
+      - AZURE_CLIENT_SECRET
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 1024M
+
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - metrics
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: metrics_service_dev
+      POSTGRES_PASSWORD: metrics_service_dev
+      POSTGRES_DB: metrics_service_dev
+  #    deploy:
+  #      resources:
+  #        limits:
+  #          cpus: "0.50"
+  #          memory: 512M
+
+  apigw:
+    container_name: tennisproject-apigw-dev
+    build:
+      context: docker/openresty
+      dockerfile: Dockerfile
+    volumes:
+      - ./docker/openresty/apigw.conf.template:/etc/nginx/templates/default.conf.template
+    environment:
+      UPSTREAM_URL: http://tennisproject-dev:8000
+      #OIDC_DISCOVERY_URL: https://dev.dex.surveypal-test.dev/.well-known/openid-configuration
+      OIDC_ISSUER: https://dev.dex.tennis-test.dev
+      OIDC_CLIENT_ID: tennis-dev
+      OIDC_CLIENT_SECRET: tennis-dev
+      OIDC_AUDIENCE: tennis-dev
+      OIDC_DEFAULT_ROLE: OrganizationAdmin
+      DNS_RESOLVER: 127.0.0.11
+    restart: unless-stopped
+    depends_on:
+      - app
+    networks:
+      - metrics
+    ports:
+      - 8001:80
+
+volumes:
+  postgres_data:
+
+networks:
+  metrics:
+    name: metrics

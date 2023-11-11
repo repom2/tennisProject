@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import {Players} from 'data/openapi/models/Players';
-//import {getData} from 'common/functions/playerData';
 import {useGetPlayers} from 'common/functions/playerFetch';
 
 

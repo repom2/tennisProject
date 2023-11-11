@@ -68,8 +68,9 @@ services:
       SESSION_SECRET: supersecretsession
       UPSTREAM_URL: http://tennis-app:3000
       TENNIS_API_URL: http://tennisproject:8000
+      HARDCODED_AUTH_USER_ID: local-dev-user
       HARDCODED_AUTH_EMAIL: admin@example.com
-      HARDCODED_AUTH_ROLE: GlobalAdmin
+      HARDCODED_AUTH_ROLE: OrganizationAdmin
     restart: unless-stopped
     depends_on:
       - tennis-app

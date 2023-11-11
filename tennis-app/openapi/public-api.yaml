@@ -33,7 +33,7 @@ paths:
           description: Players not found
 servers:
   - url: /api/tennisapi
-  - url: http://127.0.0.1:3000/api/tennisapi
+  - url: http://localhost:3000/api/metricsapi
 components:
   parameters:
     levelParam:

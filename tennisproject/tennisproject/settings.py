@@ -167,4 +167,4 @@ REST_FRAMEWORK = {
 OPENAI_API_KEY = env("OPENAI_API_KEY")
 SPORT_SCORE_KEY = env("SPORT_SCORE_KEY")
 
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000', 'http://localhost:3001']

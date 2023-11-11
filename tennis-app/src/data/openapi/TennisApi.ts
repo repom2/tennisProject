@@ -9,7 +9,7 @@ import { PlayersService } from './services/PlayersService';
 
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 
-export class TennisAPI {
+export class TennisApi {
 
     public readonly players: PlayersService;
 

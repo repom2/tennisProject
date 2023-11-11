@@ -45,9 +45,6 @@ SECRET_KEY = "django-insecure-bo3g0ho-d1mm371p^w%@*sir(imgzhe38^y_mndtqfepff&c89
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-CORS_ORIGIN_ALLOW_ALL = True
-
-ALLOWED_HOSTS = ['*']# env("ALLOWED_HOSTS")
 USE_X_FORWARDED_HOST = env("USE_X_FORWARDED_HOST")
 
 ENVIRONMENT = env("ENVIRONMENT")
@@ -167,4 +164,8 @@ REST_FRAMEWORK = {
 OPENAI_API_KEY = env("OPENAI_API_KEY")
 SPORT_SCORE_KEY = env("SPORT_SCORE_KEY")
 
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000', 'http://localhost:3001']
+
+ALLOWED_HOSTS = ['*']
+
+CORS_ORIGIN_ALLOW_ALL = True
+

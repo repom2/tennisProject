@@ -1,6 +1,6 @@
-import {TennisAPI} from "data/openapi";
+import {TennisApi} from "data/openapi";
 
-const api = new TennisAPI();
+const api = new TennisApi();
 
 /**
  * Fetch information about players

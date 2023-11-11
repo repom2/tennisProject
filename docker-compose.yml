@@ -57,26 +57,6 @@ services:
     ports:
       - 2999:3000
 
-  tennis-app-bff:
-    build:
-      context: tennis-app
-      dockerfile: docker/openresty/Dockerfile
-    image: tennis-app-openresty:20230405
-    volumes:
-      - ./tennis-app/docker/openresty/tennis-app.dev.conf.template:/etc/nginx/templates/default.conf.template
-    environment:
-      SESSION_SECRET: supersecretsession
-      UPSTREAM_URL: http://tennis-app:3000
-      TENNIS_API_URL: http://tennisproject:8000
-      HARDCODED_AUTH_USER_ID: local-dev-user
-      HARDCODED_AUTH_EMAIL: admin@example.com
-      HARDCODED_AUTH_ROLE: OrganizationAdmin
-    restart: unless-stopped
-    depends_on:
-      - tennis-app
-    ports:
-      - 3000:80
-
   tennis-app-bff-noauth:
     build:
       context: tennis-app
@@ -93,9 +73,9 @@ services:
       HARDCODED_AUTH_ROLE: OrganizationAdmin
     restart: unless-stopped
     depends_on:
-      - tennis-app
+      - tennisproject
     ports:
-      - 3001:80
+      - 3000:80
 
 volumes:
   postgres_data:

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import {useGetPlayers} from 'common/functions/playerFetch';
+import {getData} from 'common/functions/playerData';
 
 
 export const MyComponent: React.FC = () => {
     const {data: elo} = useGetPlayers();
-    //console.log(elo);
+    const play = getData();
+    console.log(play);
     return (
       <div>
-          data?.0.last_name
+        <h1>elo</h1>
       </div>
     );
 };

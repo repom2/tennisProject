@@ -111,6 +111,6 @@ server {
         proxy_send_timeout $NGINX_PROXY_SEND_TIMEOUT;
 
         # remove the /api/ part from upstream request
-        # proxy_pass $TENNIS_API_URL/;
+        proxy_pass $TENNIS_API_URL/;
     }
 }

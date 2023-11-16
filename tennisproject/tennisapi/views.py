@@ -22,4 +22,5 @@ class AtpEloList(generics.ListAPIView):
         # Note the use of `get_queryset()` instead of `self.queryset`
         queryset = self.get_queryset()
         serializer = AtpEloSerializer(queryset, many=True)
+        print(serializer.data)
         return Response(serializer.data)

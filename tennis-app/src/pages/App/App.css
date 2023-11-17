@@ -1,0 +1,16 @@
+.appContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+/* Responsive for 600px or less */
+@media (max-width: 600px) {
+  .appContainer {
+    flex-direction: column-reverse;
+        align-items: center;
+  }
+}

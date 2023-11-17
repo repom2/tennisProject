@@ -9,12 +9,15 @@ urlpatterns = [
     path(
         'players/',
         ListAPIView.as_view(
-            queryset=Players.objects.all()[:1],
+            queryset=Players.objects.filter(
+                sportscore_id__isnull=False,
+
+            )[:3],
             serializer_class=PlayerSerializer
         ),
         name='player-list'),
     path(
-        'atpelo/',
+        'atp-elo/',
         views.AtpEloList.as_view()
         , name='atp-elo')
 ]

@@ -1,0 +1,12 @@
+/* Sidebar.css */
+
+.sidebar {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding-top: 180px;
+  position: -webkit-sticky; /* Safari */
+
+  top: 0;
+}

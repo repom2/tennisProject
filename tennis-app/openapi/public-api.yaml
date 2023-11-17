@@ -31,6 +31,23 @@ paths:
                 $ref: '#/components/schemas/Players'
         '404':
           description: Players not found
+  /atp-elo:
+    get:
+      tags:
+        - players
+      summary: Get elo ratings
+      operationId: getEloRatings
+      parameters:
+        - $ref: '#/components/parameters/levelParam'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EloRatings'
+        '404':
+          description: EloRatings not found
 servers:
   - url: /api/tennisapi
   - url: http://localhost:3000/api/metricsapi
@@ -72,6 +89,25 @@ components:
         prize_total_euros:
           type: string
           description: "prize_total_euros"
+    EloRatings:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 4b145708-4e99-4547-ad02-1f3332e7708d
+          description: "Player ID"
+        first_name:
+          type: string
+          description: "First name"
+        last_name:
+          type: string
+          description: "Last Name"
+        elo:
+          type: integer
+          description: "EloRating"
+        latest_date:
+          type: integer
+          description: "Latest Record Date"
 x-json-schema-faker:
   min-items: 2
   max-items: 10

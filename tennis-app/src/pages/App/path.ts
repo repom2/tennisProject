@@ -1,4 +1,4 @@
 
 export const App = () => {
-    return `/app` as const;
+    return `/elo` as const;
 };

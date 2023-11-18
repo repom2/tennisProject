@@ -1,9 +1,9 @@
 import axios from "axios";
-import {EloRatings} from "data/openapi";
+import {Bets} from "data/openapi";
 
-export async function getData(): Promise<{data: EloRatings[]}> {
+export async function getData(): Promise<{data: Bets[]}> {
     try {
-        const response = await axios.get("http://localhost:8000/tennisapi/atp-elo/", {
+        const response = await axios.get("http://localhost:8000/tennisapi/bet-list/", {
             method: "get",
             headers: {
                 "Content-Type": "application/json",

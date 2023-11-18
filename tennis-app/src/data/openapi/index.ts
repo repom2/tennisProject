@@ -9,7 +9,9 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { Bets } from './models/Bets';
 export type { EloRatings } from './models/EloRatings';
 export type { Players } from './models/Players';
 
+export { BetsService } from './services/BetsService';
 export { PlayersService } from './services/PlayersService';

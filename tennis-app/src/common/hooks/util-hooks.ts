@@ -3,7 +3,6 @@ import {useQuery, UseQueryOptions} from "react-query";
 import {UseQueryResult} from "react-query/types/react/types";
 import {SetRequired} from "type-fest";
 
-
 /** A typesafe way to ensure that value is null or undefined */
 export const isNil = <T>(value: T | null | undefined): value is undefined | null => {
     return value === null || value === undefined;

@@ -50,17 +50,28 @@ def match_analysis(data):
 
     messages = [system_msg, user_msg]
     ai_message = chatgpt(messages)
+    preview = ai_message.content
     logging.info(ai_message.content)
     messages.append(ai_message)
 
     user_msg = HumanMessage(
         content=f"""
-                What would be the best bet on this match when home player odds are {data['odds1']} and away player odds are {data['odds2']}?
+                What would be the best bet on this match 
+                when home player odds are {data['odds1']} 
+                and away player odds are {data['odds2']}?
+                If you take consider previous review and you
+                need to find value bet, what would it be?
+                If you take consider probability of winning and odds multiplier, 
+                and value should be over 1, 
+                of course you can pass the match if there is no value.
                 """
     )
     messages.append(user_msg)
     ai_message = chatgpt(messages)
+    reasoning = ai_message.content
     logging.info(ai_message.content)
+
+    return preview, reasoning
 
 
 #if __name__ == '__main__':

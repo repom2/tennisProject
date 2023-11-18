@@ -48,6 +48,23 @@ paths:
                 $ref: '#/components/schemas/EloRatings'
         '404':
           description: EloRatings not found
+  /bet-list:
+    get:
+      tags:
+        - bets
+      summary: Get bets
+      operationId: getBets
+      parameters:
+        - $ref: '#/components/parameters/levelParam'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bets'
+        '404':
+          description: Bet list not found
 servers:
   - url: /api/tennisapi
   - url: http://localhost:3000/api/metricsapi
@@ -108,6 +125,90 @@ components:
         latest_date:
           type: integer
           description: "Latest Record Date"
+    Bets:
+      type: object
+      properties:
+        matchId:
+          type: string
+          example: 30a3c3d440e92221838639139110da3b
+          description: "Match ID"
+        homeId:
+          type: string
+          description: "Home Player ID"
+        awayId:
+          type: string
+          description: "Away Player ID"
+        homeName:
+          type: string
+          description: "Home Player Name"
+        awayName:
+          type: string
+          description: "Away Player Name"
+        homeOdds:
+          type: number
+          description: "Home Odds"
+        awayOdds:
+          type: number
+          description: "Away Odds"
+        eloProb:
+          type: number
+          description: "Elo Probability"
+        yearEloProb:
+          type: number
+          description: "Current Year Elo Probability"
+        homeSpw:
+          type: number
+          description: "Home Service Points Won"
+        awaySpw:
+          type: number
+          description: "Away Service Points Won"
+        homeRpw:
+          type: number
+          description: "Home Return Points Won"
+        awayRpw:
+          type: number
+          description: "Away Return Points Won"
+        statsWin:
+          type: number
+          description: "Calculate home win probability based on stats"
+        homeFatigue:
+          type: number
+          description: "Fatigue score for home player"
+        awayFatigue:
+          type: number
+          description: "Fatigue score for away player"
+        h2hWin:
+          type: number
+          description: "Head to head win probability"
+        h2hMatches:
+          type: integer
+          description: "Head to head matches"
+        walkover:
+          type: boolean
+          description: "Last match was a retirement"
+        homeInjScore:
+          type: number
+          description: "How long have not played"
+        awayInjScore:
+          type: number
+          description: "How long have not played"
+        commonOpponents:
+          type: integer
+          description: "Home winning percentage calculated from common opponents"
+        commonOpponentsCount:
+          type: integer
+          description: "Count of common opponents"
+        preview:
+          type: string
+          description: "Preview"
+        reasoning:
+          type: string
+          description: "Reasoning"
+        startAt:
+          type: string
+          format: date-time
+          description: "Start time"
+
 x-json-schema-faker:
   min-items: 2
   max-items: 10

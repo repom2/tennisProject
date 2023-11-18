@@ -4,8 +4,8 @@ from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import AtpTour, AtpElo, AtpHardElo
-from .serializers import AtpEloSerializer
+from .models import Bet, AtpTour, AtpElo, AtpHardElo
+from .serializers import AtpEloSerializer, BetSerializer
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.contrib.auth.models import User
@@ -25,7 +25,8 @@ class AtpEloList(generics.ListAPIView):
         now = timezone.now()
         year_ago = now - relativedelta(days=180)
 
-        players = self.get_queryset().filter(date__range=(year_ago, now)).values(
+        players = self.get_queryset().filter(date__range=(year_ago, now))\
+            .values(
             'player_id',
             'elo',
             'games',
@@ -49,3 +50,17 @@ class AtpEloList(generics.ListAPIView):
                 data.append(player_data)
 
         return Response(data)
+
+
+class BetList(generics.ListAPIView):
+    queryset = Bet.objects.all()
+
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    #permission_classes = [IsAdminUser]
+
+    def list(self, request):
+        now = timezone.now()
+        from_date = now - relativedelta(days=1)
+        queryset = self.get_queryset().filter(start_at__gte=from_date).order_by('start_at')
+        serializer = BetSerializer(queryset, many=True)
+        return Response(serializer.data)

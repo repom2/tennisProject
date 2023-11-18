@@ -17,6 +17,9 @@ from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.analysis import match_analysis
+from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers
+
+
 warnings.filterwarnings("ignore")
 
 logger = logging.getLogger()
@@ -45,6 +48,7 @@ def get_data(params):
     query = \
         """
         select 
+                match_id,
                 home_id,
                 away_id,
                 start_at,
@@ -79,6 +83,7 @@ def get_data(params):
                 home_id,
                 away_id,
                 b.start_at,
+                b.id as match_id,
                 home_odds,
                 away_odds,
                 h.first_name as winner_first_name,
@@ -144,6 +149,8 @@ def label_round(data, mapping):
 
 def predict(level, tour):
     if level == 'atp':
+        match_qs = Match.objects.all()
+        player_qs = Players.objects.all()
         tour_table = 'tennisapi_atptour'
         matches_table = 'tennisapi_atpmatches'
         match_table = 'tennisapi_match'
@@ -152,6 +159,8 @@ def predict(level, tour):
         grass_elo = 'tennisapi_atpgrasselo'
         clay_elo = 'tennisapi_atpclayelo'
     else:
+        match_table = WtaMatch.objects.all()
+        player_table = WTAPlayers.objects.all()
         tour_table = 'tennisapi_wtatour'
         matches_table = 'tennisapi_wtamatches'
         match_table = 'tennisapi_wtamatch'
@@ -170,6 +179,7 @@ def predict(level, tour):
         'tour': AsIs(tour),
     }
     data = get_data(params)
+
     l = len(data.index)
     if l == 0:
         print("No data")
@@ -317,4 +327,34 @@ def predict(level, tour):
     print('event', event_spw, event_rpw)
 
     for index, row in data.iterrows():
-        match_analysis(row)
+        preview, reasoning = match_analysis(row)
+        Bet.objects.update_or_create(
+            match=match_qs.filter(id=row.match_id)[0],
+            home=player_qs.filter(id=row.home_id)[0],
+            away=player_qs.filter(id=row.away_id)[0],
+            defaults={
+                "start_at": row.start_at,
+                "home_name": row.winner_name,
+                "away_name": row.loser_name,
+                "home_odds": row['odds1'],
+                "away_odds": row['odds2'],
+                "elo_prob": row['prob'],
+                "year_elo_prob": row['prob_y'],
+                "home_spw": row['spw1'],
+                "home_rpw": row['rpw1'],
+                "away_spw": row['spw2'],
+                "away_rpw": row['rpw2'],
+                "stats_win": row['win'],
+                "home_fatigue": row['f1'],
+                "away_fatigue": row['f2'],
+                "h2h_win": row['h2h'],
+                "h2h_matches": row['c'],
+                "walkover": row['wo'],
+                "home_inj_score": row['inj'],
+                "away_inj_score": row['inj2'],
+                "common_opponents": row['win_c'],
+                "common_opponents_count": row['count'],
+                "preview": preview,
+                "reasoning": reasoning,
+            }
+        )

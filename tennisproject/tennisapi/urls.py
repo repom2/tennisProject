@@ -19,5 +19,11 @@ urlpatterns = [
     path(
         'atp-elo/',
         views.AtpEloList.as_view()
-        , name='atp-elo')
+        , name='atp-elo'
+    ),
+    path(
+        'bet-list/',
+        views.BetList.as_view()
+        , name='bet-list'
+    )
 ]

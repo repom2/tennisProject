@@ -1,6 +1,3 @@
-
-
-
 /** Function for creating classNames for components.
  * Accepts any number of strings or falsy values as argument.
  * Examples:

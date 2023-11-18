@@ -6,7 +6,8 @@ import {createRoot} from "react-dom/client";
 import TagManager from "react-gtm-module";
 import {QueryClientProvider} from "react-query";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-import { Tips } from "/app/src/components/Tips/Tips"
+
+import {Tips} from "/app/src/components/Tips/Tips";
 
 import queryClient from "./data/queryClient";
 
@@ -20,11 +21,7 @@ if (window.config.GTM_ID.startsWith("GTM-")) {
     TagManager.initialize({gtmId: window.config.GTM_ID});
 }
 
-
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById("tennis-app")!);
-const app = (
-    <App />
-);
+const app = <App />;
 root.render(app);
-

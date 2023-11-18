@@ -1,4 +1,4 @@
-from .models import AtpElo, AtpMatches, AtpTour, Players
+from .models import AtpElo, AtpMatches, AtpTour, Players, Bet
 from rest_framework import serializers
 
 
@@ -14,6 +14,39 @@ class PlayerSerializer(serializers.Serializer):
 
     class Meta:
         model = Players
+        fields = '__all__'
+
+
+class BetSerializer(serializers.Serializer):
+    matchId = serializers.CharField(source='match_id')
+    homeId = serializers.CharField(source='home_id')
+    awayId = serializers.CharField(source='away_id')
+    homeName = serializers.CharField(source='home_name')
+    awayName = serializers.CharField(source='away_name')
+    homeOdds = serializers.FloatField(source='home_odds')
+    awayOdds = serializers.FloatField(source='away_odds')
+    eloProb = serializers.FloatField(source='elo_prob')
+    yearEloProb = serializers.FloatField(source='year_elo_prob')
+    homeSpw = serializers.FloatField(source='home_spw')
+    homeRpw = serializers.FloatField(source='home_rpw')
+    awaySpw = serializers.FloatField(source='away_spw')
+    awayRpw = serializers.FloatField(source='away_rpw')
+    statsWin = serializers.FloatField(source='stats_win')
+    homeFatigue = serializers.FloatField(source='home_fatigue')
+    awayFatigue = serializers.FloatField(source='away_fatigue')
+    h2hWin = serializers.FloatField(source='h2h_win')
+    h2hMatches = serializers.IntegerField(source='h2h_matches')
+    walkover = serializers.BooleanField()
+    homeInjScore = serializers.FloatField(source='home_inj_score')
+    awayInjScore = serializers.FloatField(source='away_inj_score')
+    commonOpponents = serializers.FloatField(source='common_opponents')
+    commonOpponentsCount = serializers.IntegerField(source='common_opponents_count')
+    preview = serializers.CharField()
+    reasoning = serializers.CharField()
+    startAt = serializers.DateTimeField(source='start_at')
+
+    class Meta:
+        model = Bet
         fields = '__all__'
 
 

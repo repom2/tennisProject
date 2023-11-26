@@ -15,7 +15,7 @@ from django.conf import settings
 pd.set_option('display.max_columns', None)
 
 
-def login (username, password):
+def login(username, password):
     s = requests.Session()
     login_req = {
         "type": "STANDARD_LOGIN",
@@ -67,7 +67,22 @@ class Command(BaseCommand):
 
         data = response.text
         data = json.loads(data)
-        data_df = data['data']
-        df = pd.DataFrame(data_df)
-        print(df)
+        for row in data:
+            print(row['name'], row['id'], row['listIndex'])
+
+        url = "https://www.veikkaus.fi//api/sport-popularity/v1/games/SPORT/draws/55446/popularity"
+        url = "https://www.veikkaus.fi//api/sport-winshare/v1/games/SPORT/draws/55446/winshare"
+        url = "https://www.veikkaus.fi//api/sport-odds/v1/games/SPORT/draws/55446/odds"
+        response = s.get(
+            url,
+            headers={
+                'Content-type': 'application/json',
+                'Accept': 'application/json',
+                'X-ESA-API-Key': 'ROBOT'
+            }
+        )
+
+        data = response.text
+
+        print(data)
 

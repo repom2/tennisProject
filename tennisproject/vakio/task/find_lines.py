@@ -11,3 +11,5 @@ def find_lines():
     inner join vakio_winshare b on b.id=a.id) s 
     where yield > 1  order by yield desc
     """
+
+    # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py

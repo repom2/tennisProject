@@ -5,7 +5,7 @@ import React from "react";
 export const Header: React.FC = () => {
     return (
         <header>
-            <h1>Tennis Player ELO Ratings</h1>
+            <h1>Tennis AI</h1>
         </header>
     );
 };

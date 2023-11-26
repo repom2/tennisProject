@@ -3,24 +3,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 header {
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
-    padding: 20px;
-    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
-    position: fixed;
+    padding: 0px;
+    /* box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
+    position: fixed; */
     width: 100%;
     top: 0;
     background-color: #2e8b57; /* New shade of green! */
-    background-image: url("/app/src/tennis-field.jpg"); /* Add this line and make sure to point to the correct image path */
-    background-repeat: no-repeat;
+    /* background-image: url("/app/src/tennis-field.jpg"); /* Add this line and make sure to point to the correct image path */
+    /* background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    background-color: #2e8b57;
+    background-color: #2e8b57;*/
     color: #fff;
+    opacity: 0.9;
 }
 
 header h1 {
     font-family: "Press Start 2P", cursive;
-    font-size: 2rem;
+    font-size: 1rem;
     text-shadow: 3px 3px #000;
+    margin-left: 20px;
 }

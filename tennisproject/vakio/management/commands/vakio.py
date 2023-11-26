@@ -11,6 +11,10 @@ from sportscore.models import Leagues, Events, Players, Teams, Stats
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
+from vakio.task.best_lines import get_win_share
+from vakio.task.find_lines import find_lines
+from vakio.task.probs import calculate_probabilities
+
 
 pd.set_option('display.max_columns', None)
 
@@ -48,6 +52,15 @@ class Command(BaseCommand):
         list_sports_cmd = subparsers.add_parser("sports")
         list_sports_cmd.set_defaults(subcommand=self.list_sports)
 
+        list_sports_cmd = subparsers.add_parser("winshare")
+        list_sports_cmd.set_defaults(subcommand=self.get_winshare)
+
+        list_sports_cmd = subparsers.add_parser("find-lines")
+        list_sports_cmd.set_defaults(subcommand=self.find_profits)
+
+        list_sports_cmd = subparsers.add_parser("prob")
+        list_sports_cmd.set_defaults(subcommand=self.calc_prob)
+
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -70,19 +83,11 @@ class Command(BaseCommand):
         for row in data:
             print(row['name'], row['id'], row['listIndex'])
 
-        url = "https://www.veikkaus.fi//api/sport-popularity/v1/games/SPORT/draws/55446/popularity"
-        url = "https://www.veikkaus.fi//api/sport-winshare/v1/games/SPORT/draws/55446/winshare"
-        url = "https://www.veikkaus.fi//api/sport-odds/v1/games/SPORT/draws/55446/odds"
-        response = s.get(
-            url,
-            headers={
-                'Content-type': 'application/json',
-                'Accept': 'application/json',
-                'X-ESA-API-Key': 'ROBOT'
-            }
-        )
+    def get_winshare(self, options):
+        get_win_share()
 
-        data = response.text
+    def find_profits(self, options):
+        find_lines()
 
-        print(data)
-
+    def calc_prob(self, options):
+        calculate_probabilities()

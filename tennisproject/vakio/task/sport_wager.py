@@ -3,10 +3,10 @@ import copy
 
 # winshare teamplate with common fields
 winshare_template = {
-	"additionalPrizeTier": False,
-	"page":0,
-        "pageSize":100,
-	"selections":[]
+        "additionalPrizeTier": False,
+        "page": 0,
+        "pageSize": 100,
+        "selections": []
 }
 
 

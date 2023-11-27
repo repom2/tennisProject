@@ -3,10 +3,18 @@ import copy
 
 # winshare teamplate with common fields
 winshare_template = {
-        "additionalPrizeTier": False,
-        "page": 0,
-        "pageSize": 100,
-        "selections": []
+    "additionalPrizeTier": False,
+    "page": 0,
+    "pageSize": 100,
+    "selections": []
+}
+
+# wager teamplate with common fields
+wager_template = {
+    "listIndex": 0,
+    "gameName": "",
+    "price": 0,
+    "boards": []
 }
 
 

@@ -41,15 +41,15 @@ def get_sport_winshare(draw, matches):
 
 
 def get_win_share():
-    matches = ["1X2", "1X2", "1X2", "1X2", "1X2", "1X2", "1X2", "1X2", "1X2", "1X2"]#, "1X2", "1X2"]
+    matches = ["1X2"] * 12
+    vakio_id = "55449"
     data = create_sport_wager("", 0, matches, False)
 
     page = 1
     has_next = True
     while has_next:
         data['page'] = page
-        print(data)
         matches = json.dumps(data)
-        has_next = get_sport_winshare("55447", matches)
-        print(has_next)
+        has_next = get_sport_winshare(vakio_id, matches)
         page += 1
+        print(page)

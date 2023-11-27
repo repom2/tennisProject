@@ -3,19 +3,19 @@ import itertools
 from vakio.models import Combination
 import os
 
-lst =[
-    [1, 2.75, 51, 1.5],
-    [2, 2.05, 51, 1.8],
-    [3, 2.15, 41, 1.74],
-    [4, 2.1, 51, 1.76],
-    [5, 1.68, 51, 2.25],
-    [6, 2.3, 51, 1.66],
-    [7, 1.8, 51, 2.05],
-    [8, 4.75, 51, 1.2],
-    [9, 1.68, 51, 2.25],
-    [10, 2.45, 51, 1.6],
-    #[11, 1.91, 3.8, 3.8],
-    #[12, 3.0, 3.25, 2.45],
+lst = [
+    [1, 1.62, 4, 5.25],
+    [2, 2.0, 3.6, 3.6],
+    [3, 1.5, 4.33, 6],
+    [4, 2.63, 3.5, 2.6],
+    [5, 1.33, 5.5, 8.5],
+    [6, 2.05, 3.8, 3.3],
+    [7, 2.7, 3.3, 2.63],
+    [8, 1.7, 3.6, 5.25],
+    [9, 1.65, 4.0, 5.0],
+    [10, 1.44, 4.5, 7.5],
+    [11, 3.2, 3.4, 2.25],
+    [12, 2.0, 3.5, 3.75],
 ]
 
 
@@ -28,7 +28,7 @@ def calculate_prob(combination, df):
     p = 1
     for i, outcome in enumerate(combination):
         p *= df.loc[i, outcome]
-    return round(p,8)
+    return round(p, 8)
 
 
 def calculate_probabilities():
@@ -60,9 +60,16 @@ def calculate_probabilities():
 
     print('Number of combinations with probability ', limit, len(df))
 
-    df['combination'] = df['combination'].apply(join_set)
+    df['id'] = df['combination'].apply(join_set)
 
-    for index, row in df.iterrows():
+    Combination.objects.all().delete()
+    df = df[['id', 'prob']]
+    data_dict = df.to_dict('records')
+    instances = [Combination(**data) for data in data_dict]
+
+    Combination.objects.bulk_create(instances)
+
+    """for index, row in df.iterrows():
         print(row)
         print(row["combination"])
         print(type(row["combination"]))
@@ -71,4 +78,8 @@ def calculate_probabilities():
             defaults={
                 "prob": row["prob"],
             }
-        )
+        )"""
+
+    # dataframe to django model
+
+

@@ -4,18 +4,18 @@ from vakio.models import Combination
 import os
 
 lst =[
-    [1, 2.45, 3.8, 2.6],
-    [2, 2.75, 3.4, 2.55],
-    [3, 2.5, 3.25, 2.88],
-    [4, 2.63, 3.5, 2.6],
-    [5, 1.65, 3.75, 5.5],
-    [6, 3.4, 3.2, 2.25],
-    [7, 1.67, 3.75, 5.0],
-    [8, 6.5, 4.5, 1.5],
-    [9, 1.7, 3.6, 5.25],
-    [10, 2.2, 3.6, 3.1],
-    [11, 1.91, 3.8, 3.8],
-    [12, 3.0, 3.25, 2.45],
+    [1, 2.75, 51, 1.5],
+    [2, 2.05, 51, 1.8],
+    [3, 2.15, 41, 1.74],
+    [4, 2.1, 51, 1.76],
+    [5, 1.68, 51, 2.25],
+    [6, 2.3, 51, 1.66],
+    [7, 1.8, 51, 2.05],
+    [8, 4.75, 51, 1.2],
+    [9, 1.68, 51, 2.25],
+    [10, 2.45, 51, 1.6],
+    #[11, 1.91, 3.8, 3.8],
+    #[12, 3.0, 3.25, 2.45],
 ]
 
 
@@ -47,7 +47,7 @@ def calculate_probabilities():
     outcomes = ['1', 'x', '2']
 
     # Generate all possible combinations for 12 matches
-    combinations = list(itertools.product(outcomes, repeat=12))
+    combinations = list(itertools.product(outcomes, repeat=len(df)))
 
     print('Number of combinations: ', len(combinations))
 

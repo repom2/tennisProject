@@ -11,7 +11,7 @@ from sportscore.models import Leagues, Events, Players, Teams, Stats
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
-from vakio.task.best_lines import get_win_share
+from vakio.task.winshare import get_win_share
 from vakio.task.find_lines import find_lines
 from vakio.task.probs import calculate_probabilities
 

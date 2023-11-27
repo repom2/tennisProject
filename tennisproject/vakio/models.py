@@ -12,3 +12,10 @@ class WinShare(models.Model):
     id = models.TextField(primary_key=True)
     bets = models.IntegerField()
     value = models.IntegerField()
+
+
+class MonivetoProb(models.Model):
+    id = models.TextField(primary_key=True)
+    prob = models.FloatField()
+    score = models.TextField()
+    match_nro = models.IntegerField()

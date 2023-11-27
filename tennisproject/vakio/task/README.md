@@ -11,3 +11,11 @@ poetry run python manage.py vakio prob
 
 poetry run python manage.py vakio winshares
 
+## Calculate the moniveto probabilities per score
+
+poetry run python manage.py vakio moniveto
+
+## Get win shares for moniveto
+
+poetry run python manage.py vakio moniveto-winshares
+

@@ -14,6 +14,10 @@ from django.conf import settings
 from vakio.task.winshare import get_win_share
 from vakio.task.find_lines import find_lines
 from vakio.task.probs import calculate_probabilities
+from vakio.task.poisson import calculate_poisson
+from vakio.task.match_prob import match_probability
+from vakio.task.moniveto import moniveto
+from vakio.task.moniveto_winshare import moniveto_winshares
 
 
 pd.set_option('display.max_columns', None)
@@ -61,6 +65,18 @@ class Command(BaseCommand):
         list_sports_cmd = subparsers.add_parser("prob")
         list_sports_cmd.set_defaults(subcommand=self.calc_prob)
 
+        list_sports_cmd = subparsers.add_parser("poisson")
+        list_sports_cmd.set_defaults(subcommand=self.calc_poisson)
+
+        list_sports_cmd = subparsers.add_parser("match-prob")
+        list_sports_cmd.set_defaults(subcommand=self.calc_match_prob)
+
+        list_sports_cmd = subparsers.add_parser("moniveto")
+        list_sports_cmd.set_defaults(subcommand=self.calc_moniveto)
+
+        list_sports_cmd = subparsers.add_parser("moniveto-winshares")
+        list_sports_cmd.set_defaults(subcommand=self.get_moniveto_winshares)
+
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -83,6 +99,20 @@ class Command(BaseCommand):
         for row in data:
             print(row['name'], row['id'], row['listIndex'])
 
+        response = s.get(
+            'https://www.veikkaus.fi/api/sport-open-games/v1/games/MULTISCORE/draws',
+            headers={
+                'Content-type': 'application/json',
+                'Accept': 'application/json',
+                'X-ESA-API-Key': 'ROBOT'
+            }
+        )
+
+        data = response.text
+        data = json.loads(data)
+        for row in data:
+            print(row['id'], row['listIndex'], row['rows'][0])
+
     def get_winshare(self, options):
         get_win_share()
 
@@ -91,3 +121,15 @@ class Command(BaseCommand):
 
     def calc_prob(self, options):
         calculate_probabilities()
+
+    def calc_poisson(self, options):
+        calculate_poisson()
+
+    def calc_match_prob(self, options):
+        match_probability()
+
+    def calc_moniveto(self, options):
+        moniveto()
+
+    def get_moniveto_winshares(self, options):
+        moniveto_winshares()

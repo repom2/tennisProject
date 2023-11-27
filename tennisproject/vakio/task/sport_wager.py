@@ -79,3 +79,36 @@ def create_sport_wager(listIndex, stake, matches, miniVakio):
             req["selections"].append(outcome)
 
     return req
+
+
+def create_multiscore_wager(listIndex, stake, matches):
+    wager_req = copy.deepcopy(wager_template)
+    wager_req["gameName"] = "MULTISCORE"
+    wager_req["listIndex"] = listIndex
+    wager_req["price"] = stake
+
+    selection = {
+        "stake": stake,
+        "betType": "Regular",
+        "selections": []
+    }
+
+    sysSize = 1
+    for match in matches:
+        home, away = match.split("-")
+        sels = {
+            "homeScores": [],
+            "awayScores": [],
+        }
+        sels["homeScores"] = list(map(int, home.split(",")))
+        sels["awayScores"] = list(map(int, away.split(",")))
+        sysSize *= len(sels["homeScores"]) * len(sels["awayScores"])
+        selection["selections"].append(sels)
+
+    if sysSize > 1:
+        wager_req["price"] = stake * sysSize
+        selection["betType"] = "FULL " + str(sysSize)
+
+    wager_req["boards"].append(selection)
+
+    return wager_req

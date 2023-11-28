@@ -5,6 +5,14 @@ from vakio.task.sport_wager import create_sport_wager
 from ast import literal_eval
 from vakio.models import WinShare
 import os
+import logging
+import time
+from datetime import datetime
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+)
 
 
 def get_sport_winshare(draw, matches):
@@ -41,6 +49,7 @@ def get_sport_winshare(draw, matches):
 
 
 def get_win_share():
+    start = datetime.now()
     matches = ["1X2"] * 12
     vakio_id = "55449"
     data = create_sport_wager("", 0, matches, False)
@@ -52,4 +61,9 @@ def get_win_share():
         matches = json.dumps(data)
         has_next = get_sport_winshare(vakio_id, matches)
         page += 1
-        print(page)
+
+    # Getting current time and log when the script ends
+    end = datetime.now()
+    logging.info('Script ended')
+
+    logging.info('Time elapsed: {}'.format(end - start))

@@ -4,6 +4,7 @@ from vakio.task.sport_wager import create_sport_wager
 import requests
 import json
 import time
+import datetime
 
 # the veikkaus site address
 host = "https://www.veikkaus.fi"
@@ -19,11 +20,37 @@ params = {
     "password": "_W14350300n1",
     "game": "SPORT",
     "draw": "",
-    "listIndex": "55449",
+    "listIndex": "5",
+    "id": "55449",
     "miniVakio": False,
     "input": "",
     "stake": 0
 }
+
+
+def get_sport_winshare(draw, matches):
+    host = "https://www.veikkaus.fi"
+    r = requests.post(
+        host + "/api/sport-winshare/v1/games/SPORT/draws/" + draw + "/winshare",
+        verify=True, data=matches, headers={
+            'Content-type': 'application/json',
+            'Accept': 'application/json',
+            'X-ESA-API-Key': 'ROBOT'
+            })
+    j = r.json()
+    print(j)
+    for winshare in j["winShares"]:
+        # each winshare has only one selection that contains the board (outcomes)
+
+        board = []
+        for selection in winshare["selections"]:
+            for outcome in selection["outcomes"]:
+                board.append(outcome)
+
+        print("value=%d,numberOfBets=%d,board=%s" % (
+        winshare["value"], winshare["numberOfBets"], "".join(board)))
+
+    return winshare["value"]
 
 
 def login(username, password):
@@ -88,25 +115,30 @@ def find_lines():
             round((prob*value*0.1)::numeric, 4) as yield
     from vakio_combination a 
     inner join vakio_winshare b on b.id=a.id) s 
-    where yield > 1 and bet = True order by yield desc
+    where yield > 1 and bet = False order by yield desc
     """
     data = WinShare.objects.raw(query)
 
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['id', 'bets', 'value', 'prob', 'win', 'yield']
     df = df[columns]
-
+    print(df)
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         print(row['id'])
         line = list(row['id'])
 
-        print(line)
-        data = create_sport_wager(params["listIndex"], 0.1, line, False)
-
-        print('-------------------')
-
-        print(data)
+        # Data for wager
+        data = create_sport_wager(params["listIndex"], 10, line, False)
+        # Data for winshare
+        win_data = create_sport_wager(params["id"], 0, line, False)
+        matches = json.dumps(win_data)
+        winshare = get_sport_winshare(params["id"], matches)
+        bet_limit = row["prob"]*winshare*0.1
+        if bet_limit < 1.0:
+            continue
+        print(winshare, bet_limit)
+        exit(0)
         place_wagers(data, session)
 
         balance = get_balance(session)

@@ -18,6 +18,7 @@ from vakio.task.poisson import calculate_poisson
 from vakio.task.match_prob import match_probability
 from vakio.task.moniveto import moniveto
 from vakio.task.moniveto_winshare import moniveto_winshares
+from vakio.task.moniveto_bet import moniveto_bet
 
 
 pd.set_option('display.max_columns', None)
@@ -77,6 +78,9 @@ class Command(BaseCommand):
         list_sports_cmd = subparsers.add_parser("moniveto-winshares")
         list_sports_cmd.set_defaults(subcommand=self.get_moniveto_winshares)
 
+        list_sports_cmd = subparsers.add_parser("moniveto-bet")
+        list_sports_cmd.set_defaults(subcommand=self.place_moniveto_bet)
+
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -133,3 +137,6 @@ class Command(BaseCommand):
 
     def get_moniveto_winshares(self, options):
         moniveto_winshares()
+
+    def place_moniveto_bet(self, options):
+        moniveto_bet()

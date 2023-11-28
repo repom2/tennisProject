@@ -19,3 +19,12 @@ class MonivetoProb(models.Model):
     prob = models.FloatField()
     score = models.TextField()
     match_nro = models.IntegerField()
+
+
+class MonivetoOdds(models.Model):
+    id = models.TextField(primary_key=True)
+    match1 = models.TextField(default="")
+    match2 = models.TextField(default="")
+    match3 = models.TextField(default="")
+    match4 = models.TextField(default="")
+    value = models.IntegerField()

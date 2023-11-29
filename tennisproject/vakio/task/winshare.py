@@ -25,7 +25,6 @@ def get_sport_winshare(draw, matches):
             'X-ESA-API-Key': 'ROBOT'
             })
     j = r.json()
-    print(j)
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
 

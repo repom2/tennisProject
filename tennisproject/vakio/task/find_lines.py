@@ -38,7 +38,7 @@ def get_sport_winshare(draw, matches):
             'X-ESA-API-Key': 'ROBOT'
             })
     j = r.json()
-    print(j)
+
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
 
@@ -47,8 +47,8 @@ def get_sport_winshare(draw, matches):
             for outcome in selection["outcomes"]:
                 board.append(outcome)
 
-        print("value=%d,numberOfBets=%d,board=%s" % (
-        winshare["value"], winshare["numberOfBets"], "".join(board)))
+        #print("value=%d,numberOfBets=%d,board=%s" % (
+        #winshare["value"], winshare["numberOfBets"], "".join(board)))
 
     return winshare["value"]
 
@@ -108,11 +108,14 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def find_lines():
-    query = """
+    max_bet_eur = 550
+    line_cost = 0.05
+    stake = 10
+    query = f"""
     select id, bets, value, prob, win, yield from 
         (select a.id, b.bets, b.value, prob, bet,
             value / 100 as win, 
-            round((prob*value*0.1)::numeric, 4) as yield
+            round((prob*(value/{stake} + 1))::numeric, 4) as yield
     from vakio_combination a 
     inner join vakio_winshare b on b.id=a.id) s 
     where yield > 1 and bet = False order by yield desc
@@ -121,37 +124,36 @@ def find_lines():
 
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['id', 'bets', 'value', 'prob', 'win', 'yield']
-    df = df[df['yield'] > 1.0]
+    df = df[df['yield'] > 1]
     df = df[columns]
-    max_bet_eur = 20
-    line_cost = 0.05
+
     max_bet = int(max_bet_eur / line_cost)
     df = df.head(max_bet)
     print("length:", len(df))
+    print(df)
+    exit()
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         print(row['id'])
         line = list(row['id'])
 
         # Data for wager
-        data = create_sport_wager(params["listIndex"], 10, line, False)
+        data = create_sport_wager(params["listIndex"], stake, line, False)
         # Data for winshare
         win_data = create_sport_wager(params["id"], 0, line, False)
         matches = json.dumps(win_data)
         winshare = get_sport_winshare(params["id"], matches)
         bet_limit = row["prob"]*winshare*0.1
         if bet_limit < 1.0:
+            print("bet limit:", bet_limit)
             continue
-        print(winshare, bet_limit)
-        exit(0)
         place_wagers(data, session)
 
         balance = get_balance(session)
-        print("\n\taccount balance: %.2f\n" % (balance / 100.0))
+        #print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         Combination.objects.update_or_create(
             id=row["id"],
             defaults={
                 "bet": True,
             }
         )
-        break

@@ -106,8 +106,11 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet():
-    query = """
-    select a.id, value * 0.1, (0.1 * value * b.prob * c.prob * d.prob * e.prob) as yield,
+    max_bet_eur = 100
+    line_cost = 0.05
+    stake = 5
+    query = f"""
+    select a.id, (value / {stake} + 1) * (b.prob * c.prob * d.prob * e.prob) as yield,
     (b.prob * c.prob * d.prob * e.prob) as prob 
     from vakio_monivetoodds a 
     inner join vakio_monivetoprob b on b.id=a.match1
@@ -125,19 +128,16 @@ def moniveto_bet():
     print(df.head(5))
     print("length:", len(df))
 
-    max_bet_eur = 20
-    line_cost = 0.05
     max_bet = int(max_bet_eur / line_cost)
     df = df.head(max_bet)
     print("length:", len(df))
-    exit(0)
+    exit()
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         print(row['id'])
         line = row['id'].split(',')
-        print(line)
         # Data for wager
-        data = create_multiscore_wager(params["listIndex"], 5, line)
+        data = create_multiscore_wager(params["listIndex"], stake, line)
         data['selections'] = data["boards"][0]["selections"]
         matches = json.dumps(data)
         winshare = get_sport_winshare(params["id"], matches)
@@ -146,5 +146,4 @@ def moniveto_bet():
             continue
         place_wagers(data, session)
         balance = get_balance(session)
-        print("\n\taccount balance: %.2f\n" % (balance / 100.0))
-        break
+        #print("\n\taccount balance: %.2f\n" % (balance / 100.0))

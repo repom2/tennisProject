@@ -59,11 +59,11 @@ def get_sport_winshare(draw_id, matches):
 
 def moniveto_winshares():
     start = datetime.now()
-    scores = ["0,1,2,3,4-0,1,2,3", "0,1,2,3-0,1,2,3", "0,1,2,3,4-0,1,2,3", "0,1,2,3,4-0,1,2,3",]
-    moniveto = "63088"
-    id = "5"
+    scores = ["0,1,2,3,4-0,1,2,3,4"] * 4
+    moniveto = "63090"
+    id = "6"
     data = create_multiscore_wager(moniveto, 0, scores)
-
+    MonivetoOdds.objects.all().delete()
     page = 1
     has_next = True
     while has_next:

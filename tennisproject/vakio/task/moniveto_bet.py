@@ -6,6 +6,9 @@ import json
 import time
 import datetime
 from vakio.task.sport_wager import create_multiscore_wager
+#from datetime import datetime
+import datetime
+import logging
 
 # the veikkaus site address
 host = "https://www.veikkaus.fi"
@@ -21,8 +24,8 @@ params = {
     "password": "_W14350300n1",
     "game": "MULTISCORE",
     "draw": "",
-    "listIndex": "5",
-    "id": "63088",
+    "listIndex": "7",
+    "id": "63090",
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -106,7 +109,8 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet():
-    max_bet_eur = 100
+    #start = datetime.now()
+    max_bet_eur = 60
     line_cost = 0.05
     stake = 5
     query = f"""
@@ -123,15 +127,16 @@ def moniveto_bet():
 
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['id', 'prob',  'yield']
-    df = df[df['yield'] > 1.0]
+    df = df[df['yield'] > 0.9]
+    #df = df[df['yield'] < 15.0]
     df = df[columns]
     print(df.head(5))
     print("length:", len(df))
 
     max_bet = int(max_bet_eur / line_cost)
-    df = df.head(max_bet)
+    #df = df.head(max_bet)
     print("length:", len(df))
-    exit()
+
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         print(row['id'])
@@ -141,9 +146,14 @@ def moniveto_bet():
         data['selections'] = data["boards"][0]["selections"]
         matches = json.dumps(data)
         winshare = get_sport_winshare(params["id"], matches)
-        bet_limit = row["prob"]*winshare*0.1
+        bet_limit = row["prob"]*(winshare/(stake+1))
         if bet_limit < 1.0:
             continue
         place_wagers(data, session)
         balance = get_balance(session)
-        #print("\n\taccount balance: %.2f\n" % (balance / 100.0))
+        print("\n\taccount balance: %.2f\n" % (balance / 100.0))
+    # Getting current time and log when the script ends
+    #end = datetime.now()
+    #logging.info('Script ended')
+
+    #logging.info('Time elapsed: {}'.format(end - start))

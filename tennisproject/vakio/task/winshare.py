@@ -50,7 +50,7 @@ def get_sport_winshare(draw, matches):
 def get_win_share():
     start = datetime.now()
     matches = ["1X2"] * 12
-    vakio_id = "55449"
+    vakio_id = "55450"
     data = create_sport_wager("", 0, matches, False)
 
     page = 1

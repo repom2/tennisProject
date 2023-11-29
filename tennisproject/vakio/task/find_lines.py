@@ -20,8 +20,8 @@ params = {
     "password": "_W14350300n1",
     "game": "SPORT",
     "draw": "",
-    "listIndex": "5",
-    "id": "55449",
+    "listIndex": "6",
+    "id": "55450",
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -108,30 +108,30 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def find_lines():
-    max_bet_eur = 550
-    line_cost = 0.05
+    max_bet_eur = 2000
+    line_cost = 0.1
     stake = 10
     query = f"""
     select id, bets, value, prob, win, yield from 
         (select a.id, b.bets, b.value, prob, bet,
             value / 100 as win, 
-            round((prob*(value/{stake} + 1))::numeric, 4) as yield
+            round((prob*(value/({stake} + 1)))::numeric, 4) as yield
     from vakio_combination a 
     inner join vakio_winshare b on b.id=a.id) s 
-    where yield > 1 and bet = False order by yield desc
+    where yield > 0.3 and bet = False order by yield desc
     """
     data = WinShare.objects.raw(query)
 
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['id', 'bets', 'value', 'prob', 'win', 'yield']
-    df = df[df['yield'] > 1]
+    #df = df[df['yield'] > 0.1]
     df = df[columns]
 
     max_bet = int(max_bet_eur / line_cost)
-    df = df.head(max_bet)
-    print("length:", len(df))
+    #df = df.head(max_bet)
+    print("length:", len(df), max_bet)
     print(df)
-    exit()
+
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         print(row['id'])
@@ -143,7 +143,7 @@ def find_lines():
         win_data = create_sport_wager(params["id"], 0, line, False)
         matches = json.dumps(win_data)
         winshare = get_sport_winshare(params["id"], matches)
-        bet_limit = row["prob"]*winshare*0.1
+        bet_limit = row["prob"]*(winshare/(stake+1))
         if bet_limit < 1.0:
             print("bet limit:", bet_limit)
             continue

@@ -4,18 +4,18 @@ from vakio.models import Combination
 import os
 
 lst = [
-    [1, 1.62, 4, 5.25],
-    [2, 2.0, 3.6, 3.6],
-    [3, 1.5, 4.33, 6],
-    [4, 2.63, 3.5, 2.6],
-    [5, 1.33, 5.5, 8.5],
-    [6, 2.05, 3.8, 3.3],
-    [7, 2.7, 3.3, 2.63],
-    [8, 1.7, 3.6, 5.25],
-    [9, 1.65, 4.0, 5.0],
-    [10, 1.44, 4.5, 7.5],
-    [11, 3.2, 3.4, 2.25],
-    [12, 2.0, 3.5, 3.75],
+    [1, 1.75, 4.2, 4.0],
+    [2, 1.36, 5.0, 8.0],
+    [3, 1.22, 7.0, 11.0],
+    [4, 2.55, 3.4, 2.7],
+    [5, 1.4, 4.5, 8.0],
+    [6, 2.0, 3.75, 3.5],
+    [7, 1.65, 4.0, 5.0],
+    [8, 1.33, 5.5, 9.0],
+    [9, 6.0, 4.2, 1.55],
+    [10, 1.73, 4.0, 4.33],
+    [11, 1.6, 4.2, 5.25],
+    [12, 1.45, 4.5, 7.0],
 ]
 
 
@@ -68,18 +68,3 @@ def calculate_probabilities():
     instances = [Combination(**data) for data in data_dict]
 
     Combination.objects.bulk_create(instances)
-
-    """for index, row in df.iterrows():
-        print(row)
-        print(row["combination"])
-        print(type(row["combination"]))
-        Combination.objects.update_or_create(
-            id=row["combination"],
-            defaults={
-                "prob": row["prob"],
-            }
-        )"""
-
-    # dataframe to django model
-
-

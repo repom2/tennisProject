@@ -1,4 +1,4 @@
-from vakio.models import WinShare, Combination
+from vakio.models import WinShare, Combination, MonivetoOdds
 import pandas as pd
 from vakio.task.sport_wager import create_sport_wager
 import requests
@@ -9,6 +9,8 @@ from vakio.task.sport_wager import create_multiscore_wager
 #from datetime import datetime
 import datetime
 import logging
+
+pd.set_option('display.max_rows', None)
 
 # the veikkaus site address
 host = "https://www.veikkaus.fi"
@@ -24,8 +26,8 @@ params = {
     "password": "_W14350300n1",
     "game": "MULTISCORE",
     "draw": "",
-    "listIndex": "7",
-    "id": "63090",
+    "listIndex": "9",
+    "id": "63135",
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -46,11 +48,11 @@ def get_sport_winshare(draw_id, matches):
 
     data = r.text
     data = json.loads(data)
-    print(data)
+
     for row in data['odds']:
-        value = row['value'] / 2
+        value = row['value']
         if value == -200:
-            value = row['exchange'] / 2
+            value = data['exchange'] / 2
     return value
 
 
@@ -110,34 +112,42 @@ def get_balance(session):
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet():
     #start = datetime.now()
-    max_bet_eur = 60
-    line_cost = 0.05
-    stake = 5
+    max_bet_eur = 67
+    line_cost = 0.2
+    stake = 20
+    bankroll = 1000
     query = f"""
-    select a.id, (value / {stake} + 1) * (b.prob * c.prob * d.prob * e.prob) as yield,
-    (b.prob * c.prob * d.prob * e.prob) as prob 
+    select a.id, 
+    (value * 0.01) * (b.prob * c.prob * d.prob) as yield,
+    (b.prob * c.prob * d.prob) as prob, 
+    value * 0.01 * {line_cost} as win,
+    ((value * 0.01) * (b.prob * c.prob * d.prob) - 1) / (value * 0.01) * 1000 as share
     from vakio_monivetoodds a 
     inner join vakio_monivetoprob b on b.id=a.match1
     inner join vakio_monivetoprob c on c.id=a.match2
     inner join vakio_monivetoprob d on d.id=a.match3
-    inner join vakio_monivetoprob e on e.id=a.match4
-    order by yield desc
+    where bet = False
+    order by share desc
     """
     data = WinShare.objects.raw(query)
 
     df = pd.DataFrame([item.__dict__ for item in data])
-    columns = ['id', 'prob',  'yield']
-    df = df[df['yield'] > 0.9]
+    columns = ['id', 'prob',  'yield', 'win', 'share']
+    print("length:", len(df))
+    df = df[df['yield'] > 1.3]
+    #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]
     df = df[columns]
-    print(df.head(5))
+
+    print(df.head(477))
     print("length:", len(df))
 
     max_bet = int(max_bet_eur / line_cost)
-    #df = df.head(max_bet)
+    df = df.head(max_bet)
     print("length:", len(df))
 
     session = login(params["username"], params["password"])
+    bankroll = get_balance(session)
     for index, row in df.iterrows():
         print(row['id'])
         line = row['id'].split(',')
@@ -146,12 +156,24 @@ def moniveto_bet():
         data['selections'] = data["boards"][0]["selections"]
         matches = json.dumps(data)
         winshare = get_sport_winshare(params["id"], matches)
-        bet_limit = row["prob"]*(winshare/(stake+1))
+        bet_limit = row["prob"]*winshare
         if bet_limit < 1.0:
             continue
+        print(winshare)
+        #break
         place_wagers(data, session)
         balance = get_balance(session)
         print("\n\taccount balance: %.2f\n" % (balance / 100.0))
+        if balance < 0.0:
+            break
+        if balance < bankroll:
+            MonivetoOdds.objects.update_or_create(
+                id=row["id"],
+                defaults={
+                    "bet": True,
+                }
+            )
+            bankroll = balance
     # Getting current time and log when the script ends
     #end = datetime.now()
     #logging.info('Script ended')

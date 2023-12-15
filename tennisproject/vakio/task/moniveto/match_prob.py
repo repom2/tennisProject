@@ -5,9 +5,10 @@ from scipy.optimize import minimize
 max_goals = 10  # Maximum number of goals to consider per team
 
 
-
 def objective_func(goals_avg, desired_probabilities):
     average_goals_teamA, average_goals_teamB = goals_avg
+    print("Average goals for team A: {:.2f}".format(average_goals_teamA))
+    #exit()
     # Calculate Poisson PMF for each team up to max goals
     poisson_teamA = sps.poisson.pmf(np.arange(max_goals+1), average_goals_teamA)
     poisson_teamB = sps.poisson.pmf(np.arange(max_goals+1), average_goals_teamB)
@@ -40,6 +41,8 @@ def match_probability(
 
     # Initial guess
     x0 = np.array([2.0, 2.0])
+    print("Initial guess: {}".format(x0))
+
     desired_probabilities = np.array([
         desired_prob_home_win,
         desired_prob_draw, desired_prob_away_win

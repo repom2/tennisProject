@@ -25,9 +25,9 @@ def get_sport_winshare(draw, matches):
             'X-ESA-API-Key': 'ROBOT'
             })
     j = r.json()
-
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
+
         board = []
         for selection in winshare["selections"]:
             for outcome in selection["outcomes"]:
@@ -58,58 +58,67 @@ def combine_strings(str1, str2):
     return combined
 
 
-def get_win_share():
+def get_win_share_vakio():
     start = datetime.now()
 
     combinations = Combination.objects.all().values('id')
     df = pd.DataFrame(list(combinations))
     logging.info(df.tail(5))
 
-    # List of wager options
-    # wager_options = ['1111111111xx1', '1111111111xxx', '1111111111xx2']
+    max_bet_eur = 2000
+    line_cost = 0.1
+    stake = 10
+    query = f"""
+        select id, bets, value, prob, win, yield from 
+            (select a.id, b.bets, b.value, prob, bet,
+                value / 100 as win, 
+                round((prob*(value/({stake} + 1)))::numeric, 4) as yield
+        from vakio_combination a 
+        inner join vakio_winshare b on b.id=a.id) s 
+        where yield > 1 and bet = False order by yield desc
+        """
+    data = WinShare.objects.raw(query)
 
-    # Create set of combinations
-    # combination_set = wager_options[:1]
-    # for option in wager_options[1:]:
-        # combination_set.append(combine_strings(combination_set[-1], option))
+    df = pd.DataFrame([item.__dict__ for item in data])
+    columns = ['id', 'bets', 'value', 'prob', 'win', 'yield']
+    # df = df[df['yield'] > 0.1]
+    df = df[columns]
+    logging.info(df.head(5))
+    logging.info("Total combinations: {}".format(len(df)))
 
     matches = [
-        ["2"],
         ["1", "X", "2"],
         ["1", "X", "2"],
         ["1", "X", "2"],
+
+        ["1", "2"],
+        ["1", "2"],
         ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["X", "2"],
-        ["1", "X", "2"],
+
         ["1", "X", "2"],
         ["1", "2"],
         ["1", "X", "2"],
-        ["X", "2"],
+
         ["1", "X", "2"],
-        ["1", "X", "2"]
+        ["1", "2"],
+        ["1", "2"],
+        ["1", "2"],
     ]
-    matches = [["1", "X", "2"]] * 12
-    print(matches)
-    vakio_id = "55466"
+    #matches = [["1", "X", "2"]] * 12
+    vakio_id = "55456"
     data = create_sport_wager("", 0, matches, False)
-    WinShare.objects.all().delete()
-    page = 3141
+
+    page = 1
     has_next = True
     while has_next:
         data['page'] = page
         matches = json.dumps(data)
-        print(matches)
         try:
             has_next = get_sport_winshare(vakio_id, matches)
         except requests.exceptions.ConnectionError:
             logging.info('ConnectionError, waiting 5 seconds')
             time.sleep(5)
             continue
-        except json.decoder.JSONDecodeError:
-            logging.info('JSONDecodeError' + str(page))
-            exit(1)
         page += 1
 
     # Getting current time and log when the script ends

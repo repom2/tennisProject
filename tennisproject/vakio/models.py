@@ -28,3 +28,4 @@ class MonivetoOdds(models.Model):
     match3 = models.TextField(default="")
     match4 = models.TextField(default="")
     value = models.IntegerField()
+    bet = models.BooleanField(default=False)

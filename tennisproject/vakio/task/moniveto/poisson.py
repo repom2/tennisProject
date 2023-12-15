@@ -22,7 +22,7 @@ def calculate_poisson(
     for i in range(max_goals + 1):
         for j in range(max_goals + 1):
             match_prob = poisson_team_a[i] * poisson_team_b[j]
-            print(f"Probability of {i}-{j} score: {match_prob:.3f}")
+            #print(f"Probability of {i}-{j} score: {match_prob:.3f} odds: {1/match_prob:.3f}")
             MonivetoProb.objects.update_or_create(
                 id=f"{match_nro}-{i}-{j}",
                 defaults={

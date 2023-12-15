@@ -5,6 +5,13 @@ import requests
 import json
 import time
 import datetime
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+)
+
 
 # the veikkaus site address
 host = "https://www.veikkaus.fi"
@@ -20,8 +27,8 @@ params = {
     "password": "_W14350300n1",
     "game": "SPORT",
     "draw": "",
-    "listIndex": "6",
-    "id": "55450",
+    "listIndex": "7",
+    "id": "55466",
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -108,29 +115,45 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def find_lines():
-    max_bet_eur = 2000
+    max_bet_eur = 20
     line_cost = 0.1
     stake = 10
     query = f"""
-    select id, bets, value, prob, win, yield from 
+    select id, bets, prob, win, yield from 
         (select a.id, b.bets, b.value, prob, bet,
             value / 100 as win, 
-            round((prob*(value/({stake} + 1)))::numeric, 4) as yield
+            round((prob*(value/({stake})))::numeric, 4) as yield
     from vakio_combination a 
     inner join vakio_winshare b on b.id=a.id) s 
-    where yield > 0.3 and bet = False order by yield desc
+    where bet = False
+     order by yield desc
     """
     data = WinShare.objects.raw(query)
 
     df = pd.DataFrame([item.__dict__ for item in data])
-    columns = ['id', 'bets', 'value', 'prob', 'win', 'yield']
-    #df = df[df['yield'] > 0.1]
+    columns = ['id', 'bets', 'prob', 'win', 'yield']
+    df = df[df['yield'] > 0.10]
+    print("length:", len(df))
     df = df[columns]
 
     max_bet = int(max_bet_eur / line_cost)
-    #df = df.head(max_bet)
+    df = df.head(max_bet)
     print("length:", len(df), max_bet)
     print(df)
+
+    matches = []
+    for index, row in df.iterrows():
+        line = row['id']
+        if matches == []:
+            for i in line:
+                matches.append([i])
+        else:
+            line = list(line)
+            for i in range(len(matches)):
+                if line[i] not in matches[i]:
+                    matches[i].append(line[i])
+
+    logging.info(matches)
 
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
@@ -142,15 +165,15 @@ def find_lines():
         # Data for winshare
         win_data = create_sport_wager(params["id"], 0, line, False)
         matches = json.dumps(win_data)
-        winshare = get_sport_winshare(params["id"], matches)
-        bet_limit = row["prob"]*(winshare/(stake+1))
-        if bet_limit < 1.0:
-            print("bet limit:", bet_limit)
-            continue
+        #winshare = get_sport_winshare(params["id"], matches)
+        #bet_limit = row["prob"]*(winshare/stake+1)
+        #if bet_limit < 1.0:
+         #   print("bet limit:", bet_limit)
+         #   continue
         place_wagers(data, session)
 
         balance = get_balance(session)
-        #print("\n\taccount balance: %.2f\n" % (balance / 100.0))
+        print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         Combination.objects.update_or_create(
             id=row["id"],
             defaults={

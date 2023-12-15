@@ -12,13 +12,15 @@ from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
 from vakio.task.winshare import get_win_share
+from vakio.task.vakio_winshare import get_win_share_vakio
 from vakio.task.find_lines import find_lines
 from vakio.task.probs import calculate_probabilities
-from vakio.task.poisson import calculate_poisson
-from vakio.task.match_prob import match_probability
-from vakio.task.moniveto import moniveto
-from vakio.task.moniveto_winshare import moniveto_winshares
-from vakio.task.moniveto_bet import moniveto_bet
+from vakio.task.moniveto.poisson import calculate_poisson
+from vakio.task.moniveto.match_prob import match_probability
+from vakio.task.moniveto.moniveto import moniveto
+from vakio.task.moniveto.moniveto_winshare import moniveto_winshares
+from vakio.task.moniveto.moniveto_bet import moniveto_bet
+from vakio.task.moniveto.parse_odds import parse_odds
 
 
 pd.set_option('display.max_columns', None)
@@ -60,6 +62,9 @@ class Command(BaseCommand):
         list_sports_cmd = subparsers.add_parser("winshare")
         list_sports_cmd.set_defaults(subcommand=self.get_winshare)
 
+        list_sports_cmd = subparsers.add_parser("winshare-vakio")
+        list_sports_cmd.set_defaults(subcommand=self.get_winshare_vakio)
+
         list_sports_cmd = subparsers.add_parser("find-lines")
         list_sports_cmd.set_defaults(subcommand=self.find_profits)
 
@@ -80,6 +85,9 @@ class Command(BaseCommand):
 
         list_sports_cmd = subparsers.add_parser("moniveto-bet")
         list_sports_cmd.set_defaults(subcommand=self.place_moniveto_bet)
+
+        list_sports_cmd = subparsers.add_parser("parse-odds")
+        list_sports_cmd.set_defaults(subcommand=self.parse_score_odds)
 
 
     def handle(self, *args, **options):
@@ -120,6 +128,9 @@ class Command(BaseCommand):
     def get_winshare(self, options):
         get_win_share()
 
+    def get_winshare_vakio(self, options):
+        get_win_share_vakio()
+
     def find_profits(self, options):
         find_lines()
 
@@ -140,3 +151,6 @@ class Command(BaseCommand):
 
     def place_moniveto_bet(self, options):
         moniveto_bet()
+
+    def parse_score_odds(self, options):
+        parse_odds()

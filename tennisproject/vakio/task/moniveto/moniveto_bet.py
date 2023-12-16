@@ -26,8 +26,8 @@ params = {
     "password": "_W14350300n1",
     "game": "MULTISCORE",
     "draw": "",
-    "listIndex": "9",
-    "id": "63135",
+    "listIndex": "2",
+    "id": "63138",
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -112,23 +112,39 @@ def get_balance(session):
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet():
     #start = datetime.now()
-    max_bet_eur = 67
-    line_cost = 0.2
-    stake = 20
+    max_bet_eur = 56
+    line_cost = 0.05
+    stake = 5
     bankroll = 1000
-    query = f"""
-    select a.id, 
-    (value * 0.01) * (b.prob * c.prob * d.prob) as yield,
-    (b.prob * c.prob * d.prob) as prob, 
-    value * 0.01 * {line_cost} as win,
-    ((value * 0.01) * (b.prob * c.prob * d.prob) - 1) / (value * 0.01) * 1000 as share
-    from vakio_monivetoodds a 
-    inner join vakio_monivetoprob b on b.id=a.match1
-    inner join vakio_monivetoprob c on c.id=a.match2
-    inner join vakio_monivetoprob d on d.id=a.match3
-    where bet = False
-    order by share desc
-    """
+    if line_cost == 0.05:
+        query = f"""
+        select a.id, 
+        (value * 0.01) * (b.prob * c.prob * d.prob * e.prob) as yield,
+        (b.prob * c.prob * d.prob * e.prob) as prob, 
+        value * 0.01 * {line_cost} as win,
+        ((value * 0.01) * (b.prob * c.prob * d.prob * e.prob) - 1) / (value * 0.01) * 1000 as share
+        from vakio_monivetoodds a 
+        inner join vakio_monivetoprob b on b.id=a.match1
+        inner join vakio_monivetoprob c on c.id=a.match2
+        inner join vakio_monivetoprob d on d.id=a.match3
+        inner join vakio_monivetoprob e on e.id=a.match4
+        where bet = False
+        order by share desc
+        """
+    else:
+        query = f"""
+                select a.id, 
+                (value * 0.01) * (b.prob * c.prob * d.prob) as yield,
+                (b.prob * c.prob * d.prob) as prob, 
+                value * 0.01 * {line_cost} as win,
+                ((value * 0.01) * (b.prob * c.prob * d.prob) - 1) / (value * 0.01) * 1000 as share
+                from vakio_monivetoodds a 
+                inner join vakio_monivetoprob b on b.id=a.match1
+                inner join vakio_monivetoprob c on c.id=a.match2
+                inner join vakio_monivetoprob d on d.id=a.match3
+                where bet = False
+                order by share desc
+                """
     data = WinShare.objects.raw(query)
 
     df = pd.DataFrame([item.__dict__ for item in data])

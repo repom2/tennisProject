@@ -9,6 +9,8 @@ import time
 from datetime import datetime
 import logging
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
+import concurrent
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +37,7 @@ def get_sport_winshare(draw_id, matches, scores):
         logging.error(e)
         logging.error(data)
 
+    odds_list = []
     for row in data['odds']:
         selections = row['selections']
         id = ''
@@ -47,59 +50,98 @@ def get_sport_winshare(draw_id, matches, scores):
         id = id[:-1]
         value = row['value']
         if value == -200:
-            value = data['exchange'] / 2
+            try:
+                value = data['exchange'] / 2
+            except TypeError:
+                logging.error(data)
+                exit(1)
         # save to db""
         if len(matches) == 4:
-            MonivetoOdds.objects.update_or_create(
+            monivetoodds = MonivetoOdds(
                 id=id,
-                defaults={
-                    "value": value,
-                    "match1": '0-' + matches[0],
-                    "match2": '1-' + matches[1],
-                    "match3": '2-' + matches[2],
-                    "match4": '3-' + matches[3],
-                }
+                value=value,
+                match1= '0-' + matches[0],
+                match2= '1-' + matches[1],
+                match3= '2-' + matches[2],
+                match4= '3-' + matches[3],
             )
+            odds_list.append(monivetoodds)
         else:
-            MonivetoOdds.objects.update_or_create(
+            monivetoodds = MonivetoOdds(
                 id=id,
-                defaults={
-                    "value": value,
-                    "match1": '0-' + matches[0],
-                    "match2": '1-' + matches[1],
-                    "match3": '2-' + matches[2],
-                }
+                value=value,
+                match1='0-' + matches[0],
+                match2='1-' + matches[1],
+                match3='2-' + matches[2],
             )
-    return data['hasNext']
+            odds_list.append(monivetoodds)
+    return odds_list
 
 
-def moniveto_winshares():
-    start = datetime.now()
-    scores = [
+moniveto = "63138"
+scores = [
+        "0,1,2,3,4,5-0,1,2,3,4,5",
         "0,1,2,3,4,5-0,1,2,3,4,5",
         "0,1,2,3,4,5-0,1,2,3,4,5",
         "0,1,2,3,4,5-0,1,2,3,4,5",
     ]
 
-    count = 0
+
+def get_odds(data, page):
+    data['page'] = page
+    data['selections'] = data["boards"][0]["selections"]
+    matches = json.dumps(data)
+    try:
+        odds = get_sport_winshare(moniveto, matches, scores)
+    except requests.exceptions.SSLError as e:
+        logging.error(e)
+        time.sleep(5)
+        try:
+            odds = get_sport_winshare(moniveto, matches, scores)
+        except requests.exceptions.SSLError as e:
+            logging.error(e)
+            time.sleep(5)
+            odds = get_sport_winshare(moniveto, matches, scores)
+    return odds
+
+
+def moniveto_winshares():
+    start = datetime.now()
+    count = 1
     for score in scores:
         home, away = score.split('-')
-        count += len(home.split(',')) * len(away.split(','))
+        count = count * len(home.split(',')) * len(away.split(','))
+    logging.info(f"Total combinations: {count}")
 
-    moniveto = "63135"
     data = create_multiscore_wager(moniveto, 0, scores)
     MonivetoOdds.objects.all().delete()
-    page = 1
-    has_next = True
 
-    with tqdm(total=count) as pbar:
-        while has_next:
-            data['page'] = page
-            data['selections'] = data["boards"][0]["selections"]
-            matches = json.dumps(data)
-            has_next = get_sport_winshare(moniveto, matches, scores)
-            page += 1
-            pbar.update(100)
+    total_pages = int(count / 100) + 1
+    logging.info(f"Total pages: {total_pages}")
+    page = 1
+    batch = 100
+    while page < total_pages:
+        print(f"Page: {page} / {page + batch}")
+        objects = []
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            futures = [executor.submit(get_odds, data, i) for i in range(page, page + batch)]
+            for future in concurrent.futures.as_completed(futures):
+                odds_data = future.result()
+                objects += odds_data
+
+        # bulk_create will make only one query to the database.
+        try:
+            MonivetoOdds.objects.bulk_create(objects)
+        except Exception as e:
+            logging.error(e)
+            for item in objects:
+                try:
+                    item.save()
+                except Exception as e:
+                    logging.error("Item double!" + e)
+                    pass
+
+        page += batch
 
     # Getting current time and log when the script ends
     end = datetime.now()

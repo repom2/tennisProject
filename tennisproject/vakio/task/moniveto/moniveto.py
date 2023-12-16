@@ -2,17 +2,17 @@ from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
 
 lst = [
-    [0, 1.943, 4.45, 3.5],
-    [1, 3.04, 4.35, 2.19],
-    [2, 2.4, 4.0, 2.75],
-    [3, 2.27, 4.0, 3.05],
+    [0, 4.75, 4.3, 1.75],
+    [1, 5.09, 3.2, 1.93],
+    [2, 2.3, 3.2, 3.64],
+    [3, 2.14, 3.96, 3.27],
 ]
 
 goals = [
-    [0, 3.214, 3.07, 2.46, 2.933],
-    [1, 44/14, 36/14, 39/14, 30/14],
-    [2, 35/14, 31/14, 33/15, 39/15],
-    [3, 35/14, 30/14, 37/15, 42/15],
+    [0, 10/7, 9/7, 17/8, 12/8, 'pl'],
+    [1, 10/7, 9/7, 9/7, 5/7, 'ita'],
+    [2, 10/8, 22/16, 6/8, 12/8, 'esp'],
+    [3, 9/7, 9/7, 13/7, 20/7, 'ger'],
 ]
 
 
@@ -23,13 +23,36 @@ def arbitrage_check(i):
 
 
 def estimated_avg_goals_calc(i):
+    premier_avg_goals_home = 1.74
+    premier_avg_conceded_home = 1.38
+    seria_avg_goals_home = 1.43
+    seria_avg_conceded_home = 1.15
+    laliga_avg_goals_home = 1.51
+    laliga_avg_conceded_home = 1.2
+    bundes_avg_goals_home = 1.98
+    bundes_avg_conceded_home = 1.44
     liiga_avg_goals_home = 2.82
     liiga_avg_conceded_home = 2.54
+    if i[5] == 'pl':
+        goals_home = premier_avg_goals_home
+        conceded_home = premier_avg_conceded_home
+    elif i[5] == 'ita':
+        goals_home = seria_avg_goals_home
+        conceded_home = seria_avg_conceded_home
+    elif i[5] == 'esp':
+        goals_home = laliga_avg_goals_home
+        conceded_home = laliga_avg_conceded_home
+    elif i[5] == 'ger':
+        goals_home = bundes_avg_goals_home
+        conceded_home = bundes_avg_conceded_home
+    else:
+        goals_home = liiga_avg_goals_home
+        conceded_home = liiga_avg_conceded_home
 
-    home = liiga_avg_goals_home + (i[1] - liiga_avg_goals_home) + (i[4] - liiga_avg_goals_home)
+    home = goals_home + (i[1] - goals_home) + (i[4] - goals_home)
 
-    away = liiga_avg_conceded_home + (i[3] - liiga_avg_conceded_home) + (
-                i[2] - liiga_avg_conceded_home)
+    away = conceded_home + (i[3] - conceded_home) + (
+                i[2] - conceded_home)
     print(round(home, 2), round(away, 2))
     return [home, away]
 

@@ -12,7 +12,6 @@ from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
 from vakio.task.winshare import get_win_share
-from vakio.task.vakio_winshare import get_win_share_vakio
 from vakio.task.find_lines import find_lines
 from vakio.task.probs import calculate_probabilities
 from vakio.task.moniveto.poisson import calculate_poisson
@@ -61,9 +60,6 @@ class Command(BaseCommand):
 
         list_sports_cmd = subparsers.add_parser("winshare")
         list_sports_cmd.set_defaults(subcommand=self.get_winshare)
-
-        list_sports_cmd = subparsers.add_parser("winshare-vakio")
-        list_sports_cmd.set_defaults(subcommand=self.get_winshare_vakio)
 
         list_sports_cmd = subparsers.add_parser("find-lines")
         list_sports_cmd.set_defaults(subcommand=self.find_profits)
@@ -127,9 +123,6 @@ class Command(BaseCommand):
 
     def get_winshare(self, options):
         get_win_share()
-
-    def get_winshare_vakio(self, options):
-        get_win_share_vakio()
 
     def find_profits(self, options):
         find_lines()

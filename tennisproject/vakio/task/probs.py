@@ -10,19 +10,25 @@ import os
     10 kohdetta oikein 15 %.
 """
 lst = [
-    [1, 1.31, 5.6, 12.0],
-    [2, 2.12, 3.76, 3.55],
-    [3, 1.74, 4.23, 4.63],
-    [4, 1.94, 3.88, 4.0],
-    [5, 1.9, 3.75, 4.3],
-    [6, 1.84, 4.2, 4.38],
-    [7, 4.3, 4.33, 1.78],
-    [8, 3.4, 2.9, 2.6],
-    [9, 2.58, 3.6, 2.9],
-    [10, 2.87, 3.4, 2.63],
-    [11, 1.74, 4.42, 4.44],
-    [12, 3.07, 3.6, 2.45],
+    [1, 1.21, 8.0, 16.5],
+    [2, 1.92, 3.95, 4.15],
+    [3, 1.23, 7.15, 14.2],
+    [4, 1.48, 4.9, 7.15],
+    [5, 3.65, 3.5, 2.17],
+    [6, 1.68, 4.2, 5.06],
+    [7, 1.53, 4.59, 6.5],
+    [8, 1.9, 3.55, 4.51],
+    [9, 3.04, 3.25, 2.65],
+    [10, 3.2, 3.6, 2.25],
+    [11, 3.2, 3.72, 2.25],
+    [12, 1.833, 3.61, 4.81],
+    [13, 2.4, 3.26, 3.29],
 ]
+
+
+def arbitrage_check(i):
+    if(1 / i[1] + 1 / i[2] + 1 / i[3]) < 1:
+        print("Arbitage found!")
 
 
 def join_set(s):
@@ -38,6 +44,8 @@ def calculate_prob(combination, df):
 
 
 def calculate_probabilities():
+    for i in lst:
+        arbitrage_check(i)
     cost = 0.1
     winshare = 330000 * 0.26 + 100000 # 13 kohdetta oikein 26 %
     winshare = 60000 * 0.26
@@ -65,14 +73,6 @@ def calculate_probabilities():
         "prob": probabilities,
         "combination": combinations,
     })
-
-    # (odds - 1) * stake = winshare
-    # odds = winshare / stake + 1
-    odds = winshare / cost + 1
-    probabilty = 1 / odds
-    df = df[df['prob'] >= probabilty]
-
-    print('Number of combinations with probability ', probabilty, len(df))
 
     df['id'] = df['combination'].apply(join_set)
 

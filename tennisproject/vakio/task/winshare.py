@@ -8,11 +8,17 @@ import os
 import logging
 import time
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
+import concurrent
+import math
+
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
+
+vakio_id = "100428"
 
 
 def get_sport_winshare(draw, matches):
@@ -25,7 +31,7 @@ def get_sport_winshare(draw, matches):
             'X-ESA-API-Key': 'ROBOT'
             })
     j = r.json()
-
+    odds_list = []
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
         board = []
@@ -33,18 +39,16 @@ def get_sport_winshare(draw, matches):
             for outcome in selection["outcomes"]:
                 board.append(outcome)
 
-        print("value=%d,numberOfBets=%d,board=%s" % (
-        winshare["value"], winshare["numberOfBets"], "".join(board)))
+        # logging.info("value=%d,numberOfBets=%d,board=%s" % (
+        # winshare["value"], winshare["numberOfBets"], "".join(board)))
 
-        # save to db
-        WinShare.objects.update_or_create(
+        vakio_odds = WinShare(
             id="".join(board),
-            defaults={
-                "value": winshare["value"],
-                "bets": winshare["numberOfBets"],
-            }
+            value=winshare["value"],
+            bets=winshare["numberOfBets"],
         )
-    return j['hasNext']
+        odds_list.append(vakio_odds)
+    return odds_list
 
 
 def combine_strings(str1, str2):
@@ -58,61 +62,65 @@ def combine_strings(str1, str2):
     return combined
 
 
-def get_win_share():
-    start = datetime.now()
-
-    combinations = Combination.objects.all().values('id')
-    df = pd.DataFrame(list(combinations))
-    logging.info(df.tail(5))
-
-    # List of wager options
-    # wager_options = ['1111111111xx1', '1111111111xxx', '1111111111xx2']
-
-    # Create set of combinations
-    # combination_set = wager_options[:1]
-    # for option in wager_options[1:]:
-        # combination_set.append(combine_strings(combination_set[-1], option))
-
-    matches = [
-        ["2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["X", "2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"],
-        ["1", "2"],
-        ["1", "X", "2"],
-        ["X", "2"],
-        ["1", "X", "2"],
-        ["1", "X", "2"]
-    ]
-    matches = [["1", "X", "2"]] * 12
-    print(matches)
-    vakio_id = "55466"
-    data = create_sport_wager("", 0, matches, False)
-    WinShare.objects.all().delete()
-    page = 3141
-    has_next = True
-    while has_next:
-        data['page'] = page
-        matches = json.dumps(data)
-        print(matches)
+def get_values(data, page):
+    data['page'] = page
+    matches = json.dumps(data)
+    try:
+        values = get_sport_winshare(vakio_id, matches)
+    except (requests.exceptions.ConnectionError,
+            requests.exceptions.JSONDecodeError,
+            requests.exceptions.SSLError) as e:
+        logging.info('ConnectionError, waiting 5 seconds')
+        time.sleep(5)
         try:
-            has_next = get_sport_winshare(vakio_id, matches)
-        except requests.exceptions.ConnectionError:
+            values = get_sport_winshare(vakio_id, matches)
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.JSONDecodeError,
+                requests.exceptions.SSLError) as e:
             logging.info('ConnectionError, waiting 5 seconds')
             time.sleep(5)
-            continue
-        except json.decoder.JSONDecodeError:
-            logging.info('JSONDecodeError' + str(page))
-            exit(1)
-        page += 1
+            values = get_sport_winshare(vakio_id, matches)
+    return values
 
-    # Getting current time and log when the script ends
+
+def get_win_share():
+    start = datetime.now()
+    number_of_matches = 13
+    matches = [["1", "X", "2"]] * number_of_matches
+    nro_of_combinations = pow(3, number_of_matches)
+    logging.info(f"Total combinations: {nro_of_combinations}")
+
+    data = create_sport_wager("", 0, matches, False)
+    WinShare.objects.all().delete()
+
+    total_pages = math.ceil(nro_of_combinations / 100) + 1
+    logging.info(f"Total pages: {total_pages}")
+    page = 0
+    batch = 100
+
+    while page < total_pages:
+        print(f"Page: {page} / {page + batch}")
+        objects = []
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            futures = [executor.submit(get_values, data, i) for i in range(page, page + batch)]
+            for future in concurrent.futures.as_completed(futures):
+                odds_data = future.result()
+                objects += odds_data
+
+        # bulk_create will make only one query to the database.
+        try:
+            WinShare.objects.bulk_create(objects)
+        except Exception as e:
+            logging.error(e)
+            for item in objects:
+                try:
+                    item.save()
+                except Exception as e:
+                    logging.error("Item double!" + e)
+                    pass
+
+        page += batch
+
     end = datetime.now()
     logging.info('Script ended')
 

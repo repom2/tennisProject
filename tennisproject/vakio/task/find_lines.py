@@ -12,7 +12,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-
 # the veikkaus site address
 host = "https://www.veikkaus.fi"
 
@@ -27,8 +26,8 @@ params = {
     "password": "_W14350300n1",
     "game": "SPORT",
     "draw": "",
-    "listIndex": "7",
-    "id": "55466",
+    "listIndex": "1",
+    "id": "100428",
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -54,8 +53,8 @@ def get_sport_winshare(draw, matches):
             for outcome in selection["outcomes"]:
                 board.append(outcome)
 
-        #print("value=%d,numberOfBets=%d,board=%s" % (
-        #winshare["value"], winshare["numberOfBets"], "".join(board)))
+        # print("value=%d,numberOfBets=%d,board=%s" % (
+        # winshare["value"], winshare["numberOfBets"], "".join(board)))
 
     return winshare["value"]
 
@@ -115,9 +114,9 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def find_lines():
-    max_bet_eur = 20
-    line_cost = 0.1
-    stake = 10
+    max_bet_eur = 55
+    line_cost = 0.25
+    stake = 25
     query = f"""
     select id, bets, prob, win, yield from 
         (select a.id, b.bets, b.value, prob, bet,
@@ -132,28 +131,37 @@ def find_lines():
 
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['id', 'bets', 'prob', 'win', 'yield']
-    df = df[df['yield'] > 0.10]
-    print("length:", len(df))
+    df = df[df['yield'] > 1.0]
+    print("Number of lines:", len(df))
     df = df[columns]
 
     max_bet = int(max_bet_eur / line_cost)
     df = df.head(max_bet)
-    print("length:", len(df), max_bet)
+    print("Max Bet length:", len(df), max_bet)
     print(df)
 
     matches = []
     for index, row in df.iterrows():
-        line = row['id']
+        line = list(row['id'])
         if matches == []:
             for i in line:
-                matches.append([i])
+                if i == '1':
+                    matches.append([1, 0, 0])
+                elif i == 'X':
+                    matches.append([0, 1, 0])
+                else:
+                    matches.append([0, 0, 1])
         else:
-            line = list(line)
             for i in range(len(matches)):
-                if line[i] not in matches[i]:
-                    matches[i].append(line[i])
-
-    logging.info(matches)
+                if line[i] == '1':
+                    matches[i][0] += 1
+                elif line[i] == 'X':
+                    matches[i][1] += 1
+                else:
+                    matches[i][2] += 1
+    for i in range(len(matches)):
+        matches[i] = [round(x / len(df), 2) for x in matches[i]]
+        logging.info(matches[i])
 
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():

@@ -26,8 +26,8 @@ params = {
     "password": "_W14350300n1",
     "game": "SPORT",
     "draw": "",
-    "listIndex": "1",
-    "id": "100428",
+    "listIndex": 2,
+    "id": 55468,
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -114,24 +114,26 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def find_lines():
-    max_bet_eur = 55
-    line_cost = 0.25
-    stake = 25
+    max_bet_eur = 12
+    line_cost = 0.1
+    stake = 10
     query = f"""
-    select id, bets, prob, win, yield from 
-        (select a.id, b.bets, b.value, prob, bet,
+    select id, bets, prob, win, yield, combination from 
+        (select a.id, b.bets, b.value, prob, bet, a.combination,
             value / 100 as win, 
             round((prob*(value/({stake})))::numeric, 4) as yield
     from vakio_combination a 
-    inner join vakio_winshare b on b.id=a.id) s 
-    where bet = False
-     order by yield desc
+    inner join vakio_winshare b on b.combination=a.combination and 
+        b.vakio_id = a.vakio_id and b.list_index = a.list_index
+    where bet = False and b.vakio_id = {params["id"]} and b.list_index = {params["listIndex"]}
+    ) s  order by yield desc
     """
     data = WinShare.objects.raw(query)
-
+    logging.info("Number of lines: %d", len(data))
     df = pd.DataFrame([item.__dict__ for item in data])
-    columns = ['id', 'bets', 'prob', 'win', 'yield']
+    columns = ['combination', 'bets', 'prob', 'win', 'yield']
     df = df[df['yield'] > 1.0]
+    df = df[df['bets'] == 1]
     print("Number of lines:", len(df))
     df = df[columns]
 
@@ -142,7 +144,7 @@ def find_lines():
 
     matches = []
     for index, row in df.iterrows():
-        line = list(row['id'])
+        line = list(row['combination'])
         if matches == []:
             for i in line:
                 if i == '1':
@@ -162,11 +164,11 @@ def find_lines():
     for i in range(len(matches)):
         matches[i] = [round(x / len(df), 2) for x in matches[i]]
         logging.info(matches[i])
-
+    #exit()
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
-        print(row['id'])
-        line = list(row['id'])
+        print(row['combination'])
+        line = list(row['combination'])
 
         # Data for wager
         data = create_sport_wager(params["listIndex"], stake, line, False)
@@ -183,7 +185,9 @@ def find_lines():
         balance = get_balance(session)
         print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         Combination.objects.update_or_create(
-            id=row["id"],
+            combination=row["combination"],
+            vakio_id=params["id"],
+            list_index=params["listIndex"],
             defaults={
                 "bet": True,
             }

@@ -7,6 +7,8 @@ def calculate_poisson(
         average_goals_team_a,
         average_goals_team_b,
         match_nro,
+        moniveto_id,
+        list_index,
 ):
 
     # All possible number of goals scored
@@ -24,7 +26,9 @@ def calculate_poisson(
             match_prob = poisson_team_a[i] * poisson_team_b[j]
             #print(f"Probability of {i}-{j} score: {match_prob:.3f} odds: {1/match_prob:.3f}")
             MonivetoProb.objects.update_or_create(
-                id=f"{match_nro}-{i}-{j}",
+                combination=f"{match_nro}-{i}-{j}",
+                moniveto_id=moniveto_id,
+                list_index=list_index,
                 defaults={
                     "match_nro": match_nro,
                     "score": f"{i}-{j}",

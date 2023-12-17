@@ -9,20 +9,23 @@ import os
     11 kohdetta oikein 9 %
     10 kohdetta oikein 15 %.
 """
+
+list_index = 2
+vakio_id = 55468
 lst = [
-    [1, 1.21, 8.0, 16.5],
-    [2, 1.92, 3.95, 4.15],
-    [3, 1.23, 7.15, 14.2],
-    [4, 1.48, 4.9, 7.15],
-    [5, 3.65, 3.5, 2.17],
-    [6, 1.68, 4.2, 5.06],
-    [7, 1.53, 4.59, 6.5],
-    [8, 1.9, 3.55, 4.51],
-    [9, 3.04, 3.25, 2.65],
-    [10, 3.2, 3.6, 2.25],
-    [11, 3.2, 3.72, 2.25],
-    [12, 1.833, 3.61, 4.81],
-    [13, 2.4, 3.26, 3.29],
+    [1, 1.5, 5.0, 6.9],
+    [2, 3.27, 3.7, 2.24],
+    [3, 2.16, 3.65, 3.51],
+    [4, 1.37, 6.1, 8.5],
+    [5, 1.6, 4.2, 6.2],
+    [6, 1.96, 3.32, 4.62],
+    [7, 1.26, 7.0, 11.0],
+    [8, 2.28, 3.57, 3.25],
+    [9, 1.462, 4.86, 7.8],
+    [10, 2.5, 3.05, 3.4],
+    [11, 4.55, 3.75, 1.89],
+    [12, 1.332, 6.0, 9.0],
+    #[13, 2.4, 3.26, 3.29],
 ]
 
 
@@ -74,10 +77,12 @@ def calculate_probabilities():
         "combination": combinations,
     })
 
-    df['id'] = df['combination'].apply(join_set)
+    df['combination'] = df['combination'].apply(join_set)
+    df['vakio_id'] = vakio_id
+    df['list_index'] = list_index
 
-    Combination.objects.all().delete()
-    df = df[['id', 'prob']]
+    Combination.objects.filter(vakio_id=vakio_id, list_index=list_index).delete()
+    df = df[['vakio_id', 'prob', 'combination', 'list_index']]
     data_dict = df.to_dict('records')
     instances = [Combination(**data) for data in data_dict]
 

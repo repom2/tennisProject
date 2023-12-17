@@ -11,11 +11,21 @@ import logging
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 import concurrent
+from django.db.utils import IntegrityError
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
+
+moniveto_id = 63142
+list_index = 6
+scores = [
+        "0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
+        "0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
+        "0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
+        #"0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
+    ]
 
 
 def get_sport_winshare(draw_id, matches, scores):
@@ -55,10 +65,12 @@ def get_sport_winshare(draw_id, matches, scores):
             except TypeError:
                 logging.error(data)
                 exit(1)
-        # save to db""
+
         if len(matches) == 4:
             monivetoodds = MonivetoOdds(
-                id=id,
+                combination=id,
+                list_index=list_index,
+                moniveto_id=moniveto_id,
                 value=value,
                 match1= '0-' + matches[0],
                 match2= '1-' + matches[1],
@@ -68,7 +80,9 @@ def get_sport_winshare(draw_id, matches, scores):
             odds_list.append(monivetoodds)
         else:
             monivetoodds = MonivetoOdds(
-                id=id,
+                combination=id,
+                list_index=list_index,
+                moniveto_id=moniveto_id,
                 value=value,
                 match1='0-' + matches[0],
                 match2='1-' + matches[1],
@@ -78,30 +92,21 @@ def get_sport_winshare(draw_id, matches, scores):
     return odds_list
 
 
-moniveto = "63138"
-scores = [
-        "0,1,2,3,4,5-0,1,2,3,4,5",
-        "0,1,2,3,4,5-0,1,2,3,4,5",
-        "0,1,2,3,4,5-0,1,2,3,4,5",
-        "0,1,2,3,4,5-0,1,2,3,4,5",
-    ]
-
-
 def get_odds(data, page):
     data['page'] = page
     data['selections'] = data["boards"][0]["selections"]
     matches = json.dumps(data)
     try:
-        odds = get_sport_winshare(moniveto, matches, scores)
+        odds = get_sport_winshare(moniveto_id, matches, scores)
     except requests.exceptions.SSLError as e:
         logging.error(e)
         time.sleep(5)
         try:
-            odds = get_sport_winshare(moniveto, matches, scores)
+            odds = get_sport_winshare(moniveto_id, matches, scores)
         except requests.exceptions.SSLError as e:
             logging.error(e)
             time.sleep(5)
-            odds = get_sport_winshare(moniveto, matches, scores)
+            odds = get_sport_winshare(moniveto_id, matches, scores)
     return odds
 
 
@@ -113,8 +118,9 @@ def moniveto_winshares():
         count = count * len(home.split(',')) * len(away.split(','))
     logging.info(f"Total combinations: {count}")
 
-    data = create_multiscore_wager(moniveto, 0, scores)
-    MonivetoOdds.objects.all().delete()
+    data = create_multiscore_wager(moniveto_id, 0, scores)
+
+    MonivetoOdds.objects.filter(moniveto_id=moniveto_id, list_index=list_index).delete()
 
     total_pages = int(count / 100) + 1
     logging.info(f"Total pages: {total_pages}")
@@ -132,13 +138,14 @@ def moniveto_winshares():
         # bulk_create will make only one query to the database.
         try:
             MonivetoOdds.objects.bulk_create(objects)
-        except Exception as e:
+            #MonivetoOdds.objects.bulk_update(objects, ['value'])
+        except IntegrityError as e:
             logging.error(e)
             for item in objects:
                 try:
                     item.save()
                 except Exception as e:
-                    logging.error("Item double!" + e)
+                    logging.error(e)
                     pass
 
         page += batch

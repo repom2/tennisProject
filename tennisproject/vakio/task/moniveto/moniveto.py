@@ -2,19 +2,27 @@ from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
 
 lst = [
-    [0, 4.75, 4.3, 1.75],
-    [1, 5.09, 3.2, 1.93],
-    [2, 2.3, 3.2, 3.64],
-    [3, 2.14, 3.96, 3.27],
+    [0, 1.37, 6.1, 8.5],
+    [1, 1.332, 6.0, 9.0],
+    [2, 4.55, 3.75, 1.89],
+    [7, 1.26, 7.0, 11.0],
+]
+lst = [
+    [0, 1.5, 5.0, 6.9],
+    [1, 3.27, 3.7, 2.24],
+    [2, 2.16, 3.65, 3.51],
+    #[3, 2.14, 3.96, 3.27],
 ]
 
 goals = [
-    [0, 10/7, 9/7, 17/8, 12/8, 'pl'],
-    [1, 10/7, 9/7, 9/7, 5/7, 'ita'],
-    [2, 10/8, 22/16, 6/8, 12/8, 'esp'],
-    [3, 9/7, 9/7, 13/7, 20/7, 'ger'],
+    [0, 16/8, 8/8, 11/7, 16/7, 'pl'],
+    [1, 9/8, 12/8, 11/8, 15/8, 'pl'],
+    [2, 11.5/7, 10/7, 9/8, 13/8, 'pl'],
+    #[3, 9/7, 9/7, 13/7, 20/7, 'ger'],
 ]
 
+moniveto_id = 63142
+list_index = 6
 
 def arbitrage_check(i):
     print(round(1 / i[1], 2), round(1 / i[2], 2), round(1 / i[3], 2))
@@ -33,6 +41,10 @@ def estimated_avg_goals_calc(i):
     bundes_avg_conceded_home = 1.44
     liiga_avg_goals_home = 2.82
     liiga_avg_conceded_home = 2.54
+    mestis_avg_goals_home = 3.35
+    mestis_avg_conceded_home = 2.98
+    ligue1_avg_goals_home = 1.45
+    ligue1_avg_conceded_home = 1.06
     if i[5] == 'pl':
         goals_home = premier_avg_goals_home
         conceded_home = premier_avg_conceded_home
@@ -45,9 +57,18 @@ def estimated_avg_goals_calc(i):
     elif i[5] == 'ger':
         goals_home = bundes_avg_goals_home
         conceded_home = bundes_avg_conceded_home
-    else:
+    elif i[5] == 'mestis':
+        goals_home = mestis_avg_goals_home
+        conceded_home = mestis_avg_conceded_home
+    elif i[5] == 'fra':
+        goals_home = ligue1_avg_goals_home
+        conceded_home = ligue1_avg_conceded_home
+    elif i[5] == 'liiga':
         goals_home = liiga_avg_goals_home
         conceded_home = liiga_avg_conceded_home
+    else:
+        print("League not found!")
+        exit()
 
     home = goals_home + (i[1] - goals_home) + (i[4] - goals_home)
 
@@ -67,5 +88,11 @@ def moniveto():
             estimated_avg_goals = estimated_avg_goals_calc(goals[i])
         except IndexError:
             exit()
-        calculate_poisson(estimated_avg_goals[0], estimated_avg_goals[1], item[0])
+        calculate_poisson(
+            estimated_avg_goals[0],
+            estimated_avg_goals[1],
+            item[0],
+            moniveto_id,
+            list_index,
+        )
         print("---------------------------")

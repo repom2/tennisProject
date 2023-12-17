@@ -1,4 +1,4 @@
-from vakio.models import WinShare, Combination, MonivetoOdds
+from vakio.models import MonivetoOdds, MonivetoBet
 import pandas as pd
 from vakio.task.sport_wager import create_sport_wager
 import requests
@@ -20,14 +20,15 @@ headers = {
         'Accept': 'application/json',
         'X-ESA-API-Key': 'ROBOT'
 }
-
+moniveto_id = 63142
+list_index = 6
 params = {
     "username": "repom",
     "password": "_W14350300n1",
     "game": "MULTISCORE",
     "draw": "",
-    "listIndex": "2",
-    "id": "63138",
+    "listIndex": list_index,
+    "id": moniveto_id,
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -112,43 +113,45 @@ def get_balance(session):
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet():
     #start = datetime.now()
-    max_bet_eur = 56
-    line_cost = 0.05
-    stake = 5
+    max_bet_eur = 10
+    line_cost = 0.2
+    stake = 20
     bankroll = 1000
     if line_cost == 0.05:
         query = f"""
         select a.id, 
-        (value * 0.01) * (b.prob * c.prob * d.prob * e.prob) as yield,
+        (value * 0.01) * (b.prob * c.prob * d.prob * e.prob) as yield, bet.bet,
         (b.prob * c.prob * d.prob * e.prob) as prob, 
         value * 0.01 * {line_cost} as win,
         ((value * 0.01) * (b.prob * c.prob * d.prob * e.prob) - 1) / (value * 0.01) * 1000 as share
         from vakio_monivetoodds a 
-        inner join vakio_monivetoprob b on b.id=a.match1
-        inner join vakio_monivetoprob c on c.id=a.match2
-        inner join vakio_monivetoprob d on d.id=a.match3
-        inner join vakio_monivetoprob e on e.id=a.match4
-        where bet = False
+        left join vakio_monivetobet bet on bet.combination = a.combination and bet.moniveto_id = a.moniveto_id and bet.list_index = a.list_index
+        inner join vakio_monivetoprob b on b.id=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
+        inner join vakio_monivetoprob c on c.id=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
+        inner join vakio_monivetoprob d on d.id=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
+        inner join vakio_monivetoprob e on e.id=a.match4 and e.moniveto_id = a.moniveto_id and e.list_index = a.list_index
+        where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
         order by share desc
         """
     else:
         query = f"""
-                select a.id, 
-                (value * 0.01) * (b.prob * c.prob * d.prob) as yield,
+                select a.id, a.combination,
+                (value * 0.01) * (b.prob * c.prob * d.prob) as yield, bet.bet,
                 (b.prob * c.prob * d.prob) as prob, 
                 value * 0.01 * {line_cost} as win,
                 ((value * 0.01) * (b.prob * c.prob * d.prob) - 1) / (value * 0.01) * 1000 as share
                 from vakio_monivetoodds a 
-                inner join vakio_monivetoprob b on b.id=a.match1
-                inner join vakio_monivetoprob c on c.id=a.match2
-                inner join vakio_monivetoprob d on d.id=a.match3
-                where bet = False
+                left join vakio_monivetobet bet on (bet.combination = a.combination and bet.moniveto_id = a.moniveto_id and bet.list_index = a.list_index)
+                inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
+                inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
+                inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
+                where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
                 order by share desc
                 """
-    data = WinShare.objects.raw(query)
+    data = MonivetoOdds.objects.raw(query)
 
     df = pd.DataFrame([item.__dict__ for item in data])
-    columns = ['id', 'prob',  'yield', 'win', 'share']
+    columns = ['combination', 'prob',  'yield', 'win', 'share', 'bet']
     print("length:", len(df))
     df = df[df['yield'] > 1.3]
     #df = df[df['share'] > 0.1]
@@ -161,12 +164,12 @@ def moniveto_bet():
     max_bet = int(max_bet_eur / line_cost)
     df = df.head(max_bet)
     print("length:", len(df))
-
+    #exit(0)
     session = login(params["username"], params["password"])
     bankroll = get_balance(session)
     for index, row in df.iterrows():
-        print(row['id'])
-        line = row['id'].split(',')
+        """print(row['combination'])
+        line = row['combination'].split(',')
         # Data for wager
         data = create_multiscore_wager(params["listIndex"], stake, line)
         data['selections'] = data["boards"][0]["selections"]
@@ -182,16 +185,19 @@ def moniveto_bet():
         print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         if balance < 0.0:
             break
-        if balance < bankroll:
-            MonivetoOdds.objects.update_or_create(
-                id=row["id"],
-                defaults={
-                    "bet": True,
-                }
-            )
-            bankroll = balance
-    # Getting current time and log when the script ends
-    #end = datetime.now()
-    #logging.info('Script ended')
-
-    #logging.info('Time elapsed: {}'.format(end - start))
+        if balance < bankroll:"""
+        bet = MonivetoOdds.objects.update_or_create(
+            combination=row["combination"],
+            moniveto_id=moniveto_id,
+            list_index=list_index,
+            defaults={
+                "bet": True,
+            }
+        )
+        MonivetoBet.objects.create(
+            combination=row["combination"],
+            moniveto_id=moniveto_id,
+            list_index=list_index,
+            bet=True,
+        )
+        bankroll = balance

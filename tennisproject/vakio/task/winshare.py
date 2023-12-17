@@ -11,6 +11,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 import concurrent
 import math
+from django.db.utils import IntegrityError
 
 
 logging.basicConfig(
@@ -18,13 +19,15 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-vakio_id = "100428"
+vakio_id = 55468
+number_of_matches = 12
+list_index = 2
 
 
 def get_sport_winshare(draw, matches):
     host = "https://www.veikkaus.fi"
     r = requests.post(
-        host + "/api/sport-winshare/v1/games/SPORT/draws/" + draw + "/winshare",
+        host + "/api/sport-winshare/v1/games/SPORT/draws/" + str(draw) + "/winshare",
         verify=True, data=matches, headers={
             'Content-type': 'application/json',
             'Accept': 'application/json',
@@ -43,7 +46,9 @@ def get_sport_winshare(draw, matches):
         # winshare["value"], winshare["numberOfBets"], "".join(board)))
 
         vakio_odds = WinShare(
-            id="".join(board),
+            vakio_id=str(draw),
+            list_index=str(list_index),
+            combination="".join(board),
             value=winshare["value"],
             bets=winshare["numberOfBets"],
         )
@@ -85,13 +90,12 @@ def get_values(data, page):
 
 def get_win_share():
     start = datetime.now()
-    number_of_matches = 13
     matches = [["1", "X", "2"]] * number_of_matches
     nro_of_combinations = pow(3, number_of_matches)
     logging.info(f"Total combinations: {nro_of_combinations}")
 
     data = create_sport_wager("", 0, matches, False)
-    WinShare.objects.all().delete()
+    WinShare.objects.filter(vakio_id=vakio_id, list_index=list_index).delete()
 
     total_pages = math.ceil(nro_of_combinations / 100) + 1
     logging.info(f"Total pages: {total_pages}")
@@ -110,13 +114,13 @@ def get_win_share():
         # bulk_create will make only one query to the database.
         try:
             WinShare.objects.bulk_create(objects)
-        except Exception as e:
+        except IntegrityError as e:
             logging.error(e)
             for item in objects:
                 try:
                     item.save()
                 except Exception as e:
-                    logging.error("Item double!" + e)
+                    logging.error(e)
                     pass
 
         page += batch

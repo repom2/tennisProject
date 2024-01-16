@@ -543,3 +543,46 @@ class Bet(models.Model):
     preview = models.TextField(null=True)
     reasoning = models.TextField(null=True)
     start_at = models.DateTimeField(null=True)
+
+
+class BetWta(models.Model):
+    match = models.OneToOneField(
+        WtaMatch, on_delete=models.CASCADE
+    )
+    home = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="homebet",
+    )
+    away = models.ForeignKey(
+        to=WTAPlayers,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="awaybet",
+    )
+    home_name = models.TextField(null=True)
+    away_name = models.TextField(null=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    elo_prob = models.FloatField(null=True)
+    year_elo_prob = models.FloatField(null=True)
+    home_spw = models.FloatField(null=True)
+    home_rpw = models.FloatField(null=True)
+    away_spw = models.FloatField(null=True)
+    away_rpw = models.FloatField(null=True)
+    stats_win = models.FloatField(null=True)
+    home_fatigue = models.FloatField(null=True)
+    away_fatigue = models.FloatField(null=True)
+    h2h_win = models.FloatField(null=True)
+    h2h_matches = models.IntegerField(null=True)
+    walkover = models.BooleanField(null=True)
+    home_inj_score = models.FloatField(null=True)
+    away_inj_score = models.FloatField(null=True)
+    common_opponents = models.FloatField(null=True)
+    common_opponents_count = models.IntegerField(null=True)
+    preview = models.TextField(null=True)
+    reasoning = models.TextField(null=True)
+    start_at = models.DateTimeField(null=True)

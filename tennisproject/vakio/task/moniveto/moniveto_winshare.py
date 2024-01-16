@@ -17,14 +17,14 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
-
-moniveto_id = 63142
-list_index = 6
+moniveto_id = 63224
+list_index = 5
+bonus = 0
 scores = [
-        "0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
-        "0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
-        "0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
-        #"0,1,2,3,4,5,6,7-0,1,2,3,4,5,6,7",
+        "0,1,2,3,4,5,6,7-0,1,2,3",
+        "0,1,2,3,4,5-0,1,2,3,4",
+        "0,1,2,3,4,5,6,7-0,1,2,3",
+        #"1,2,3,4,5,6-0,1,2,3,4,5",
     ]
 
 
@@ -61,7 +61,7 @@ def get_sport_winshare(draw_id, matches, scores):
         value = row['value']
         if value == -200:
             try:
-                value = data['exchange'] / 2
+                value = (data['exchange'] + bonus) / 2
             except TypeError:
                 logging.error(data)
                 exit(1)
@@ -124,7 +124,7 @@ def moniveto_winshares():
 
     total_pages = int(count / 100) + 1
     logging.info(f"Total pages: {total_pages}")
-    page = 1
+    page = 0
     batch = 100
     while page < total_pages:
         print(f"Page: {page} / {page + batch}")

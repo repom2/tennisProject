@@ -1,28 +1,23 @@
 from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
 
+
 lst = [
-    [0, 1.37, 6.1, 8.5],
-    [1, 1.332, 6.0, 9.0],
-    [2, 4.55, 3.75, 1.89],
-    [7, 1.26, 7.0, 11.0],
-]
-lst = [
-    [0, 1.5, 5.0, 6.9],
-    [1, 3.27, 3.7, 2.24],
-    [2, 2.16, 3.65, 3.51],
-    #[3, 2.14, 3.96, 3.27],
+    [0, 1.42, 5.1, 8.3],
+    [1, 1.86, 3.65, 4.67],
+    [2, 1.253, 6.15, 13.03],
+    #[3, 2.34, 4.25, 3.05],
 ]
 
 goals = [
-    [0, 16/8, 8/8, 11/7, 16/7, 'pl'],
-    [1, 9/8, 12/8, 11/8, 15/8, 'pl'],
-    [2, 11.5/7, 10/7, 9/8, 13/8, 'pl'],
-    #[3, 9/7, 9/7, 13/7, 20/7, 'ger'],
+    [0, 16/9, 7/9, 9/9, 13/9, 'ita'],
+    [1, 18/8, 9/8, 9/7, 9/7, 'pl'],
+    [2, 21/12, 11/12, 7/13, 21/13, 'champ'],
+    #[3, 41/18, 47/18, 40/19, 57/19, 'liiga'],
 ]
+moniveto_id = 63224
+list_index = 5
 
-moniveto_id = 63142
-list_index = 6
 
 def arbitrage_check(i):
     print(round(1 / i[1], 2), round(1 / i[2], 2), round(1 / i[3], 2))
@@ -45,9 +40,14 @@ def estimated_avg_goals_calc(i):
     mestis_avg_conceded_home = 2.98
     ligue1_avg_goals_home = 1.45
     ligue1_avg_conceded_home = 1.06
+    championship_avg_goals_home = 1.51
+    championship_avg_conceded_home = 1.24
     if i[5] == 'pl':
         goals_home = premier_avg_goals_home
         conceded_home = premier_avg_conceded_home
+    elif i[5] == 'champ':
+        goals_home = championship_avg_goals_home
+        conceded_home = championship_avg_conceded_home
     elif i[5] == 'ita':
         goals_home = seria_avg_goals_home
         conceded_home = seria_avg_conceded_home

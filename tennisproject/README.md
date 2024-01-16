@@ -58,6 +58,7 @@ poetry run python manage.py elo_rate atp 'hard'
 poetry run python manage.py elo_rate wta 'grass'
 poetry run python manage.py elo_rate wta 'grass'
 
+poetry run python manage.py predict pred 'atp' 'austral'
 
 
 #ATP

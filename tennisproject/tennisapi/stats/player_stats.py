@@ -1,5 +1,8 @@
 import pandas as pd
 from django.db import connection
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def player_stats(player_id, params):
@@ -47,5 +50,5 @@ def player_stats(player_id, params):
     df = pd.read_sql(query, connection, params=params)
     spw = df.iloc[0]['spw']
     rpw = df.iloc[0]['rpw']
-
+    log.info(f"spw: {spw}, rpw: {rpw}")
     return [spw, rpw]

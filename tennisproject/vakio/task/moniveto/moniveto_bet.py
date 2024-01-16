@@ -10,6 +10,12 @@ from vakio.task.sport_wager import create_multiscore_wager
 import datetime
 import logging
 
+moniveto_id = 63224
+list_index = 5
+max_bet_eur = 30
+line_cost = 0.2
+stake = 20
+
 pd.set_option('display.max_rows', None)
 
 # the veikkaus site address
@@ -20,8 +26,7 @@ headers = {
         'Accept': 'application/json',
         'X-ESA-API-Key': 'ROBOT'
 }
-moniveto_id = 63142
-list_index = 6
+
 params = {
     "username": "repom",
     "password": "_W14350300n1",
@@ -113,23 +118,21 @@ def get_balance(session):
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet():
     #start = datetime.now()
-    max_bet_eur = 10
-    line_cost = 0.2
-    stake = 20
+
     bankroll = 1000
     if line_cost == 0.05:
         query = f"""
-        select a.id, 
+        select a.id, a.combination,
         (value * 0.01) * (b.prob * c.prob * d.prob * e.prob) as yield, bet.bet,
         (b.prob * c.prob * d.prob * e.prob) as prob, 
         value * 0.01 * {line_cost} as win,
         ((value * 0.01) * (b.prob * c.prob * d.prob * e.prob) - 1) / (value * 0.01) * 1000 as share
         from vakio_monivetoodds a 
         left join vakio_monivetobet bet on bet.combination = a.combination and bet.moniveto_id = a.moniveto_id and bet.list_index = a.list_index
-        inner join vakio_monivetoprob b on b.id=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
-        inner join vakio_monivetoprob c on c.id=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
-        inner join vakio_monivetoprob d on d.id=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
-        inner join vakio_monivetoprob e on e.id=a.match4 and e.moniveto_id = a.moniveto_id and e.list_index = a.list_index
+        inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
+        inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
+        inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
+        inner join vakio_monivetoprob e on e.combination=a.match4 and e.moniveto_id = a.moniveto_id and e.list_index = a.list_index
         where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
         order by share desc
         """
@@ -153,12 +156,12 @@ def moniveto_bet():
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'prob',  'yield', 'win', 'share', 'bet']
     print("length:", len(df))
-    df = df[df['yield'] > 1.3]
+    df = df[df['yield'] > 1.6]
     #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]
     df = df[columns]
 
-    print(df.head(477))
+    print(df.head(80))
     print("length:", len(df))
 
     max_bet = int(max_bet_eur / line_cost)
@@ -168,7 +171,7 @@ def moniveto_bet():
     session = login(params["username"], params["password"])
     bankroll = get_balance(session)
     for index, row in df.iterrows():
-        """print(row['combination'])
+        print(row['combination'])
         line = row['combination'].split(',')
         # Data for wager
         data = create_multiscore_wager(params["listIndex"], stake, line)
@@ -185,19 +188,19 @@ def moniveto_bet():
         print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         if balance < 0.0:
             break
-        if balance < bankroll:"""
-        bet = MonivetoOdds.objects.update_or_create(
-            combination=row["combination"],
-            moniveto_id=moniveto_id,
-            list_index=list_index,
-            defaults={
-                "bet": True,
-            }
-        )
-        MonivetoBet.objects.create(
-            combination=row["combination"],
-            moniveto_id=moniveto_id,
-            list_index=list_index,
-            bet=True,
-        )
-        bankroll = balance
+        if balance < bankroll:
+            bet = MonivetoOdds.objects.update_or_create(
+                combination=row["combination"],
+                moniveto_id=moniveto_id,
+                list_index=list_index,
+                defaults={
+                    "bet": True,
+                }
+            )
+            MonivetoBet.objects.create(
+                combination=row["combination"],
+                moniveto_id=moniveto_id,
+                list_index=list_index,
+                bet=True,
+            )
+            bankroll = balance

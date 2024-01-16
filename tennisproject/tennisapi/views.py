@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Bet, AtpTour, AtpElo, AtpHardElo
+from .models import Bet, AtpTour, AtpElo, AtpHardElo, BetWta
 from .serializers import AtpEloSerializer, BetSerializer
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -13,6 +13,9 @@ from rest_framework.permissions import IsAdminUser
 from django.db.models import F, Max, Subquery, OuterRef
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class AtpEloList(generics.ListAPIView):
@@ -53,14 +56,16 @@ class AtpEloList(generics.ListAPIView):
 
 
 class BetList(generics.ListAPIView):
-    queryset = Bet.objects.all()
+    queryset = BetWta.objects.all()
 
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     #permission_classes = [IsAdminUser]
 
     def list(self, request):
         now = timezone.now()
-        from_date = now - relativedelta(days=1)
+        from_date = now# - relativedelta(days=1)
         queryset = self.get_queryset().filter(start_at__gte=from_date).order_by('start_at')
+        log.info(f"queryset: {queryset}")
         serializer = BetSerializer(queryset, many=True)
+        log.info(f"serializer: {serializer}")
         return Response(serializer.data)

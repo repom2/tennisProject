@@ -19,9 +19,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-vakio_id = 55468
-number_of_matches = 12
 list_index = 2
+vakio_id = 55500
+number_of_matches = 12
 
 
 def get_sport_winshare(draw, matches):
@@ -35,6 +35,7 @@ def get_sport_winshare(draw, matches):
             })
     j = r.json()
     odds_list = []
+
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
         board = []
@@ -91,6 +92,7 @@ def get_values(data, page):
 def get_win_share():
     start = datetime.now()
     matches = [["1", "X", "2"]] * number_of_matches
+    #matches = [["1", "2"]] * number_of_matches
     nro_of_combinations = pow(3, number_of_matches)
     logging.info(f"Total combinations: {nro_of_combinations}")
 

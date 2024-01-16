@@ -7,6 +7,12 @@ import time
 import datetime
 import logging
 
+list_index = 2
+vakio_id = 55500
+max_bet_eur = 20
+line_cost = 0.1
+stake = 10
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
@@ -26,8 +32,8 @@ params = {
     "password": "_W14350300n1",
     "game": "SPORT",
     "draw": "",
-    "listIndex": 2,
-    "id": 55468,
+    "listIndex": list_index,
+    "id": vakio_id,
     "miniVakio": False,
     "input": "",
     "stake": 0
@@ -114,9 +120,6 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def find_lines():
-    max_bet_eur = 12
-    line_cost = 0.1
-    stake = 10
     query = f"""
     select id, bets, prob, win, yield, combination from 
         (select a.id, b.bets, b.value, prob, bet, a.combination,
@@ -132,14 +135,14 @@ def find_lines():
     logging.info("Number of lines: %d", len(data))
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield']
-    df = df[df['yield'] > 1.0]
-    df = df[df['bets'] == 1]
+    df = df[df['yield'] >= 0.70]
+    #df = df[df['bets'] == 1]
     print("Number of lines:", len(df))
     df = df[columns]
 
     max_bet = int(max_bet_eur / line_cost)
     df = df.head(max_bet)
-    print("Max Bet length:", len(df), max_bet)
+    print("Max Bet length:", len(df), "lines to bet", max_bet)
     print(df)
 
     matches = []

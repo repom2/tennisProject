@@ -10,8 +10,8 @@ from vakio.task.sport_wager import create_multiscore_wager
 import datetime
 import logging
 
-moniveto_id = 63224
-list_index = 5
+moniveto_id = 63229
+list_index = 10
 max_bet_eur = 30
 line_cost = 0.2
 stake = 20
@@ -149,7 +149,7 @@ def moniveto_bet():
                 inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                 inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
                 where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                order by share desc
+                order by yield desc
                 """
     data = MonivetoOdds.objects.raw(query)
 

@@ -181,8 +181,8 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2024-01-15 18:00:00',
-        'end_at': '2024-01-16 18:00:00',
+        'start_at': '2024-01-17 18:00:00',
+        'end_at': '2024-01-18 18:00:00',
     }
     data = get_data(params)
 
@@ -333,9 +333,10 @@ def predict(level, tour):
     print(date)
     print('tour', tour_spw, tour_rpw)
     print('event', event_spw, event_rpw)
-    data = data.where(pd.notnull(data), None)
+    #data = data.where(pd.notnull(data), None)
+    data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
-        preview, reasoning = match_analysis(row)
+        preview, reasoning = None, None#match_analysis(row)
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],
             home=player_qs.filter(id=row.home_id)[0],

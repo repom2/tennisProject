@@ -17,13 +17,13 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
-moniveto_id = 63224
-list_index = 5
+moniveto_id = 63229
+list_index = 10
 bonus = 0
 scores = [
-        "0,1,2,3,4,5,6,7-0,1,2,3",
-        "0,1,2,3,4,5-0,1,2,3,4",
-        "0,1,2,3,4,5,6,7-0,1,2,3",
+        "0,1,2,3-0,1,2,3",
+        "0,1,2,3-0,1,2,3",
+        "0,1,2,3-0,1,2,3",
         #"1,2,3,4,5,6-0,1,2,3,4,5",
     ]
 

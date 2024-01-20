@@ -181,8 +181,8 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2024-01-17 18:00:00',
-        'end_at': '2024-01-18 18:00:00',
+        'start_at': '2024-01-19 18:00:00',
+        'end_at': '2024-01-20 18:00:00',
     }
     data = get_data(params)
 
@@ -193,7 +193,7 @@ def predict(level, tour):
         print("No data")
         return
 
-    date = timezone.now() - timedelta(hours=1)
+    date = timezone.now() - timedelta(hours=4)
     data = data[data['start_at'] > date]
     log.info(data[['start_at', 'winner_name', 'loser_name']])
     if level == 'atp':
@@ -213,10 +213,10 @@ def predict(level, tour):
         event_spw, event_rpw = 0.565, 0.435
 
     data[['spw1', 'rpw1']] = pd.DataFrame(
-        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], params)),
+        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], params)),
         index=data.index)
     data[['spw2', 'rpw2']] = pd.DataFrame(
-        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], params)),
+        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], data['start_at'], params)),
         index=data.index)
     data['player1'] = data.apply(lambda x: event_spw + (x.spw1 - tour_spw) - (x.rpw2 - tour_rpw) if (x.rpw2 and x.spw1) else None, axis=1)
     data['player2'] = data.apply(lambda x: event_spw + (x.spw2 - tour_spw) - (x.rpw1 - tour_rpw) if (x.rpw1 and x.spw2) else None, axis=1)
@@ -235,7 +235,8 @@ def predict(level, tour):
             data['home_id'],
             data['away_id'],
             event_spw,
-            '2022-1-1'
+            '2022-1-1',
+            data['start_at']
         )
         ), index=data.index)
 
@@ -251,6 +252,7 @@ def predict(level, tour):
             data['home_id'],
             params['tour_table'],
             params['matches_table'],
+            params['start_at'],
             )
         ),
         index=data.index)
@@ -259,6 +261,7 @@ def predict(level, tour):
             data['away_id'],
             params['tour_table'],
             params['matches_table'],
+            params['start_at'],
         )
         ),
         index=data.index)
@@ -268,6 +271,7 @@ def predict(level, tour):
             data['away_id'],
             params['tour_table'],
             params['matches_table'],
+            params['start_at'],
         )
         ),
         index=data.index)
@@ -327,6 +331,8 @@ def predict(level, tour):
         'count',
         #'spw1_c',
         #'spw2_c',
+        #'winner_hardelo',
+        #'loser_hardelo',
     ]
 
     print(data[columns])

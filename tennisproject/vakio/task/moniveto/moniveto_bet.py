@@ -10,11 +10,11 @@ from vakio.task.sport_wager import create_multiscore_wager
 import datetime
 import logging
 
-moniveto_id = 63229
-list_index = 10
-max_bet_eur = 30
-line_cost = 0.2
-stake = 20
+moniveto_id = 63235
+list_index = 5
+max_bet_eur = 34
+line_cost = 0.05
+stake = 5
 
 pd.set_option('display.max_rows', None)
 
@@ -156,7 +156,10 @@ def moniveto_bet():
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'prob',  'yield', 'win', 'share', 'bet']
     print("length:", len(df))
-    df = df[df['yield'] > 1.6]
+    if len(df) == 0:
+        print("No bets")
+        exit(0)
+    df = df[df['yield'] > 0.0]
     #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]
     df = df[columns]

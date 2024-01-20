@@ -46,6 +46,7 @@ Get event data loop through League Ids
 poetry run python manage.py sportscore leagues
 dbt run --select tennisapi_atptour
 poetry run python manage.py sportscore events-by-leagues
+cd dbt/tennis_metrics/
 dbt run --select tennisapi_atpmatches
 dbt run --select tennisapi_wtamatches
 poetry run python manage.py sportscore stats

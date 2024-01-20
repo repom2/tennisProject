@@ -56,15 +56,15 @@ class AtpEloList(generics.ListAPIView):
 
 
 class BetList(generics.ListAPIView):
-    #queryset = BetWta.objects.all()
-    queryset = Bet.objects.all()
+    queryset = BetWta.objects.all()
+    #queryset = Bet.objects.all()
 
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     #permission_classes = [IsAdminUser]
 
     def list(self, request):
         now = timezone.now()
-        from_date = now - relativedelta(hours=15)
+        from_date = now - relativedelta(hours=18)
         queryset = self.get_queryset().filter(start_at__gte=from_date).order_by('start_at')
         log.info(f"queryset: {queryset}")
         serializer = BetSerializer(queryset, many=True)

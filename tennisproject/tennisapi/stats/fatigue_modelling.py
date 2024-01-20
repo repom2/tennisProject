@@ -18,7 +18,7 @@ def fatigue_score(params):
             winner_id = %(player_id)s
             or loser_id = %(player_id)s
             )
-            and t.date > '2015-1-1'
+            and t.date between '2015-1-1' and %(start_at)s
             order by a.date desc limit 14
                 ) s;
         """
@@ -31,12 +31,13 @@ def fatigue_score(params):
     return score
 
 
-def fatigue_modelling(player_id, tour_table, matches_table):
+def fatigue_modelling(player_id, tour_table, matches_table, start_at):
 
     params = {
         'tour_table': AsIs(tour_table),
         'matches_table': AsIs(matches_table),
         'player_id': player_id,
+        'start_at': start_at,
     }
 
     score = fatigue_score(params)

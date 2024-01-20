@@ -17,14 +17,14 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
-moniveto_id = 63229
-list_index = 10
+moniveto_id = 63235
+list_index = 5
 bonus = 0
 scores = [
+        "1-1",
         "0,1,2,3-0,1,2,3",
         "0,1,2,3-0,1,2,3",
         "0,1,2,3-0,1,2,3",
-        #"1,2,3,4,5,6-0,1,2,3,4,5",
     ]
 
 
@@ -49,6 +49,8 @@ def get_sport_winshare(draw_id, matches, scores):
 
     odds_list = []
     for row in data['odds']:
+        #logging.info(row)
+        #exit(1)
         selections = row['selections']
         id = ''
         matches = []
@@ -76,6 +78,16 @@ def get_sport_winshare(draw_id, matches, scores):
                 match2= '1-' + matches[1],
                 match3= '2-' + matches[2],
                 match4= '3-' + matches[3],
+            )
+            odds_list.append(monivetoodds)
+        elif len(matches) == 2:
+            monivetoodds = MonivetoOdds(
+                combination=id,
+                list_index=list_index,
+                moniveto_id=moniveto_id,
+                value=value,
+                match1= '0-' + matches[0],
+                match2= '1-' + matches[1],
             )
             odds_list.append(monivetoodds)
         else:

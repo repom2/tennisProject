@@ -5,8 +5,9 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def player_stats(player_id, params):
+def player_stats(player_id, start_at, params):
     params['player_id'] = player_id
+    params['start_at'] = start_at
     query = \
         """
             select
@@ -44,6 +45,7 @@ def player_stats(player_id, params):
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
                and surface ilike '%%hard%%'
                and round_name not ilike 'qualification%%'
+               and t.date < date(%(start_at)s)
                ) a order by date desc limit 22
             ) s
         """

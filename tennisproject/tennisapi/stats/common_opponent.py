@@ -39,7 +39,7 @@ def player_opponents(params):
             from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
             where surface ilike '%%hard%%' and 
             (winner_id = %(player_id)s or loser_id = %(player_id)s)
-            and a.date > %(date)s
+            and a.date between %(date)s and %(start_at)s
             ) s order by date desc
         """
 
@@ -48,9 +48,10 @@ def player_opponents(params):
     return df
 
 
-def common_opponent(params, player1, player2, event_spw, date):
+def common_opponent(params, player1, player2, event_spw, date ,start_at):
 
     params['date'] = date
+    params['start_at'] = start_at
     params['player_id'] = player1
     player1 = player_opponents(params)
     params['player_id'] = player2

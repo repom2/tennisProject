@@ -2,21 +2,28 @@ from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
 
 
+moniveto_id = 63235
+list_index = 5
+
 lst = [
-    [0, 2.05, 3.5, 4.2],
-    [1, 3.64, 3.76, 2.05],
-    [2, 2.8, 3.9, 2.47],
-    #[3, 2.34, 4.25, 3.05],
+    [0, 2.0, 3.6, 3.0],
+    [1, 1.65, 3.9, 6.1],
+    [2, 1.72, 3.55, 6.25],
+    [3, 1.87, 3.71, 4.42],
+]
+estimated_avg_goals = [
+    [0, 2.1, 2.3],
+    [1, 1.75, 0.75],
+    [2, 1.65, 0.76],
+    [2, 1.7, 1.23],
 ]
 
 goals = [
-    [0, 16/11, 12/11, 11/10, 15/10, 'champ'],
-    [1, 21/15, 9/15, 20/10, 10/10, 'champ'],
-    [2, 20/11, 11/11, 23/14, 15/14, 'champ'],
+    [0, 16/10, 11/10, 12/10, 11/10, 'ita'],
+    [1, 21/10, 11/10, 15/10, 7/10, 'esp'],
+    [2, 14/10, 11/10, 9/10, 14/10, 'pl'],
     #[3, 41/18, 47/18, 40/19, 57/19, 'liiga'],
 ]
-moniveto_id = 63229
-list_index = 10
 
 
 def arbitrage_check(i):
@@ -84,13 +91,13 @@ def moniveto():
         #calculate_poisson(estimated_avg_goals[0], estimated_avg_goals[1], i[0])
         #estimated_avg_goals = [3.1, 2.54]
         arbitrage_check(item)
-        try:
-            estimated_avg_goals = estimated_avg_goals_calc(goals[i])
-        except IndexError:
-            exit()
+        # try:
+            # estimated_avg_goals = estimated_avg_goals_calc(goals[i])
+        # except IndexError:
+            # exit()
         calculate_poisson(
-            estimated_avg_goals[0],
-            estimated_avg_goals[1],
+            estimated_avg_goals[i][1],
+            estimated_avg_goals[i][2],
             item[0],
             moniveto_id,
             list_index,

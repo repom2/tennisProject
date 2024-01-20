@@ -18,9 +18,10 @@ def head_to_head_win_percentage(params):
             
             from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
             where 
+            a.date < date(%(start_at)s) and (
             (winner_id = %(player1)s and loser_id = %(player2)s)
             or
-            (winner_id = %(player2)s and loser_id = %(player1)s)
+            (winner_id = %(player2)s and loser_id = %(player1)s) )
         ) s
         """
 
@@ -32,12 +33,13 @@ def head_to_head_win_percentage(params):
     return [won, count]
 
 
-def head2head(player1, player2, tour_table, matches_table):
+def head2head(player1, player2, tour_table, matches_table, start_at):
     params = {
         'tour_table': AsIs(tour_table),
         'matches_table': AsIs(matches_table),
         'player1': player1,
         'player2': player2,
+        'start_at': start_at,
     }
 
     score = head_to_head_win_percentage(params)

@@ -7,9 +7,9 @@ import time
 import datetime
 import logging
 
-list_index = 2
-vakio_id = 55500
-max_bet_eur = 20
+list_index = 7
+vakio_id = 55505
+max_bet_eur = 16
 line_cost = 0.1
 stake = 10
 

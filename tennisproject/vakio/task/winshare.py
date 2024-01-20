@@ -19,8 +19,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-list_index = 2
-vakio_id = 55500
+list_index = 7
+vakio_id = 55505
 number_of_matches = 12
 
 

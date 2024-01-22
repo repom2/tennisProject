@@ -6,9 +6,9 @@ import gradio as gr
 
 
 def feature_importance():
-    local_path = os.getcwd() + '/tennisapi/ml/trained_models/'
+    local_path = os.getcwd() + '/tennisapi/ml/models/'
 
-    file_name = "roland_garros_wta_model"
+    file_name = "test"
     file_path = local_path + file_name
 
     model = joblib.load(file_path)

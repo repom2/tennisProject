@@ -52,5 +52,4 @@ def player_stats(player_id, start_at, params):
     df = pd.read_sql(query, connection, params=params)
     spw = df.iloc[0]['spw']
     rpw = df.iloc[0]['rpw']
-    log.info(f"spw: {spw}, rpw: {rpw}")
     return [spw, rpw]

@@ -18,12 +18,26 @@ from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.analysis import match_analysis
 from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers, BetWta
-from tennisapi.ml.train_model import train_ml_model
 import logging
 
 log = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore")
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+
+stdout_handler = logging.StreamHandler(sys.stdout)
+stdout_handler.setLevel(logging.DEBUG)
+stdout_handler.setFormatter(formatter)
+
+file_handler = logging.FileHandler('logs.log')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stdout_handler)
 
 
 def probability_of_winning(x):
@@ -47,10 +61,6 @@ def get_data(params):
                 home_odds,
                 away_odds,
                 round_name,
-                case when (round_name ilike '%%ifinal%%' or round_name ilike '%%quarterfi%%') then 0
-                    when (round_name ilike '%%r32%%' or round_name ilike '%%r16%%')  then 1 
-                    when (round_name ilike '%%r64%%' or round_name ilike '%%r128%%')  then 2 
-                else 3 end as round_code,
                 winner_grasselo,
                 winner_hardelo,
                 winner_games,
@@ -139,7 +149,7 @@ def label_round(data, mapping):
     return data
 
 
-def predict(level, tour):
+def insert_data_to_match(level, tour):
     if level == 'atp':
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
@@ -171,21 +181,19 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2024-01-21 18:00:00',
-        'end_at': '2024-01-22 18:00:00',
+        'start_at': '2014-01-19 18:00:00',
+        'end_at': '2024-01-20 18:00:00',
     }
     data = get_data(params)
 
     log.info(data)
     log.info(data['start_at'].describe())
+    #exit(0)
     l = len(data.index)
     if l == 0:
-        print("No data")
+        log.info("No data")
         return
 
-    date = timezone.now() - timedelta(hours=8)
-    data = data[data['start_at'] > date]
-    log.info(data[['start_at', 'winner_name', 'loser_name']])
     if level == 'atp':
         tour_spw, tour_rpw = 0.645, 0.355
     else:
@@ -323,20 +331,13 @@ def predict(level, tour):
         #'spw2_c',
         #'winner_hardelo',
         #'loser_hardelo',
-        'round_code',
     ]
 
     print('tour', tour_spw, tour_rpw)
     print('event', event_spw, event_rpw)
-    #data = data.where(pd.notnull(data), None)
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
         preview, reasoning = None, None#match_analysis(row)
-        try:
-            train_ml_model(row, level)
-        except Exception as e:
-            pass
-        #break
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],
             home=player_qs.filter(id=row.home_id)[0],

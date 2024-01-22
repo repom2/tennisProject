@@ -9,10 +9,11 @@ from vakio.task.sport_wager import create_multiscore_wager
 #from datetime import datetime
 import datetime
 import logging
+from vakio.task.moniveto import moniveto
 
-moniveto_id = 63235
-list_index = 5
-max_bet_eur = 34
+moniveto_id = moniveto.moniveto_id
+list_index = moniveto.list_index
+max_bet_eur = 16
 line_cost = 0.05
 stake = 5
 
@@ -149,7 +150,7 @@ def moniveto_bet():
                 inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                 inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
                 where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                order by yield desc
+                order by share desc
                 """
     data = MonivetoOdds.objects.raw(query)
 
@@ -159,7 +160,7 @@ def moniveto_bet():
     if len(df) == 0:
         print("No bets")
         exit(0)
-    df = df[df['yield'] > 0.0]
+    df = df[df['yield'] > 1.0]
     #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]
     df = df[columns]

@@ -6,10 +6,11 @@ import json
 import time
 import datetime
 import logging
+from vakio.task import probs
 
-list_index = 7
-vakio_id = 55505
-max_bet_eur = 16
+list_index = probs.list_index
+vakio_id = probs.vakio_id
+max_bet_eur = 15
 line_cost = 0.1
 stake = 10
 
@@ -124,20 +125,21 @@ def find_lines():
     select id, bets, prob, win, yield, combination from 
         (select a.id, b.bets, b.value, prob, bet, a.combination,
             value / 100 as win, 
-            round((prob*(value/({stake})))::numeric, 4) as yield
+            round((prob*(value/({stake})))::numeric, 4) as yield,
+            ((value * 0.01) * (prob) - 1) / (value * 0.01) * 1000 as share
     from vakio_combination a 
     inner join vakio_winshare b on b.combination=a.combination and 
         b.vakio_id = a.vakio_id and b.list_index = a.list_index
     where bet = False and b.vakio_id = {params["id"]} and b.list_index = {params["listIndex"]}
-    ) s  order by yield desc
+    ) s  order by share desc
     """
     data = WinShare.objects.raw(query)
     logging.info("Number of lines: %d", len(data))
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield']
-    df = df[df['yield'] >= 0.70]
+    df = df[df['yield'] >= 1.0]
     #df = df[df['bets'] == 1]
-    print("Number of lines:", len(df))
+    print("Profitable lines:", len(df))
     df = df[columns]
 
     max_bet = int(max_bet_eur / line_cost)

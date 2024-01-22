@@ -64,13 +64,14 @@ from (
             when league_id = '7090' then '1094' --lausanne
             when league_id = '6925' then '2036' --budapest
             when league_id = '6965' then '466' --palermo
+            when league_id = '6878' then '580' --palermo
             else league_id
             end as league_idd
         from sportscore_events ) a inner join tennisapi_wtatour t
     on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_idd)
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id
-    where start_at::timestamp > '2020-05-1'
+    where start_at::timestamp > '2014-01-1'
     and sport_id='2'
     --and status = 'notstarted'
 ) s

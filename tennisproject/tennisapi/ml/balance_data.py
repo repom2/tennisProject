@@ -23,21 +23,21 @@ def balance_train_data(data):
 
     # Dont change because have to match with sql
     columns = [
-        'date',
-        'winner_name',
-        'loser_name',
+        'start_at',
+        'home_name',
+        'away_name',
         'round_name'
-        ] + winner_features() + loser_features() + ['result']
+        ] + winner_features() + loser_features() + ['winner_code']
 
     revert_columns = [
-        'date',
-        'loser_name',
-        'winner_name',
+        'start_at',
+        'home_name',
+        'away_name',
         'round_name'
-        ] + loser_features() + winner_features() + ['result']
+        ] + loser_features() + winner_features() + ['winner_code']
 
     df2 = df2[revert_columns]
-    df2["result"] = 0
+    df2["winner_code"] = 0
     df2.columns = columns
 
     merge_df = pd.concat([df1, df2])

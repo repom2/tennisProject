@@ -12,18 +12,19 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 import concurrent
 from django.db.utils import IntegrityError
+from vakio.task.moniveto import moniveto
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
-moniveto_id = 63235
-list_index = 5
+moniveto_id = moniveto.moniveto_id
+list_index = moniveto.list_index
 bonus = 0
 scores = [
-        "1-1",
-        "0,1,2,3-0,1,2,3",
-        "0,1,2,3-0,1,2,3",
+        "0,1,2,3-0,1,2,3,4",
+        "0,1,2,3-0,1,2,3,4",
+        "0,1,2,3,4-0,1,3",
         "0,1,2,3-0,1,2,3",
     ]
 

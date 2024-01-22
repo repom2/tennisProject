@@ -12,15 +12,15 @@ from concurrent.futures import ThreadPoolExecutor
 import concurrent
 import math
 from django.db.utils import IntegrityError
-
+from vakio.task import probs
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-list_index = 7
-vakio_id = 55505
+list_index = probs.list_index
+vakio_id = probs.vakio_id
 number_of_matches = 12
 
 

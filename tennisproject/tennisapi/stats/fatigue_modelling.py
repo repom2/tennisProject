@@ -18,7 +18,7 @@ def fatigue_score(params):
             winner_id = %(player_id)s
             or loser_id = %(player_id)s
             )
-            and t.date between '2015-1-1' and %(start_at)s
+            and t.date between (date(%(start_at)s) - interval '1 year') and %(start_at)s
             order by a.date desc limit 14
                 ) s;
         """

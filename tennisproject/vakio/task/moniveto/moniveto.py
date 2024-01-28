@@ -2,20 +2,20 @@ from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
 
 
-moniveto_id = 63243
-list_index = 3
+moniveto_id = 63264
+list_index = 4
 
 lst = [
-    [0, 4.2, 4.35, 1.81],
-    [1, 4.1, 4.15, 1.9],
-    [2, 1.83, 3.95, 4.6],
-    [3, 5.43, 3.48, 1.85],
+    [0, 3.85, 3.6, 2.06],
+    [1, 3.36, 3.95, 2.08],
+    [2, 1.16, 9.04, 18.68],
+    #[3, 1.662, 4.85, 5.0],
 ]
 estimated_avg_goals = [
-    [0, 1.1, 1.7],
-    [1, 1.2, 1.59],
-    [2, 2.0, 1.1],
-    [3, 0.9, 1.6],
+    [0, 1.05, 1.45],
+    [1, 1.21, 1.54],
+    [2, 3.0, 0.55],
+    #[3, 3.2, 2.15],
 ]
 
 goals = [

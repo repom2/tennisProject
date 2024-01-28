@@ -10,7 +10,7 @@ from vakio.task import probs
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-max_bet_eur = 15
+max_bet_eur = 16
 line_cost = 0.1
 stake = 10
 
@@ -44,7 +44,7 @@ params = {
 def get_sport_winshare(draw, matches):
     host = "https://www.veikkaus.fi"
     r = requests.post(
-        host + "/api/sport-winshare/v1/games/SPORT/draws/" + draw + "/winshare",
+        host + "/api/sport-winshare/v1/games/SPORT/draws/" + str(draw) + "/winshare",
         verify=True, data=matches, headers={
             'Content-type': 'application/json',
             'Accept': 'application/json',
@@ -105,8 +105,10 @@ def place_wagers(wager_req, session):
     if r.status_code == 200:
         j = r.json()
         print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.datetime.now(), rt, j["serialNumber"][:17]))
+        return True
     else:
         print("Request failed:\n" + r.text)
+        return False
 
 
 def get_balance(session):
@@ -122,22 +124,24 @@ def get_balance(session):
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def find_lines():
     query = f"""
-    select id, bets, prob, win, yield, combination from 
-        (select a.id, b.bets, b.value, prob, bet, a.combination,
-            value / 100 as win, 
-            round((prob*(value/({stake})))::numeric, 4) as yield,
-            ((value * 0.01) * (prob) - 1) / (value * 0.01) * 1000 as share
+    select id, bets, prob, win, yield, combination, value, share from 
+        (select a.id, b.bets, prob, bet, a.combination,
+            b.value / 100 as win, 
+            round((prob*(b.value/({stake})))::numeric, 4) as yield,
+            ((b.value * 0.01) * (prob) - 1) / (b.value * 0.01) * 1000 as share,
+            b.value as value
     from vakio_combination a 
     inner join vakio_winshare b on b.combination=a.combination and 
         b.vakio_id = a.vakio_id and b.list_index = a.list_index
     where bet = False and b.vakio_id = {params["id"]} and b.list_index = {params["listIndex"]}
-    ) s  order by share desc
+    ) s  order by share asc
     """
     data = WinShare.objects.raw(query)
     logging.info("Number of lines: %d", len(data))
     df = pd.DataFrame([item.__dict__ for item in data])
-    columns = ['combination', 'bets', 'prob', 'win', 'yield']
+    columns = ['combination', 'bets', 'prob', 'win', 'yield', 'value', 'share']
     df = df[df['yield'] >= 1.0]
+    df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]
     print("Profitable lines:", len(df))
     df = df[columns]
@@ -180,20 +184,23 @@ def find_lines():
         # Data for winshare
         win_data = create_sport_wager(params["id"], 0, line, False)
         matches = json.dumps(win_data)
-        #winshare = get_sport_winshare(params["id"], matches)
-        #bet_limit = row["prob"]*(winshare/stake+1)
-        #if bet_limit < 1.0:
-         #   print("bet limit:", bet_limit)
-         #   continue
-        place_wagers(data, session)
+        winshare = get_sport_winshare(params["id"], matches)
+        bet_limit = row["prob"]*(winshare/stake)
+        if bet_limit < 1.0:
+            print("BET LIMIT EXCEEDED, bet limit:", bet_limit)
+            continue
+        print("BET:", "winshare:", winshare, "bet limit:", bet_limit)
+        is_bet_placed = place_wagers(data, session)
 
         balance = get_balance(session)
         print("\n\taccount balance: %.2f\n" % (balance / 100.0))
-        Combination.objects.update_or_create(
-            combination=row["combination"],
-            vakio_id=params["id"],
-            list_index=params["listIndex"],
-            defaults={
-                "bet": True,
-            }
+        if is_bet_placed:
+            Combination.objects.update_or_create(
+                combination=row["combination"],
+                vakio_id=params["id"],
+                list_index=params["listIndex"],
+                defaults={
+                    "bet": True,
+                    "value": winshare,
+                }
         )

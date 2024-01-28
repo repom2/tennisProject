@@ -171,13 +171,11 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2024-01-21 18:00:00',
-        'end_at': '2024-01-22 18:00:00',
+        'start_at': '2024-01-26 18:00:00',
+        'end_at': '2024-01-28 18:00:00',
     }
     data = get_data(params)
 
-    log.info(data)
-    log.info(data['start_at'].describe())
     l = len(data.index)
     if l == 0:
         print("No data")
@@ -200,44 +198,46 @@ def predict(level, tour):
     }
     event_spw, event_rpw = event_stats(params)
     if event_spw is None:
-        event_spw, event_rpw = 0.565, 0.435
+        if level == 'atp':
+            tour_spw, tour_rpw = 0.645, 0.355
+        else:
+            tour_spw, tour_rpw = 0.565, 0.435
 
-    data[['spw1', 'rpw1']] = pd.DataFrame(
+    data[['home_spw', 'home_rpw']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], params)),
         index=data.index)
-    data[['spw2', 'rpw2']] = pd.DataFrame(
+    data[['away_spw', 'away_rpw']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], data['start_at'], params)),
         index=data.index)
-    data['player1'] = data.apply(lambda x: event_spw + (x.spw1 - tour_spw) - (x.rpw2 - tour_rpw) if (x.rpw2 and x.spw1) else None, axis=1)
-    data['player2'] = data.apply(lambda x: event_spw + (x.spw2 - tour_spw) - (x.rpw1 - tour_rpw) if (x.rpw1 and x.spw2) else None, axis=1)
+    data['player1'] = data.apply(lambda x: event_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw) if (x.away_rpw and x.home_spw) else None, axis=1)
+    data['player2'] = data.apply(lambda x: event_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw) if (x.home_rpw and x.away_spw) else None, axis=1)
 
-    data['win'] = data.apply(
+    data['stats_win'] = data.apply(
         lambda x: matchProb(
-            x.player1 if x.player1 else 0.55,
-            1-x.player2 if x.player2 else 0.55,
+            x.player1 if x.player1 else None,
+            1-x.player2 if x.player2 else None,
             gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
         ), axis=1).round(2)
 
     # Common opponent
-    data[['spw1_c', 'spw2_c', 'count']] = pd.DataFrame(
+    data[['spw1_c', 'spw2_c', 'common_opponents_count']] = pd.DataFrame(
         np.row_stack(np.vectorize(common_opponent, otypes=['O'])(
             params,
             data['home_id'],
             data['away_id'],
             event_spw,
-            '2022-1-1',
             data['start_at']
         )
         ), index=data.index)
 
-    data['win_c'] = data.apply(
+    data['common_opponents'] = data.apply(
         lambda x: matchProb(
             x.spw1_c,
             1 - x.spw2_c,
             gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
         ), axis=1).round(2)
 
-    data['f1'] = pd.DataFrame(
+    data['home_fatigue'] = pd.DataFrame(
         np.row_stack(np.vectorize(fatigue_modelling, otypes=['O'])(
             data['home_id'],
             params['tour_table'],
@@ -246,7 +246,7 @@ def predict(level, tour):
             )
         ),
         index=data.index)
-    data['f2'] = pd.DataFrame(
+    data['away_fatigue'] = pd.DataFrame(
         np.row_stack(np.vectorize(fatigue_modelling, otypes=['O'])(
             data['away_id'],
             params['tour_table'],
@@ -255,7 +255,7 @@ def predict(level, tour):
         )
         ),
         index=data.index)
-    data[['h2h', 'c']] = pd.DataFrame(
+    data[['h2h_win', 'h2h_matches']] = pd.DataFrame(
         np.row_stack(np.vectorize(head2head, otypes=['O'])(
             data['home_id'],
             data['away_id'],
@@ -266,7 +266,7 @@ def predict(level, tour):
         ),
         index=data.index)
     data['date'] = data['start_at'].dt.strftime('%Y-%m-%d')
-    data[['wo', 'inj']] = pd.DataFrame(
+    data[['walkover_home', 'home_inj_score']] = pd.DataFrame(
         np.row_stack(np.vectorize(injury_modelling, otypes=['O'])(
             data['date'],
             data['home_id'],
@@ -275,7 +275,7 @@ def predict(level, tour):
         )
         ),
         index=data.index)
-    data[['wo2', 'inj2']] = pd.DataFrame(
+    data[['walkover_away', 'away_inj_score']] = pd.DataFrame(
         np.row_stack(np.vectorize(injury_modelling, otypes=['O'])(
             data['date'],
             data['away_id'],
@@ -285,40 +285,40 @@ def predict(level, tour):
         ),
         index=data.index)
 
-    data['odds1'] = data['home_odds'].astype(float)
-    data['odds2'] = data['away_odds'].astype(float)
+    data['home_odds'] = data['home_odds'].astype(float)
+    data['away_odds'] = data['away_odds'].astype(float)
 
-    data['prob'] = data['winner_hardelo'] - data['loser_hardelo']
-    data['prob'] = data['prob'].apply(probability_of_winning).round(2)
+    data['elo_prob'] = data['winner_hardelo'] - data['loser_hardelo']
+    data['elo_prob'] = data['elo_prob'].apply(probability_of_winning).round(2)
 
-    data['prob_year'] = data['winner_year_elo'] - data['loser_year_elo']
-    data['prob_y'] = data['prob_year'].apply(probability_of_winning).round(2)
+    data['year_elo_prob'] = data['winner_year_elo'] - data['loser_year_elo']
+    data['year_elo_prob'] = data['year_elo_prob'].apply(probability_of_winning).round(2)
 
     columns = [
         #'start_at',
         'winner_name',
         'loser_name',
-        'odds1',
-        'odds2',
-        'prob',
-        'prob_y',
-        'spw1',
-        'rpw1',
-        'spw2',
-        'rpw2',
-        'win',
-        'f1',
-        'f2',
-        'h2h',
-        'c',
-        'wo',
-        'inj',
-        'wo2',
-        'inj2',
+        'home_odds',
+        'away_odds',
+        'elo_prob',
+        'year_elo_prob',
+        'home_spw',
+        'home_rpw',
+        'away_spw',
+        'away_rpw',
+        'stats_win',
+        'home_fatigue',
+        'away_fatigue',
+        'h2h_win',
+        'h2h_matches',
+        'walkover_home',
+        'home_inj_score',
+        'walkover_away',
+        'away_inj_score',
         #'player1',
         #'player2',
-        'win_c',
-        'count',
+        'common_opponents',
+        'common_opponents_count',
         #'spw1_c',
         #'spw2_c',
         #'winner_hardelo',
@@ -335,6 +335,7 @@ def predict(level, tour):
         try:
             train_ml_model(row, level)
         except Exception as e:
+            log.error(e)
             pass
         #break
         bet_qs.update_or_create(
@@ -345,25 +346,25 @@ def predict(level, tour):
                 "start_at": row.start_at,
                 "home_name": row.winner_name,
                 "away_name": row.loser_name,
-                "home_odds": row['odds1'],
-                "away_odds": row['odds2'],
-                "elo_prob": row['prob'],
-                "year_elo_prob": row['prob_y'],
-                "home_spw": row['spw1'],
-                "home_rpw": row['rpw1'],
-                "away_spw": row['spw2'],
-                "away_rpw": row['rpw2'],
-                "stats_win": row['win'],
-                "home_fatigue": row['f1'],
-                "away_fatigue": row['f2'],
-                "h2h_win": row['h2h'],
-                "h2h_matches": row['c'],
-                "walkover_home": row['wo'],
-                "walkover_away": row['wo2'],
-                "home_inj_score": row['inj'],
-                "away_inj_score": row['inj2'],
-                "common_opponents": row['win_c'],
-                "common_opponents_count": row['count'],
+                "home_odds": row['home_odds'],
+                "away_odds": row['away_odds'],
+                "elo_prob": row['elo_prob'],
+                "year_elo_prob": row['year_elo_prob'],
+                "home_spw": row['home_spw'],
+                "home_rpw": row['home_rpw'],
+                "away_spw": row['away_spw'],
+                "away_rpw": row['away_rpw'],
+                "stats_win": row['stats_win'],
+                "home_fatigue": row['home_fatigue'],
+                "away_fatigue": row['away_fatigue'],
+                "h2h_win": row['h2h_win'],
+                "h2h_matches": row['h2h_matches'],
+                "walkover_home": row['walkover_home'],
+                "walkover_away": row['walkover_away'],
+                "home_inj_score": row['home_inj_score'],
+                "away_inj_score": row['away_inj_score'],
+                "common_opponents": row['common_opponents'],
+                "common_opponents_count": row['common_opponents_count'],
                 "preview": preview,
                 "reasoning": reasoning,
             }

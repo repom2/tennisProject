@@ -8,6 +8,7 @@ class Combination(models.Model):
     bet = models.BooleanField(default=False)
     list_index = models.IntegerField(default=0)
     vakio_id = models.IntegerField(default=0)
+    value = models.IntegerField(null=True, default=None)
 
     # Composite primary key
     class Meta:
@@ -78,5 +79,7 @@ class MonivetoOdds(models.Model):
 class MonivetoBet(models.Model):
     combination = models.TextField()
     list_index = models.IntegerField()
+    value = models.IntegerField(null=True, default=None)
     moniveto_id = models.IntegerField()
     bet = models.BooleanField(default=False)
+    created_at = models.DateTimeField(null=True, auto_now_add=True)

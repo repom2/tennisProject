@@ -64,7 +64,7 @@ from (
             when league_id = '7090' then '1094' --lausanne
             when league_id = '6925' then '2036' --budapest
             when league_id = '6965' then '466' --palermo
-            when league_id = '6878' then '580' --palermo
+            --when league_id = '6878' then '580' --australia
             else league_id
             end as league_idd
         from sportscore_events ) a inner join tennisapi_wtatour t

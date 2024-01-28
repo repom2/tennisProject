@@ -133,8 +133,7 @@ def get_data(params):
             left join %(player_table)s h on h.id = b.home_id
             left join %(player_table)s aw on aw.id = b.away_id
             where surface ilike '%%hard%%' and b.start_at between %(start_at)s and %(end_at)s
-            and (
-            (name ilike '%%%(tour)s%%' ))
+            --and (name ilike '%%%(tour)s%%' )
             ) 
             ss where winner_name is not null and loser_name is not null order by start_at
     """
@@ -181,8 +180,8 @@ def insert_data_to_match(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2014-01-19 18:00:00',
-        'end_at': '2024-01-20 18:00:00',
+        'start_at': '2000-01-19 18:00:00',
+        'end_at': '20214-01-20 18:00:00',
     }
     data = get_data(params)
 
@@ -208,7 +207,10 @@ def insert_data_to_match(level, tour):
     }
     event_spw, event_rpw = event_stats(params)
     if event_spw is None:
-        event_spw, event_rpw = 0.565, 0.435
+        if level == 'atp':
+            tour_spw, tour_rpw = 0.645, 0.355
+        else:
+            tour_spw, tour_rpw = 0.565, 0.435
 
     data[['spw1', 'rpw1']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], params)),
@@ -221,8 +223,8 @@ def insert_data_to_match(level, tour):
 
     data['win'] = data.apply(
         lambda x: matchProb(
-            x.player1 if x.player1 else 0.55,
-            1-x.player2 if x.player2 else 0.55,
+            x.player1 if x.player1 else None,
+            1-x.player2 if x.player2 else None,
             gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
         ), axis=1).round(2)
 
@@ -233,7 +235,6 @@ def insert_data_to_match(level, tour):
             data['home_id'],
             data['away_id'],
             event_spw,
-            '2022-1-1',
             data['start_at']
         )
         ), index=data.index)

@@ -40,9 +40,8 @@ def get_data_atp_data():
             elo_prob,
             year_elo_prob,
             stats_win,
-            home_fatigue,
-            away_fatigue,
-            h2h_win,
+            home_fatigue - away_fatigue as fatigue,
+            (round(h2h_win::numeric * h2h_matches, 0) - round((1-h2h_win)::numeric * h2h_matches, 0))::integer as h2h_win,
             case when walkover_home is null then 0 when walkover_home = false then 0 else 1 end as walkover_home,
             case when walkover_away is null then 0 when walkover_away = false then 0 else 1 end as walkover_away,
             home_inj_score,
@@ -55,11 +54,16 @@ def get_data_atp_data():
             h2h_matches,
             common_opponents_count
         from tennisapi_bet b
-        inner join tennisapi_match m on b.match_id=m.id
-        where ( m.tour_id like '%-580' or m.tour_id like '%-7117' )
-        and (winner_code=1 or winner_code=2)
-        order by b.start_at desc;
+        inner join tennisapi_match m on b.match_id=m.id inner join tennisapi_atptour t on m.tour_id=t.id
+        where (winner_code=1 or winner_code=2) 
+        --and (walkover_home is null or walkover_home is false)
+        --and (walkover_away is null or walkover_home is false)
+        --and home_inj_score > 20.00
+        --and away_inj_score < 20.00
+        and surface ilike 'Hard'
+        --and (round_name ilike '%ifinal%' or round_name ilike '%quarterfi%' or round_name ilike '%r16%')
         """
+    # --( m.tour_id like '%-580' or m.tour_id like '%-7117' );
     df = pd.read_sql(query, connection)#, params=params)
 
     return df
@@ -75,9 +79,8 @@ def get_data_wta_data():
             elo_prob,
             year_elo_prob,
             stats_win,
-            home_fatigue,
-            away_fatigue,
-            h2h_win,
+            home_fatigue - away_fatigue as fatigue,
+            (round(h2h_win::numeric * h2h_matches, 0) - round((1-h2h_win)::numeric * h2h_matches, 0))::integer as h2h_win,
             case when walkover_home is null then 0 when walkover_home = false then 0 else 1 end as walkover_home,
             case when walkover_away is null then 0 when walkover_away = false then 0 else 1 end as walkover_away,
             home_inj_score,
@@ -90,9 +93,13 @@ def get_data_wta_data():
             h2h_matches,
             common_opponents_count
         from tennisapi_betwta b
-        inner join tennisapi_wtamatch m on b.match_id=m.id
-        where ( m.tour_id like '%-580' or m.tour_id like '%-6878' )
-        and (winner_code=1 or winner_code=2)
+        inner join tennisapi_wtamatch m on b.match_id=m.id  inner join tennisapi_wtatour t on m.tour_id=t.id
+        where 
+        --( m.tour_id like '%-580' or m.tour_id like '%-6878' ) and 
+        (winner_code=1 or winner_code=2)
+        and surface ilike 'Hard'
+        --and (walkover_home is null or walkover_home is false)
+        --and (walkover_away is null or walkover_home is false)
         order by b.start_at desc;
         """
     df = pd.read_sql(query, connection)#, params=params)
@@ -106,16 +113,20 @@ def classifier(
         features,
         round_mapping,
 ):
-    scaler = ColumnTransformer(
-        remainder='passthrough',  # passthough features not listed
-        transformers=[("num_preprocess", MinMaxScaler(), [
-        ])]
-    )
+    if "h2h_win" in features:
+        scaler = ColumnTransformer(
+            remainder='passthrough',  # passthough features not listed
+            transformers=[("num_preprocess", MinMaxScaler(), [
+                "h2h_win",
+            ])]
+        )
+    else:
+        scaler = None
     classifier = LogisticRegression(max_iter=500)
-    #classifier = RandomForestClassifier(n_estimators=1000)
+    # classifier = RandomForestClassifier(n_estimators=1000)
 
     pipeline = Pipeline([
-        #('preprocessor', scaler),
+        ('preprocessor', scaler),
         #('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False))),
         ('classifier', classifier)
     ])
@@ -137,49 +148,35 @@ def classifier(
 def train_ml_model(row, level):
     logging.info(f"Training model for {row['winner_name']} vs {row['loser_name']}")
     features = [
-        'odds',
+        #'home_odds',
         'elo_prob',
         'year_elo_prob',
         'stats_win',
+        'fatigue',
+        #'h2h_win',
         #'home_fatigue',
         #'away_fatigue',
-        #'h2h_win',
         #'walkover_home',
         #'walkover_away',
         #'home_inj_score',
         #'away_inj_score',
-        #'common_opponents',
-        'round_code',
+        'common_opponents',
+        #'round_code',
     ]
 
     # pandas series to dataframe
     df = row.to_frame().T
-    # rename column
-    df = df.rename(
-        columns={
-            'wo': 'walkover_home',
-            'wo2': 'walkover_away',
-            'odds1': 'odds',
-            'odds2': 'away_odds',
-            'prob': 'elo_prob',
-            'prob_y': 'year_elo_prob',
-            'spw1': 'home_spw',
-            'rpw1': 'home_rpw',
-            'spw2': 'away_spw',
-            'rpw2': 'away_rpw',
-            'win': 'stats_win',
-            'f1': 'home_fatigue',
-            'f2': 'away_fatigue',
-            'h2h': 'h2h_win',
-            'c': 'h2h_matches',
-            'inj': 'home_inj_score',
-            'inj2': 'away_inj_score',
-            'win_c': 'common_opponents',
-            'count': 'common_opponents_count',
-        }
-    )
 
-    df["odds"] = 1 / df['odds']
+    df["home_odds"] = 1 / df['home_odds']
+    df["fatigue"] = df['home_fatigue'] - df['away_fatigue']
+    if "h2h_win" in features:
+        try:
+            df["h2h_win"] = (df['h2h_win'] * df['h2h_matches'] - (1 - df['h2h_win']) * df['h2h_matches']).astype(int)
+        except Exception as e:
+            logging.info(f"Error: {e}")
+            features.remove("h2h_win")
+            logging.info("h2h_win not available")
+            logging.info(f"Features: {features}")
     df = df[features]
 
     if level == 'atp':
@@ -187,7 +184,7 @@ def train_ml_model(row, level):
     else:
         data = get_data_wta_data()
 
-    data["odds"] = 1/ data['home_odds']
+    data["home_odds"] = 1/ data['home_odds']
 
     #data = data[data['h2h_matches'] > 1]
     #data = data[data['common_opponents_count'] > 1]

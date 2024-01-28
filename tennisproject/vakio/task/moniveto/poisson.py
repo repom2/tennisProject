@@ -32,7 +32,7 @@ def calculate_poisson(
                 defaults={
                     "match_nro": match_nro,
                     "score": f"{i}-{j}",
-                    "prob": match_prob*0.85,
+                    "prob": match_prob*0.95,
                 }
             )
 

@@ -11,11 +11,18 @@ import datetime
 import logging
 from vakio.task.moniveto import moniveto
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+)
+
 moniveto_id = moniveto.moniveto_id
 list_index = moniveto.list_index
-max_bet_eur = 16
-line_cost = 0.05
-stake = 5
+max_bet_eur = 1
+line_cost = 0.2
+stake = 20
+m = 3
+bet_lines = 'n'
 
 pd.set_option('display.max_rows', None)
 
@@ -102,8 +109,10 @@ def place_wagers(wager_req, session):
     if r.status_code == 200:
         j = r.json()
         print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.datetime.now(), rt, j["serialNumber"][:17]))
+        return True
     else:
         print("Request failed:\n" + r.text)
+        return False
 
 
 def get_balance(session):
@@ -121,13 +130,13 @@ def moniveto_bet():
     #start = datetime.now()
 
     bankroll = 1000
-    if line_cost == 0.05:
+    if m == 4:
         query = f"""
         select a.id, a.combination,
-        (value * 0.01) * (b.prob * c.prob * d.prob * e.prob) as yield, bet.bet,
+        (a.value * 0.01) * (b.prob * c.prob * d.prob * e.prob) as yield, bet.bet,
         (b.prob * c.prob * d.prob * e.prob) as prob, 
-        value * 0.01 * {line_cost} as win,
-        ((value * 0.01) * (b.prob * c.prob * d.prob * e.prob) - 1) / (value * 0.01) * 1000 as share
+        a.value * 0.01 * {line_cost} as win,
+        ((a.value * 0.01) * (b.prob * c.prob * d.prob * e.prob) - 1) / (a.value * 0.01) * 1000 as share
         from vakio_monivetoodds a 
         left join vakio_monivetobet bet on bet.combination = a.combination and bet.moniveto_id = a.moniveto_id and bet.list_index = a.list_index
         inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
@@ -137,41 +146,57 @@ def moniveto_bet():
         where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
         order by share desc
         """
-    else:
+    elif m == 3:
         query = f"""
                 select a.id, a.combination,
-                (value * 0.01) * (b.prob * c.prob * d.prob) as yield, bet.bet,
+                (a.value * 0.01) * (b.prob * c.prob * d.prob) as yield, bet.bet,
                 (b.prob * c.prob * d.prob) as prob, 
-                value * 0.01 * {line_cost} as win,
-                ((value * 0.01) * (b.prob * c.prob * d.prob) - 1) / (value * 0.01) * 1000 as share
+                a.value * 0.01 * {line_cost} as win,
+                ((a.value * 0.01) * (b.prob * c.prob * d.prob) - 1) / (a.value * 0.01) * 1000 as share
                 from vakio_monivetoodds a 
                 left join vakio_monivetobet bet on (bet.combination = a.combination and bet.moniveto_id = a.moniveto_id and bet.list_index = a.list_index)
                 inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
                 inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                 inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
                 where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                order by share desc
+                order by yield desc
                 """
+    else:
+        query = f"""
+                    select a.id, a.combination,
+                    (a.value * 0.01) * (b.prob * c.prob) as yield, bet.bet,
+                    (b.prob * c.prob) as prob, 
+                    a.value * 0.01 * {line_cost} as win,
+                    ((a.value * 0.01) * (b.prob * c.prob) - 1) / (a.value * 0.01) * 1000 as share
+                    from vakio_monivetoodds a 
+                    left join vakio_monivetobet bet on (bet.combination = a.combination and bet.moniveto_id = a.moniveto_id and bet.list_index = a.list_index)
+                    inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
+                    inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
+                    where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
+                    order by yield desc
+                    """
     data = MonivetoOdds.objects.raw(query)
 
-    df = pd.DataFrame([item.__dict__ for item in data])
+    data = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'prob',  'yield', 'win', 'share', 'bet']
-    print("length:", len(df))
-    if len(df) == 0:
+    if len(data) == 0:
         print("No bets")
         exit(0)
-    df = df[df['yield'] > 1.0]
+    yield_limit = 1.0
+    df = data[data['yield'] > yield_limit]
     #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]
     df = df[columns]
 
     print(df.head(80))
-    print("length:", len(df))
+    print("Profitable lines:", len(df), "of", len(data), round(len(df)/len(data)*100),2), "%"
+    print("Yield limit:", yield_limit)
 
     max_bet = int(max_bet_eur / line_cost)
     df = df.head(max_bet)
-    print("length:", len(df))
-    #exit(0)
+    print("Lines to bet:", len(df), "with", max_bet, "max bet")
+    if bet_lines == 'no':
+        exit()
     session = login(params["username"], params["password"])
     bankroll = get_balance(session)
     for index, row in df.iterrows():
@@ -184,15 +209,14 @@ def moniveto_bet():
         winshare = get_sport_winshare(params["id"], matches)
         bet_limit = row["prob"]*winshare
         if bet_limit < 1.0:
+            logging.info("Bet limit too low: %s" % bet_limit)
             continue
-        print(winshare)
-        #break
-        place_wagers(data, session)
+        is_bet_placed = place_wagers(data, session)
         balance = get_balance(session)
         print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         if balance < 0.0:
             break
-        if balance < bankroll:
+        if balance < bankroll and is_bet_placed:
             bet = MonivetoOdds.objects.update_or_create(
                 combination=row["combination"],
                 moniveto_id=moniveto_id,
@@ -206,5 +230,6 @@ def moniveto_bet():
                 moniveto_id=moniveto_id,
                 list_index=list_index,
                 bet=True,
+                value=winshare,
             )
             bankroll = balance

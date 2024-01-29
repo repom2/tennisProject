@@ -127,7 +127,7 @@ def find_lines():
     select id, bets, prob, win, yield, combination, value, share from 
         (select a.id, b.bets, prob, bet, a.combination,
             b.value / 100 as win, 
-            round((prob*(b.value/({stake})))::numeric, 4) as yield,
+            round((prob*(b.value*0.01/({stake})))::numeric, 4) as yield,
             ((b.value * 0.01) * (prob) - 1) / (b.value * 0.01) * 1000 as share,
             b.value as value
     from vakio_combination a 

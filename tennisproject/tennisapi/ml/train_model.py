@@ -177,6 +177,12 @@ def train_ml_model(row, level):
             features.remove("h2h_win")
             logging.info("h2h_win not available")
             logging.info(f"Features: {features}")
+
+    if df['year_elo_prob'].isnull().values.any():
+        logging.info("year_elo_prob not available")
+        features.remove("year_elo_prob")
+        logging.info(f"Features: {features}")
+
     df = df[features]
 
     if level == 'atp':

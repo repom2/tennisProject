@@ -171,8 +171,8 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2024-01-26 18:00:00',
-        'end_at': '2024-01-28 18:00:00',
+        'start_at': '2024-01-29 07:00:00',
+        'end_at': '2024-01-29 20:00:00',
     }
     data = get_data(params)
 

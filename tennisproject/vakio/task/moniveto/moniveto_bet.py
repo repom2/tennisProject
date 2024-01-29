@@ -18,8 +18,8 @@ logging.basicConfig(
 
 moniveto_id = moniveto.moniveto_id
 list_index = moniveto.list_index
-max_bet_eur = 1
-line_cost = 0.2
+max_bet_eur = 34
+line_cost = 0.20
 stake = 20
 m = 3
 bet_lines = 'n'
@@ -144,7 +144,7 @@ def moniveto_bet():
         inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
         inner join vakio_monivetoprob e on e.combination=a.match4 and e.moniveto_id = a.moniveto_id and e.list_index = a.list_index
         where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-        order by share desc
+        order by yield desc
         """
     elif m == 3:
         query = f"""
@@ -159,7 +159,7 @@ def moniveto_bet():
                 inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                 inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
                 where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                order by yield desc
+                order by share desc
                 """
     else:
         query = f"""

@@ -7,8 +7,8 @@ max_goals = 10  # Maximum number of goals to consider per team
 
 def objective_func(goals_avg, desired_probabilities):
     average_goals_teamA, average_goals_teamB = goals_avg
-    print("Average goals for team A: {:.2f}".format(average_goals_teamA))
-    #exit()
+    # print("Average goals for team A: {:.2f}".format(average_goals_teamA))
+
     # Calculate Poisson PMF for each team up to max goals
     poisson_teamA = sps.poisson.pmf(np.arange(max_goals+1), average_goals_teamA)
     poisson_teamB = sps.poisson.pmf(np.arange(max_goals+1), average_goals_teamB)
@@ -51,7 +51,7 @@ def match_probability(
     # Optimization
     result = minimize(objective_func, x0, args=(desired_probabilities), method='Nelder-Mead')
     estimated_avg_goals = result.x
-    print("Average goals for team A: {:.2f}".format(estimated_avg_goals[0]))
-    print("Average goals for team B: {:.2f}".format(estimated_avg_goals[1]))
+    #print("Average goals for team A: {:.2f}".format(estimated_avg_goals[0]))
+    #print("Average goals for team B: {:.2f}".format(estimated_avg_goals[1]))
 
     return estimated_avg_goals

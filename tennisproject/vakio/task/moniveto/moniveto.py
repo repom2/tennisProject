@@ -1,21 +1,26 @@
 from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
+import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+)
 
-moniveto_id = 63264
-list_index = 4
+moniveto_id = 63268
+list_index = 8
 
 lst = [
-    [0, 3.85, 3.6, 2.06],
-    [1, 3.36, 3.95, 2.08],
-    [2, 1.16, 9.04, 18.68],
-    #[3, 1.662, 4.85, 5.0],
+    [0, 5.35, 3.81, 1.73],
+    [1, 1.82, 3.6, 5.01],
+    [2, 1.64, 4.64, 5.0],
+    #[3, 1.6, 4.3, 6.35],
 ]
 estimated_avg_goals = [
-    [0, 1.05, 1.45],
-    [1, 1.21, 1.54],
-    [2, 3.0, 0.55],
-    #[3, 3.2, 2.15],
+    [0, 1.0, 2.0],
+    [1, 1.7, 1.0],
+    [2, 2.0, 1.0],
+    #[3, 2.1, 1.0],
 ]
 
 goals = [
@@ -85,21 +90,29 @@ def estimated_avg_goals_calc(i):
     return [home, away]
 
 def moniveto():
-
-    for i, item in enumerate(lst):
-        #estimated_avg_goals = match_probability(i[1], i[2], i[3])
-        #calculate_poisson(estimated_avg_goals[0], estimated_avg_goals[1], i[0])
-        #estimated_avg_goals = [3.1, 2.54]
-        arbitrage_check(item)
-        # try:
-            # estimated_avg_goals = estimated_avg_goals_calc(goals[i])
-        # except IndexError:
-            # exit()
-        calculate_poisson(
-            estimated_avg_goals[i][1],
-            estimated_avg_goals[i][2],
-            item[0],
-            moniveto_id,
-            list_index,
-        )
-        print("---------------------------")
+    is_using_own_data = False
+    if is_using_own_data:
+        for i, item in enumerate(lst):
+            arbitrage_check(item)
+            calculate_poisson(
+                estimated_avg_goals[i][1],
+                estimated_avg_goals[i][2],
+                item[0],
+                moniveto_id,
+                list_index,
+            )
+            print("---------------------------")
+    else:
+        for i, item in enumerate(lst):
+            #if i == 0 or i == 1:
+             #   continue
+            estimated_avg_goals = match_probability(item[1], item[2], item[3])
+            calculate_poisson(
+                estimated_avg_goals[0],
+                estimated_avg_goals[1],
+                item[0],
+                moniveto_id,
+                list_index,
+            )
+            logging.info("Estimated avg goals: %s", estimated_avg_goals)
+            print("---------------------------")

@@ -7,12 +7,21 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
-from sportscore.models import Leagues, Events, Players, Teams, Stats
+from sportscore.models import Leagues, Events, Players, Teams, Stats, FootballEvents
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
+import logging
+from tabulate import tabulate
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
+)
 
 pd.set_option('display.max_columns', None)
+
+sport_score_key = settings.SPORT_SCORE_KEY
 
 
 class Command(BaseCommand):
@@ -34,6 +43,9 @@ class Command(BaseCommand):
 
         events_by_leagues_cmd = subparsers.add_parser("events-by-leagues")
         events_by_leagues_cmd.set_defaults(subcommand=self.events_by_leagues)
+
+        football_events_by_leagues_cmd = subparsers.add_parser("football-events-by-leagues")
+        football_events_by_leagues_cmd.set_defaults(subcommand=self.football_events_by_leagues)
 
         events_by_section_cmd = subparsers.add_parser("events-by-section")
         events_by_section_cmd.set_defaults(subcommand=self.events_by_section_id)
@@ -71,7 +83,8 @@ class Command(BaseCommand):
         data = json.loads(data)
         data_df = data['data']
         df = pd.DataFrame(data_df)
-        print(df)
+        logging.info(
+            f"DataFrame:\n{tabulate(df[['id', 'slug']], headers='keys', tablefmt='psql', showindex=False)}")
 
     # SECTION ID
     def list_sections(self, options):
@@ -89,10 +102,13 @@ class Command(BaseCommand):
         data = json.loads(data)
         data_df = data['data']
         df = pd.DataFrame(data_df)
-        print(df)
+        # sort by priority field
+        df = df.sort_values(by='priority', ascending=False)
+        logging.info(
+            f"DataFrame:\n{tabulate(df[['id', 'name', 'priority']], headers='keys', tablefmt='psql', showindex=False)}")
 
     def list_leagues(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/2/leagues"
+        url = "https://sportscore1.p.rapidapi.com/sports/1/leagues"
         sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
             "X-RapidAPI-Key": sport_score_key,
@@ -131,6 +147,7 @@ class Command(BaseCommand):
                 m = Leagues(**item)
                 m.save()
                 pbar.update(1)
+
 
     # Update database
     def events_by_leagues(self, options):
@@ -193,6 +210,62 @@ class Command(BaseCommand):
                     m.save()
                     pbar.update(1)
 
+    # Update database
+    def football_events_by_leagues(self, options):
+        football_leagues = ['317', '326']
+
+        for league_id in football_leagues:
+            events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id + "/events"
+
+            headers = {
+                "X-RapidAPI-Key": sport_score_key,
+                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+            }
+
+            querystring = {"page": "1"}
+
+            response = requests.request(
+                "GET", events_by_league_id, headers=headers, params=querystring
+            )
+
+            data = response.text
+
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                continue
+            try:
+                data_df = data['data']
+            except:
+                continue
+            meta_from = data['meta']["from"]
+            current_page = data['meta']["current_page"]
+            per_page = data['meta']["per_page"]
+            meta_to = data['meta']["to"]
+
+            if meta_to is not None:
+                while meta_to >= per_page:
+                    current_page += 1
+                    querystring = {"page": str(current_page)}
+                    response = requests.request(
+                        "GET", events_by_league_id, headers=headers, params=querystring
+                    )
+                    data = response.text
+                    data = json.loads(data)
+                    try:
+                        data_df.extend(data["data"])
+                    except json.JSONDecodeError:
+                        continue
+                    per_page += data['meta']["per_page"]
+                    meta_to = data['meta']["to"]
+                    if meta_to is None:
+                        break
+
+            with tqdm(total=len(data_df)) as pbar:
+                for item in data_df:
+                    m = FootballEvents(**item)
+                    m.save()
+                    pbar.update(1)
 
     # FIX TO PAGE
     def list_events(self, options):

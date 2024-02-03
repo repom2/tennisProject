@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "tennis_atp",
     "corsheaders",
     "vakio",
+    "footballapi",
 ]
 
 MIDDLEWARE = [

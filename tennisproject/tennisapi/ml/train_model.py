@@ -153,7 +153,7 @@ def train_ml_model(row, level):
         'year_elo_prob',
         'stats_win',
         'fatigue',
-        #'h2h_win',
+        'h2h_win',
         #'home_fatigue',
         #'away_fatigue',
         #'walkover_home',
@@ -173,15 +173,12 @@ def train_ml_model(row, level):
         try:
             df["h2h_win"] = (df['h2h_win'] * df['h2h_matches'] - (1 - df['h2h_win']) * df['h2h_matches']).astype(int)
         except Exception as e:
-            logging.info(f"Error: {e}")
             features.remove("h2h_win")
-            logging.info("h2h_win not available")
-            logging.info(f"Features: {features}")
-
+    if "common_opponents" in features:
+        if df['common_opponents'].isnull().values.any() or df['common_opponents_count'].iloc[0] < 2:
+            features.remove("common_opponents")
     if df['year_elo_prob'].isnull().values.any():
-        logging.info("year_elo_prob not available")
         features.remove("year_elo_prob")
-        logging.info(f"Features: {features}")
 
     df = df[features]
 
@@ -198,16 +195,16 @@ def train_ml_model(row, level):
     f = features + ['winner_code'] + ['start_at', 'home_name', 'away_name']
 
     data = data[f]
-    logging.info(f"Lenght of Data All:{len(data)}")
+    data_length = len(data)
     data = data.dropna()
-    logging.info(f"Lenght of Data:{len(data)}")
-    logging.info(f"Lenght of Home:{len(data[data['winner_code'] == 0])}")
-    logging.info(f"Lenght of Away:{len(data[data['winner_code'] == 1])}")
+    logging.info(f"Lenght of Data All:{data_length} "
+                 f"Lenght of Data:{len(data)}"
+                 f"Lenght of Home:{len(data[data['winner_code'] == 0])} "
+                 f"Lenght of Away:{len(data[data['winner_code'] == 1])}")
 
     #data, round_mapping = balance_train_data(data)
 
     x_train = data[features]
-    print("Lenght of Train Data:", len(x_train))
     y_train = data[['winner_code']]
 
     model = classifier(

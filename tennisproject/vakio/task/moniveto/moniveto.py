@@ -7,27 +7,27 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = 63268
-list_index = 8
+moniveto_id = 63280
+list_index = 2
 
 lst = [
-    [0, 5.35, 3.81, 1.73],
-    [1, 1.82, 3.6, 5.01],
-    [2, 1.64, 4.64, 5.0],
-    #[3, 1.6, 4.3, 6.35],
+    [0, 1.5, 4.0, 7.0],
+    [1, 3.75, 3.2, 2.1],
+    [2, 4.75, 3.8, 1.73],
+    #[3, 1.95, 4.08, 4.05],
 ]
 estimated_avg_goals = [
-    [0, 1.0, 2.0],
-    [1, 1.7, 1.0],
-    [2, 2.0, 1.0],
+    [0, 1.9, 2.8],
+    [1, 2.51, 2.833],
+    #[2, 2.51, 2.8],
     #[3, 2.1, 1.0],
 ]
 
 goals = [
-    [0, 16/10, 11/10, 12/10, 11/10, 'ita'],
-    [1, 21/10, 11/10, 15/10, 7/10, 'esp'],
-    [2, 14/10, 11/10, 9/10, 14/10, 'pl'],
-    #[3, 41/18, 47/18, 40/19, 57/19, 'liiga'],
+    [0, 27/11, 12/11, 10/11, 17/11, 'esp'],
+    [1, 12/11, 15/11, 12/10, 11/10, 'ita'],
+    [2, 18/14, 16/14, 19/14, 15/14, 'champ'],
+    #[3, 20/10, 8/10, 16/10, 15/10, 'pl'],
 ]
 
 
@@ -82,21 +82,35 @@ def estimated_avg_goals_calc(i):
         print("League not found!")
         exit()
 
-    home = goals_home + (i[1] - goals_home) + (i[4] - goals_home)
+    home = i[1] / goals_home
+    home_defence = i[2] / conceded_home
 
-    away = conceded_home + (i[3] - conceded_home) + (
-                i[2] - conceded_home)
-    print(round(home, 2), round(away, 2))
-    return [home, away]
+    away = i[3] / conceded_home
+    away_defence = i[4] / goals_home
+
+    home = home * away_defence * goals_home
+    away = away * home_defence * conceded_home
+
+    return ['estimated_goals', home, away]
 
 def moniveto():
-    is_using_own_data = False
+    estimated_avg_goals = [
+        [0, 1.9, 2.8],
+        [1, 2.51, 2.833],
+        [2, 2.51, 2.8],
+        # [3, 2.1, 1.0],
+    ]
+    is_using_own_data = True
     if is_using_own_data:
         for i, item in enumerate(lst):
             arbitrage_check(item)
+            estimated_goals = estimated_avg_goals_calc(goals[i])
+            logging.info( estimated_goals)
             calculate_poisson(
-                estimated_avg_goals[i][1],
-                estimated_avg_goals[i][2],
+                #estimated_avg_goals[i][1],
+                estimated_goals[1],
+                #estimated_avg_goals[i][2],
+                estimated_goals[2],
                 item[0],
                 moniveto_id,
                 list_index,

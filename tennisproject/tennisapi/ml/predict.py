@@ -20,6 +20,7 @@ from tennisapi.stats.analysis import match_analysis
 from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers, BetWta
 from tennisapi.ml.train_model import train_ml_model
 import logging
+from tabulate import tabulate
 
 log = logging.getLogger(__name__)
 
@@ -40,8 +41,12 @@ def get_data(params):
                 home_id,
                 away_id,
                 start_at,
-                winner_first_name,
-                loser_first_name,
+                case when winner_first_name is not null then 
+                winner_first_name || ' ' || winner_name 
+                else winner_name end as winner_fullname,
+                case when loser_first_name is not null then 
+                loser_first_name || ' ' || loser_name 
+                else loser_name end as loser_fullname,
                 winner_name,
                 loser_name,
                 home_odds,
@@ -171,8 +176,8 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2024-01-29 07:00:00',
-        'end_at': '2024-01-29 20:00:00',
+        'start_at': '2024-02-03 00:00:00',
+        'end_at': '2024-02-03 22:00:00',
     }
     data = get_data(params)
 
@@ -183,7 +188,20 @@ def predict(level, tour):
 
     date = timezone.now() - timedelta(hours=8)
     data = data[data['start_at'] > date]
-    log.info(data[['start_at', 'winner_name', 'loser_name']])
+    l = len(data.index)
+    if l == 0:
+        print("No data")
+        return
+    columns = [
+        'start_at',
+        'winner_fullname',
+        'loser_fullname',
+        'home_id',
+        'away_id',
+    ]
+    logging.info(
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
+
     if level == 'atp':
         tour_spw, tour_rpw = 0.645, 0.355
     else:

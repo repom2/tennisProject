@@ -1,16 +1,22 @@
 .appContainer {
-    display: flex;
+    display: flex; /* Use 'flex' instead of 'inline-flex' */
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start; /* Aligns children to the start of the container */
+    align-items: flex-start; /* Aligns children to the start of the cross axis */
     gap: 20px;
     padding: 20px;
-    flex-wrap: wrap;
 }
 
-/* Responsive for 600px or less */
-@media (max-width: 600px) {
+/* Responsive for 800px or less */
+@media (max-width: 800px) {
     .appContainer {
-        flex-direction: column-reverse;
-        align-items: center;
+        flex-direction: column;
+        align-items: stretch; /* Children will stretch full width */
+    }
+
+    /* You may want to add a class to your Sidebar to manage its width */
+    .sidebar { /* Adapt this to match your actual Sidebar's className if it's different */
+        width: 100%; /* Sidebar will take full width */
+        /* Or set a max-width if you do not want it to be full width */
     }
 }

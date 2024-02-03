@@ -4,10 +4,8 @@ from vakio.task.sport_wager import create_sport_wager
 import requests
 import json
 import time
-import datetime
+from datetime import datetime
 from vakio.task.sport_wager import create_multiscore_wager
-#from datetime import datetime
-import datetime
 import logging
 from vakio.task.moniveto import moniveto
 
@@ -18,9 +16,9 @@ logging.basicConfig(
 
 moniveto_id = moniveto.moniveto_id
 list_index = moniveto.list_index
-max_bet_eur = 34
-line_cost = 0.20
-stake = 20
+max_bet_eur = 30
+line_cost = 0.2
+stake = line_cost * 100
 m = 3
 bet_lines = 'n'
 
@@ -108,7 +106,7 @@ def place_wagers(wager_req, session):
 
     if r.status_code == 200:
         j = r.json()
-        print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.datetime.now(), rt, j["serialNumber"][:17]))
+        print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.now(), rt, j["serialNumber"][:17]))
         return True
     else:
         print("Request failed:\n" + r.text)
@@ -127,7 +125,7 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet():
-    #start = datetime.now()
+    start = datetime.now()
 
     bankroll = 1000
     if m == 4:
@@ -144,7 +142,7 @@ def moniveto_bet():
         inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
         inner join vakio_monivetoprob e on e.combination=a.match4 and e.moniveto_id = a.moniveto_id and e.list_index = a.list_index
         where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-        order by yield desc
+        order by share desc
         """
     elif m == 3:
         query = f"""
@@ -173,7 +171,7 @@ def moniveto_bet():
                     inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
                     inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                     where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                    order by yield desc
+                    order by share desc
                     """
     data = MonivetoOdds.objects.raw(query)
 
@@ -188,13 +186,16 @@ def moniveto_bet():
     #df = df[df['yield'] < 15.0]
     df = df[columns]
 
-    print(df.head(80))
-    print("Profitable lines:", len(df), "of", len(data), round(len(df)/len(data)*100),2), "%"
-    print("Yield limit:", yield_limit)
+    logging.info(df.head(80))
+    logging.info("Profitable lines:" + str(len(df)) + " of " + str(len(data)) + ' ' + str(round((len(df)/len(data)*100),2)) + "%")
+    logging.info("Yield limit:" + str(yield_limit))
 
     max_bet = int(max_bet_eur / line_cost)
     df = df.head(max_bet)
-    print("Lines to bet:", len(df), "with", max_bet, "max bet")
+    logging.info("Lines to bet: " + str(len(df)) + " with " + str(max_bet) + " max bet")
+    end = datetime.now()
+    logging.info('Script ended')
+    logging.info('Time elapsed: {}'.format(end - start))
     if bet_lines == 'no':
         exit()
     session = login(params["username"], params["password"])

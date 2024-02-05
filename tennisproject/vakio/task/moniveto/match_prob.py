@@ -35,9 +35,9 @@ def match_probability(
         odds_draw,
         odds_away_win,
 ):
-    desired_prob_home_win = 1 / odds_home_win
-    desired_prob_draw = 1 / odds_draw
-    desired_prob_away_win = 1 / odds_away_win
+    desired_prob_home_win =  odds_home_win
+    desired_prob_draw =  odds_draw
+    desired_prob_away_win =  odds_away_win
 
     # Initial guess
     x0 = np.array([4.0, 4.0])

@@ -43,7 +43,9 @@ def get_data(params):
                 aw.name as away_name,
                 winner_code,
                 (select elo from %(elo_table)s elo where elo.team_id=home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
-                (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo
+                (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
+                (select elo from %(elo_home)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
+                (select elo from %(elo_away)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_away
             from %(match_table)s b
             left join footballapi_teams h on h.id = b.home_team_id
             left join footballapi_teams aw on aw.id = b.away_team_id
@@ -67,15 +69,21 @@ def predict(level):
         match_qs = PremierLeague.objects.all()
         match_table = 'footballapi_premierleague'
         elo_table = 'footballapi_premierelo'
+        elo_home = 'footballapi_premierelohome'
+        elo_away = 'footballapi_premiereloaway'
     else:
         match_qs = Championship.objects.all()
         match_table = 'footballapi_championship'
         elo_table = 'footballapi_championshipelo'
+        elo_home = 'footballapi_championshipelohome'
+        elo_away = 'footballapi_championshipeloaway'
     params = {
         'match_table': AsIs(match_table),
         'elo_table': AsIs(elo_table),
-        'start_at': '2024-02-03 00:00:00',
-        'end_at': '2024-02-03 22:00:00',
+        'elo_home': AsIs(elo_home),
+        'elo_away': AsIs(elo_away),
+        'start_at': '2024-02-04 00:00:00',
+        'end_at': '2024-02-04 22:00:00',
     }
     data = get_data(params)
     l = len(data.index)
@@ -93,6 +101,7 @@ def predict(level):
         'home_elo',
         'away_elo',
         'elo_prob',
+        'elo_prob_home',
     ]
 
     data['home_odds'] = data['home_odds'].astype(float)
@@ -100,9 +109,11 @@ def predict(level):
 
     data['elo_prob'] = data['home_elo'] - data['away_elo']
     data['elo_prob'] = data['elo_prob'].apply(probability_of_winning).round(2)
+    data['elo_prob_home'] = data['elo_home'] - data['elo_away']
+    data['elo_prob_home'] = data['elo_prob_home'].apply(probability_of_winning).round(2)
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
-
+    #exit()
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
         train_ml_model(row, level, params)

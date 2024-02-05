@@ -12,7 +12,7 @@ list_index = probs.list_index
 vakio_id = probs.vakio_id
 max_bet_eur = 16
 line_cost = 0.1
-stake = 10
+stake = line_cost * 100
 
 logging.basicConfig(
     level=logging.INFO,
@@ -127,21 +127,21 @@ def find_lines():
     select id, bets, prob, win, yield, combination, value, share from 
         (select a.id, b.bets, prob, bet, a.combination,
             b.value / 100 as win, 
-            round((prob*(b.value*0.01/({stake})))::numeric, 4) as yield,
-            ((b.value * 0.01) * (prob) - 1) / (b.value * 0.01) * 1000 as share,
+            round((prob*(b.value*0.01/({line_cost})))::numeric, 4) as yield,
+            ((b.value * 0.01) * (prob) - 1) / (b.value * 0.01) * 10000 as share,
             b.value as value
     from vakio_combination a 
     inner join vakio_winshare b on b.combination=a.combination and 
         b.vakio_id = a.vakio_id and b.list_index = a.list_index
     where bet = False and b.vakio_id = {params["id"]} and b.list_index = {params["listIndex"]}
-    ) s  order by share asc
+    ) s  order by yield desc
     """
     data = WinShare.objects.raw(query)
     logging.info("Number of lines: %d", len(data))
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'value', 'share']
-    df = df[df['yield'] >= 1.0]
-    df = df[df['share'] >= 0]
+    #df = df[df['yield'] >= 0.0]
+    #df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]
     print("Profitable lines:", len(df))
     df = df[columns]

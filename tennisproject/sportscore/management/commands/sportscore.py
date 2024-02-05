@@ -108,7 +108,7 @@ class Command(BaseCommand):
             f"DataFrame:\n{tabulate(df[['id', 'name', 'priority']], headers='keys', tablefmt='psql', showindex=False)}")
 
     def list_leagues(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/1/leagues"
+        url = "https://sportscore1.p.rapidapi.com/sports/2/leagues"
         sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
             "X-RapidAPI-Key": sport_score_key,

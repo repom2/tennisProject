@@ -17,10 +17,9 @@ logging.basicConfig(
 moniveto_id = moniveto.moniveto_id
 list_index = moniveto.list_index
 max_bet_eur = 30
-line_cost = 0.2
-stake = line_cost * 100
-m = 3
 bet_lines = 'n'
+
+m = moniveto.matches_to_bet
 
 pd.set_option('display.max_rows', None)
 
@@ -127,7 +126,11 @@ def get_balance(session):
 def moniveto_bet():
     start = datetime.now()
 
-    bankroll = 1000
+    if m == 3 or m == 2:
+        line_cost = 0.2
+    else:
+        line_cost = 0.05
+    stake = line_cost * 100
     if m == 4:
         query = f"""
         select a.id, a.combination,
@@ -180,7 +183,7 @@ def moniveto_bet():
     if len(data) == 0:
         print("No bets")
         exit(0)
-    yield_limit = 1.0
+    yield_limit = 1.6
     df = data[data['yield'] > yield_limit]
     #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]

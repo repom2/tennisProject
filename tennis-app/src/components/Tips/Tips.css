@@ -7,17 +7,14 @@
     margin: 0 auto;
     padding: 0;
     font-family: Arial, sans-serif;
-    padding-top: 30px;
 }
 
 .main {
     width: 100%;
     max-width: 1000px;
     list-style-type: none;
-    margin: 0 auto;
-    padding: 0;
     font-family: Arial, sans-serif;
-    padding-top: 0px;
+    margin-left: 10px;
 }
 
 .player-list-item {

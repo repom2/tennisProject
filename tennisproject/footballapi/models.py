@@ -81,6 +81,40 @@ class PremierElo(models.Model):
     date = models.DateField(null=True)
 
 
+class PremierEloHome(models.Model):
+    match = models.ForeignKey(
+        'PremierLeague',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class PremierEloAway(models.Model):
+    match = models.ForeignKey(
+        'PremierLeague',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
 class ChampionshipElo(models.Model):
     match = models.ForeignKey(
         'Championship',
@@ -91,6 +125,40 @@ class ChampionshipElo(models.Model):
         to=Teams,
         on_delete=models.DO_NOTHING,
         related_name="championship_elo_rating",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class ChampionshipEloHome(models.Model):
+    match = models.ForeignKey(
+        'Championship',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="championship_home_elo_rating",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class ChampionshipEloAway(models.Model):
+    match = models.ForeignKey(
+        'Championship',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="championship_away_elo_rating",
     )
     elo = models.IntegerField()
     elo_change = models.IntegerField()

@@ -46,7 +46,9 @@ def get_train_data(params):
                 aw.name as away_name,
                 winner_code,
                 (select elo from %(elo_table)s elo where elo.team_id=home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
-                (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo
+                (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
+                (select elo from %(elo_home)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
+                (select elo from %(elo_away)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_away
             from %(match_table)s b
             left join footballapi_teams h on h.id = b.home_team_id
             left join footballapi_teams aw on aw.id = b.away_team_id
@@ -93,6 +95,7 @@ def train_ml_model(row, level, params):
     features = [
         #'home_odds',
         'elo_prob',
+        'elo_prob_home',
     ]
 
     # pandas series to dataframe
@@ -105,7 +108,9 @@ def train_ml_model(row, level, params):
     data = get_train_data(params)
 
     data['elo_prob'] = data['home_elo'] - data['away_elo']
+    data['elo_prob_home'] = data['elo_home'] - data['elo_away']
     data['elo_prob'] = data['elo_prob'].apply(probability_of_winning).round(2)
+    data['elo_prob_home'] = data['elo_prob_home'].apply(probability_of_winning).round(2)
 
     data["home_odds"] = 1/ data['home_odds']
 

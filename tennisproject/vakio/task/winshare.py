@@ -21,7 +21,7 @@ logging.basicConfig(
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-number_of_matches = 12
+number_of_matches = probs.number_of_matches
 
 
 def get_sport_winshare(draw, matches):

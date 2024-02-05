@@ -146,7 +146,10 @@ def classifier(
 
 
 def train_ml_model(row, level):
-    logging.info(f"Training model for {row['winner_name']} vs {row['loser_name']}")
+    logging.info("-" * 50)
+    # logging.info(f"Training model for {row['winner_name']} vs {row['loser_name']}")
+    home_name = row['winner_fullname']
+    away_name = row['loser_fullname']
     features = [
         #'home_odds',
         'elo_prob',
@@ -166,12 +169,19 @@ def train_ml_model(row, level):
 
     # pandas series to dataframe
     df = row.to_frame().T
-
-    df["home_odds"] = 1 / df['home_odds']
+    odds_home = df['home_odds'].iloc[0]
+    odds_away = df['away_odds'].iloc[0]
+    # df["home_odds"] = 1 / df['home_odds']
     df["fatigue"] = df['home_fatigue'] - df['away_fatigue']
+
+    if df["fatigue"].iloc[0] == 0 or df["fatigue"].isnull().values.any():
+        features.remove("fatigue")
+
     if "h2h_win" in features:
         try:
             df["h2h_win"] = (df['h2h_win'] * df['h2h_matches'] - (1 - df['h2h_win']) * df['h2h_matches']).astype(int)
+            if df["h2h_win"].iloc[0] == 0:
+                features.remove("h2h_win")
         except Exception as e:
             features.remove("h2h_win")
     if "common_opponents" in features:
@@ -187,7 +197,7 @@ def train_ml_model(row, level):
     else:
         data = get_data_wta_data()
 
-    data["home_odds"] = 1/ data['home_odds']
+    #data["home_odds"] = 1/ data['home_odds']
 
     #data = data[data['h2h_matches'] > 1]
     #data = data[data['common_opponents_count'] > 1]
@@ -197,10 +207,9 @@ def train_ml_model(row, level):
     data = data[f]
     data_length = len(data)
     data = data.dropna()
-    logging.info(f"Lenght of Data All:{data_length} "
-                 f"Lenght of Data:{len(data)}"
-                 f"Lenght of Home:{len(data[data['winner_code'] == 0])} "
-                 f"Lenght of Away:{len(data[data['winner_code'] == 1])}")
+    """logging.info(f"Lenght of Data All:{data_length} "
+                 f"Home:{len(data[data['winner_code'] == 0])} "
+                 f"Away:{len(data[data['winner_code'] == 1])}")"""
 
     #data, round_mapping = balance_train_data(data)
 
@@ -214,14 +223,27 @@ def train_ml_model(row, level):
         None,
     )
 
-    local_path = os.getcwd() + '/tennisapi/ml/models/'
+    title = f"Model for {home_name} vs {away_name}"
+    table_str = tabulate(df, headers='keys', tablefmt='psql', showindex=True)
+    # Prepend the title to the table string
+    log_output = f"{title}\n{table_str}"
 
-    logging.info(
-    f"DataFrame:\n{tabulate(df, headers='keys', tablefmt='psql', showindex=True)}")
-    y_pred = model.predict(df)
-    logging.info(f"Predicted: {y_pred}")
+    # Log the table with the title
+    logging.info("\n" + log_output)
+    y_pred = model.predict_proba(df)
+
     # log probabilities
-    logging.info(f"Probabilities: {model.predict_proba(df)}")
-    file_name = "test"
-    file_path = local_path + file_name
-    joblib.dump(model, file_path)
+    prob_home = y_pred[0][0]
+    prob_away = y_pred[0][1]
+    odds_limit_home = 1/prob_home
+    odds_limit_away = 1/prob_away
+    yield_home = odds_home * prob_home
+    yield_away = odds_away * prob_away
+
+    logging.info(f"Probabilities: {model.predict_proba(df)} {odds_limit_home} {odds_limit_away}")
+    logging.info(f"Odds: {odds_home} {odds_away} Yield {yield_home} {yield_away}")
+
+    #local_path = os.getcwd() + '/tennisapi/ml/models/'
+    #file_name = "test"
+    #file_path = local_path + file_name
+    #joblib.dump(model, file_path)

@@ -51,8 +51,8 @@ def get_train_data(params):
                 (select elo from %(elo_home)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
                 (select elo from %(elo_away)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_away
             from %(match_table)s b
-            left join footballapi_teams h on h.id = b.home_team_id
-            left join footballapi_teams aw on aw.id = b.away_team_id
+            left join icehockeyapi_teams h on h.id = b.home_team_id
+            left join icehockeyapi_teams aw on aw.id = b.away_team_id
             where (winner_code=1 or winner_code=2 or winner_code=3)
             order by start_at
         """
@@ -68,7 +68,7 @@ def classifier(
         round_mapping,
 ):
 
-    classifier = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=1000)
+    classifier = LogisticRegression(max_iter=500)
     # classifier = RandomForestClassifier(n_estimators=1000)
     scaler = None
     pipeline = Pipeline([
@@ -106,8 +106,6 @@ def train_ml_model(row, level, params):
 
     df = match_data[features]
 
-    if level == 'facup':
-        params['match_table'] = AsIs('footballapi_championship')
     data = get_train_data(params)
 
     data['elo_prob'] = data['home_elo'] - data['away_elo']
@@ -143,8 +141,6 @@ def train_ml_model(row, level, params):
         None,
     )
 
-    local_path = os.getcwd() + '/tennisapi/ml/models/'
-
     logging.info(
     f"DataFrame:\n{tabulate(df, headers='keys', tablefmt='psql', showindex=True)}")
     y_pred = model.predict(df)
@@ -152,10 +148,7 @@ def train_ml_model(row, level, params):
     # log probabilities
     logging.info(f""
                  f"Probabilities: 1:{round(model.predict_proba(df)[0][0] , 3)}"
-                 f" X:{round(model.predict_proba(df)[0][2] , 3)}"
                  f" 2:{round(model.predict_proba(df)[0][1] , 3)}"
                  f"")
-    logging.info(f"Odds: {round(1/match_data['home_odds'].values[0], 2)}:{round(1/match_data['draw_odds'].values[0], 2)}:{round(1/match_data['away_odds'].values[0], 2)}")
-    file_name = "test"
-    file_path = local_path + file_name
-    joblib.dump(model, file_path)
+    logging.info(f"Odds: {round(1/match_data['home_odds'].values[0], 2)}:{round(1/match_data['away_odds'].values[0], 2)}")
+

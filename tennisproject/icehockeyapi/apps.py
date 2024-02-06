@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class IcehockeyConfig(AppConfig):
+class IcehockeyapiConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "icehockey"
+    name = "icehockeyapi"

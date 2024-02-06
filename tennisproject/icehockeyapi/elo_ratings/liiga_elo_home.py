@@ -1,4 +1,4 @@
-from footballapi.models import ChampionshipEloHome, ChampionshipElo, ChampionshipEloAway, Championship, Teams
+from icehockeyapi.models import LiigaEloHome, LiigaElo, LiigaEloAway, Liiga, Teams
 from django.db.models import Q, Exists, OuterRef
 
 
@@ -23,11 +23,11 @@ def calculate_k_factor(matches, o, c, s):
     return k
 
 
-def championship_elo_home():
-    matches = Championship.objects.filter(winner_code__isnull=False).order_by('start_at').distinct()
+def liiga_elo_home():
+    matches = Liiga.objects.filter(winner_code__isnull=False).order_by('start_at').distinct()
 
     matches = matches.filter(
-            ~Exists(ChampionshipEloHome.objects.filter(id=OuterRef('elo_rating_home'))))
+            ~Exists(LiigaEloHome.objects.filter(id=OuterRef('elo_rating_home'))))
 
     for match in matches:
         try:
@@ -35,11 +35,11 @@ def championship_elo_home():
             away_id = Teams.objects.filter(id=match.away_team_id)[0]
         except:
             continue
-        home_home = ChampionshipEloHome.objects.filter(team__id=match.home_team_id).order_by('-games')
-        away = ChampionshipElo.objects.filter(team__id=match.away_team_id).order_by('-games')
+        home_home = LiigaEloHome.objects.filter(team__id=match.home_team_id).order_by('-games')
+        away = LiigaElo.objects.filter(team__id=match.away_team_id).order_by('-games')
 
-        home = ChampionshipElo.objects.filter(team__id=match.home_team_id).order_by('-games')
-        away_away = ChampionshipEloAway.objects.filter(team__id=match.away_team_id).order_by('-games')
+        home = LiigaElo.objects.filter(team__id=match.home_team_id).order_by('-games')
+        away_away = LiigaEloAway.objects.filter(team__id=match.away_team_id).order_by('-games')
         if match.winner_code == 1:
             outcome = 1
             away_outcome = 0
@@ -67,7 +67,7 @@ def championship_elo_home():
         k = calculate_k_factor(home_games, o, c, s)
         home_elo, home_change = calculate_new_elo(home_elo, outcome, prob, k)
 
-        m = ChampionshipEloHome(
+        m = LiigaEloHome(
             team=home_id,
             match=match,
             elo=home_elo,
@@ -82,7 +82,7 @@ def championship_elo_home():
         k = calculate_k_factor(away_games, o, c, s)
         away_elo, away_change = calculate_new_elo(away_elo, away_outcome, 1- prob, k)
 
-        m = ChampionshipEloAway(
+        m = LiigaEloAway(
             team=away_id,
             match=match,
             elo=away_elo,

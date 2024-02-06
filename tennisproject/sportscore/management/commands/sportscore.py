@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
-from sportscore.models import Leagues, Events, Players, Teams, Stats, FootballEvents
+from sportscore.models import Leagues, Events, Players, Teams, Stats, FootballEvents, IceHockeyEvents
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
@@ -46,6 +46,11 @@ class Command(BaseCommand):
 
         football_events_by_leagues_cmd = subparsers.add_parser("football-events-by-leagues")
         football_events_by_leagues_cmd.set_defaults(subcommand=self.football_events_by_leagues)
+
+        hockey_events_by_leagues_cmd = subparsers.add_parser(
+            "ice-hockey-events-by-leagues")
+        hockey_events_by_leagues_cmd.set_defaults(
+            subcommand=self.ice_hockey_events_by_leagues)
 
         events_by_section_cmd = subparsers.add_parser("events-by-section")
         events_by_section_cmd.set_defaults(subcommand=self.events_by_section_id)
@@ -88,7 +93,7 @@ class Command(BaseCommand):
 
     # SECTION ID
     def list_sections(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/1/sections"
+        url = "https://sportscore1.p.rapidapi.com/sports/4/sections"
         sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
             "X-RapidAPI-Key": sport_score_key,
@@ -266,6 +271,63 @@ class Command(BaseCommand):
                     m = FootballEvents(**item)
                     m.save()
                     pbar.update(1)
+
+    def ice_hockey_events_by_leagues(self, options):
+        ice_hockey_leagues = ['7622'] # mestis 7623
+
+        for league_id in ice_hockey_leagues:
+            events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id + "/events"
+
+            headers = {
+                "X-RapidAPI-Key": sport_score_key,
+                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+            }
+
+            querystring = {"page": "1"}
+
+            response = requests.request(
+                "GET", events_by_league_id, headers=headers, params=querystring
+            )
+
+            data = response.text
+
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                continue
+            try:
+                data_df = data['data']
+            except:
+                continue
+            meta_from = data['meta']["from"]
+            current_page = data['meta']["current_page"]
+            per_page = data['meta']["per_page"]
+            meta_to = data['meta']["to"]
+
+            if meta_to is not None:
+                while meta_to >= per_page:
+                    current_page += 1
+                    querystring = {"page": str(current_page)}
+                    response = requests.request(
+                        "GET", events_by_league_id, headers=headers, params=querystring
+                    )
+                    data = response.text
+                    data = json.loads(data)
+                    try:
+                        data_df.extend(data["data"])
+                    except json.JSONDecodeError:
+                        continue
+                    per_page += data['meta']["per_page"]
+                    meta_to = data['meta']["to"]
+                    if meta_to is None:
+                        break
+
+            with tqdm(total=len(data_df)) as pbar:
+                for item in data_df:
+                    m = IceHockeyEvents(**item)
+                    m.save()
+                    pbar.update(1)
+
 
     # FIX TO PAGE
     def list_events(self, options):

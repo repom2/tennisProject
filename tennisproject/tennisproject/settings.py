@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "vakio",
     "footballapi",
+    "icehockeyapi",
 ]
 
 MIDDLEWARE = [

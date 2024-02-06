@@ -11,3 +11,6 @@ dbt run --select footballapi_premierleague
 dbt run --select footballapi_championship
 dbt run --select footballapi_facup
 
+
+### ICE HOCKEY
+poetry run python manage.py sportscore ice-hockey-events-by-leagues

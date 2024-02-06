@@ -16,11 +16,8 @@ logging.basicConfig(
 
 moniveto_id = moniveto.moniveto_id
 list_index = moniveto.list_index
-max_bet_eur = 30
-line_cost = 0.2
-stake = line_cost * 100
-m = 3
-bet_lines = 'n'
+
+m = moniveto.matches_to_bet
 
 pd.set_option('display.max_rows', None)
 
@@ -124,10 +121,14 @@ def get_balance(session):
 
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
-def moniveto_bet():
+def moniveto_bet(bet, max_bet_eur):
     start = datetime.now()
 
-    bankroll = 1000
+    if m == 3 or m == 2:
+        line_cost = 0.2
+    else:
+        line_cost = 0.05
+    stake = line_cost * 100
     if m == 4:
         query = f"""
         select a.id, a.combination,
@@ -180,7 +181,7 @@ def moniveto_bet():
     if len(data) == 0:
         print("No bets")
         exit(0)
-    yield_limit = 1.0
+    yield_limit = 1.6
     df = data[data['yield'] > yield_limit]
     #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]
@@ -196,7 +197,7 @@ def moniveto_bet():
     end = datetime.now()
     logging.info('Script ended')
     logging.info('Time elapsed: {}'.format(end - start))
-    if bet_lines == 'no':
+    if bet != 'bet':
         exit()
     session = login(params["username"], params["password"])
     bankroll = get_balance(session)

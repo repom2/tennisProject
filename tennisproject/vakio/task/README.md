@@ -41,7 +41,7 @@ and a.list_index=m.list_index
 inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
 inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
 inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
-where a.list_index=2 and a.moniveto_id=63271
+where a.list_index=4 and a.moniveto_id=63282
 and m.bet=True
 order by yield desc;
 
@@ -57,16 +57,18 @@ order by yield desc;
 
 
 select id, bets, prob, win, yield, ayield, combination, value, avalue from 
-        (select a.id, b.bets, prob, bet, a.combination,
-            b.value / 100 as win, 
-            round((prob*(b.value*0.01/(0.1)))::numeric, 4) as yield,
-            round((prob*(a.value*0.01/(0.1)))::numeric, 4) as ayield,
-            b.value as value,
-            a.value as avalue
-    from vakio_combination a 
-    inner join vakio_winshare b on b.combination=a.combination and 
-        b.vakio_id = a.vakio_id and b.list_index = a.list_index
-    where bet = True and a.vakio_id = 55513 and a.list_index = 2
-    ) s  order by yield asc;
+    (select a.id, b.bets, prob, bet, a.combination,
+        b.value / 100 as win, 
+        round((prob*(b.value*0.01/(0.1)))::numeric, 4) as yield,
+        round((prob*(a.value*0.01/(0.1)))::numeric, 4) as ayield,
+        b.value as value,
+        a.value as avalue
+from vakio_combination a 
+inner join vakio_winshare b on b.combination=a.combination and 
+    b.vakio_id = a.vakio_id and b.list_index = a.list_index
+where bet = True 
+and a.vakio_id = 100435 
+and a.list_index = 1
+) s  order by yield asc;
 
 

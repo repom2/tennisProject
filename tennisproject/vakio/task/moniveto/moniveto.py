@@ -7,15 +7,18 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = 63280
-list_index = 2
+moniveto_id = 63290
+list_index = 1
 
 lst = [
-    [0, 1.5, 4.0, 7.0],
-    [1, 3.75, 3.2, 2.1],
-    [2, 4.75, 3.8, 1.73],
-    #[3, 1.95, 4.08, 4.05],
+    [0, 0.503, 0.233, 0.264],
+    [1, 0.332, 0.281, 0.387],
+    [2, 0.626, 0.198, 0.176],
+    #[3, 0.572, 0.209, 0.219],
 ]
+
+matches_to_bet = len(lst)
+
 estimated_avg_goals = [
     [0, 1.9, 2.8],
     [1, 2.51, 2.833],
@@ -24,10 +27,10 @@ estimated_avg_goals = [
 ]
 
 goals = [
-    [0, 27/11, 12/11, 10/11, 17/11, 'esp'],
-    [1, 12/11, 15/11, 12/10, 11/10, 'ita'],
-    [2, 18/14, 16/14, 19/14, 15/14, 'champ'],
-    #[3, 20/10, 8/10, 16/10, 15/10, 'pl'],
+    [0, 30/11, 14/11, 14/11, 10/11, 'esp'],
+    [1, 13/10, 6/10, 13/11, 22/11, 'ita'],
+    [2, 7/4, 6/8, 11/8, 3/4, 'ita'],
+    #[3, 73/23, 52/23, 68/24, 57/24, 'liiga'],
 ]
 
 
@@ -100,7 +103,7 @@ def moniveto():
         [2, 2.51, 2.8],
         # [3, 2.1, 1.0],
     ]
-    is_using_own_data = True
+    is_using_own_data = False
     if is_using_own_data:
         for i, item in enumerate(lst):
             arbitrage_check(item)

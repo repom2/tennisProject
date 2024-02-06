@@ -36,7 +36,7 @@ def event_stats(params):
                 l_secondwon as opponent_secondwon
             from  %(matches_table)s t inner join %(tour_table)s e on t.tour_id=e.id
             where
-                surface ilike '%%hard%%' and (name ilike '%%%(event)s%%' ) and t.date > %(date)s
+                surface ilike '%%%(surface)s%%' and (name ilike '%%%(event)s%%' ) and t.date > %(date)s
             ) a 
             ) s ) aa; 
     """

@@ -17,7 +17,7 @@ from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.analysis import match_analysis
-from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers, BetWta
+from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers, BetWta, AtpTour, WtaTour
 from tennisapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
@@ -127,7 +127,7 @@ def get_data(params):
             inner join %(match_table)s b on b.tour_id=a.id
             left join %(player_table)s h on h.id = b.home_id
             left join %(player_table)s aw on aw.id = b.away_id
-            where surface ilike '%%hard%%' and b.start_at between %(start_at)s and %(end_at)s
+            where surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
             and (
             (name ilike '%%%(tour)s%%' ))
             ) 
@@ -145,7 +145,18 @@ def label_round(data, mapping):
 
 
 def predict(level, tour):
+    surface = 'hard'
+    start_at = '2024-02-05 00:00:00'
+    end_at ='2024-02-06 22:00:00'
+    start_at = datetime.strptime(start_at, '%Y-%m-%d %H:%M:%S') - timedelta(days=8)
     if level == 'atp':
+        qs = AtpTour.objects.filter(
+            name__icontains=tour,
+            date__gte=start_at
+        ).values_list('surface', flat=True)
+        if 'Clay' in qs:
+            surface = 'clay'
+        logging.info('Surface: %s', surface)
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
         player_qs = Players.objects.all()
@@ -155,7 +166,9 @@ def predict(level, tour):
         player_table = 'tennisapi_players'
         hard_elo = 'tennisapi_atphardelo'
         grass_elo = 'tennisapi_atpgrasselo'
-        clay_elo = 'tennisapi_atpclayelo'
+        clay_elo = 'tennisapi_atpelo'
+        if surface == 'clay':
+            hard_elo = clay_elo
     else:
         bet_qs = BetWta.objects.all()
         match_qs = WtaMatch.objects.all()
@@ -176,8 +189,9 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': '2024-02-05 00:00:00',
-        'end_at': '2024-02-06 22:00:00',
+        'start_at': start_at,
+        'end_at': end_at,
+        'surface': AsIs(surface),
     }
     data = get_data(params)
 
@@ -210,6 +224,7 @@ def predict(level, tour):
     date = '2015-1-1'
     params = {
         'event': AsIs(tour),
+        'surface': AsIs(surface),
         'tour_table': AsIs(tour_table),
         'matches_table': AsIs(matches_table),
         'date': date,
@@ -227,8 +242,8 @@ def predict(level, tour):
     data[['away_spw', 'away_rpw']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], data['start_at'], params)),
         index=data.index)
-    data['player1'] = data.apply(lambda x: event_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw) if (x.away_rpw and x.home_spw) else None, axis=1)
-    data['player2'] = data.apply(lambda x: event_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw) if (x.home_rpw and x.away_spw) else None, axis=1)
+    data['player1'] = data.apply(lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw) if (x.away_rpw and x.home_spw) else None, axis=1)
+    data['player2'] = data.apply(lambda x: tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw) if (x.home_rpw and x.away_spw) else None, axis=1)
 
     data['stats_win'] = data.apply(
         lambda x: matchProb(
@@ -312,38 +327,6 @@ def predict(level, tour):
     data['year_elo_prob'] = data['winner_year_elo'] - data['loser_year_elo']
     data['year_elo_prob'] = data['year_elo_prob'].apply(probability_of_winning).round(2)
 
-    columns = [
-        #'start_at',
-        'winner_name',
-        'loser_name',
-        'home_odds',
-        'away_odds',
-        'elo_prob',
-        'year_elo_prob',
-        'home_spw',
-        'home_rpw',
-        'away_spw',
-        'away_rpw',
-        'stats_win',
-        'home_fatigue',
-        'away_fatigue',
-        'h2h_win',
-        'h2h_matches',
-        'walkover_home',
-        'home_inj_score',
-        'walkover_away',
-        'away_inj_score',
-        #'player1',
-        #'player2',
-        'common_opponents',
-        'common_opponents_count',
-        #'spw1_c',
-        #'spw2_c',
-        #'winner_hardelo',
-        #'loser_hardelo',
-        'round_code',
-    ]
-
     print('tour', tour_spw, tour_rpw)
     print('event', event_spw, event_rpw)
     #data = data.where(pd.notnull(data), None)
@@ -351,7 +334,7 @@ def predict(level, tour):
     for index, row in data.iterrows():
         preview, reasoning = None, None#match_analysis(row)
         try:
-            train_ml_model(row, level)
+            train_ml_model(row, level, params)
         except Exception as e:
             log.error(e)
             pass

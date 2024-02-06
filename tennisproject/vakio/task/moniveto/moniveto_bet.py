@@ -16,8 +16,6 @@ logging.basicConfig(
 
 moniveto_id = moniveto.moniveto_id
 list_index = moniveto.list_index
-max_bet_eur = 30
-bet_lines = 'n'
 
 m = moniveto.matches_to_bet
 
@@ -123,7 +121,7 @@ def get_balance(session):
 
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
-def moniveto_bet():
+def moniveto_bet(bet, max_bet_eur):
     start = datetime.now()
 
     if m == 3 or m == 2:
@@ -199,7 +197,7 @@ def moniveto_bet():
     end = datetime.now()
     logging.info('Script ended')
     logging.info('Time elapsed: {}'.format(end - start))
-    if bet_lines == 'no':
+    if bet != 'bet':
         exit()
     session = login(params["username"], params["password"])
     bankroll = get_balance(session)

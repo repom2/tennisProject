@@ -29,8 +29,8 @@ def championship_elorate():
         #start_at__gte='2023-08-01'
     ).order_by('start_at').distinct()
 
-    #matches = matches.filter(
-     #       ~Exists(ChampionshipElo.objects.filter(id=OuterRef('elo_rating'))))
+    matches = matches.filter(
+           ~Exists(ChampionshipElo.objects.filter(id=OuterRef('elo_rating'))))
     elo_table = ChampionshipElo
     for match in matches:
         try:

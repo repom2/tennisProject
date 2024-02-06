@@ -43,7 +43,7 @@ def player_stats(player_id, start_at, params):
                else w_secondwon end as opponen_secondwon
             from %(matches_table)s t inner join %(tour_table)s e on t.tour_id=e.id
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
-               and surface ilike '%%hard%%'
+               and surface ilike '%%%(surface)s%%'
                and round_name not ilike 'qualification%%'
                and t.date < date(%(start_at)s)
                ) a order by date desc limit 22

@@ -212,7 +212,7 @@ class Command(BaseCommand):
 
     # Update database
     def football_events_by_leagues(self, options):
-        football_leagues = ['317', '326']
+        football_leagues = ['317', '326', '318']
 
         for league_id in football_leagues:
             events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id + "/events"

@@ -132,7 +132,7 @@ def get_data(params):
             inner join %(match_table)s b on b.tour_id=a.id
             left join %(player_table)s h on h.id = b.home_id
             left join %(player_table)s aw on aw.id = b.away_id
-            where surface ilike '%%hard%%' and b.start_at between %(start_at)s and %(end_at)s
+            where surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
             --and (name ilike '%%%(tour)s%%' )
             ) 
             ss where winner_name is not null and loser_name is not null order by start_at
@@ -149,6 +149,7 @@ def label_round(data, mapping):
 
 
 def insert_data_to_match(level, tour):
+    surface = 'clay'
     if level == 'atp':
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
@@ -159,7 +160,10 @@ def insert_data_to_match(level, tour):
         player_table = 'tennisapi_players'
         hard_elo = 'tennisapi_atphardelo'
         grass_elo = 'tennisapi_atpgrasselo'
-        clay_elo = 'tennisapi_atpclayelo'
+        clay_elo = 'tennisapi_atpelo'
+        if surface == 'clay':
+            hard_elo = clay_elo
+            clay_elo = 'tennisapi_atphardelo'
     else:
         bet_qs = BetWta.objects.all()
         match_qs = WtaMatch.objects.all()
@@ -180,6 +184,7 @@ def insert_data_to_match(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
+        'surface': AsIs(surface),
         'start_at': '2000-01-19 18:00:00',
         'end_at': '20214-01-20 18:00:00',
     }
@@ -204,6 +209,7 @@ def insert_data_to_match(level, tour):
         'tour_table': AsIs(tour_table),
         'matches_table': AsIs(matches_table),
         'date': date,
+        'surface': AsIs(surface),
     }
     event_spw, event_rpw = event_stats(params)
     if event_spw is None:

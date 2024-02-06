@@ -34,7 +34,7 @@ def player_stats():
             "l_secondwon as opponent_secondwon " \
         "from tennisapi_atpmatches t inner join tennisapi_atptour e on t.tour_id=e.id " \
         "where " \
-            "surface ilike '%hard%' and (name ilike '%us%pen%' ) " \
+            "surface ilike '%%%(surface)s%%' and (name ilike '%us%pen%' ) " \
         ") a  " \
         ") s ) aa; "
 

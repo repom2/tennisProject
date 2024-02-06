@@ -7,13 +7,13 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = 63286
-list_index = 8
+moniveto_id = 63290
+list_index = 1
 
 lst = [
-    [0, 0.52, 0.28, 0.20],
-    [1, 0.56, 0.24, 0.20],
-    [2, 0.35, 0.29, 0.36],
+    [0, 0.503, 0.233, 0.264],
+    [1, 0.332, 0.281, 0.387],
+    [2, 0.626, 0.198, 0.176],
     #[3, 0.572, 0.209, 0.219],
 ]
 

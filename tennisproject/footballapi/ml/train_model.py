@@ -24,6 +24,7 @@ from tennisapi.ml.balance_data import balance_train_data
 from tennisapi.models import Bet
 import logging
 from tabulate import tabulate
+from psycopg2.extensions import AsIs
 
 # Retrieve the root logger
 logging = logging.getLogger(__name__)
@@ -93,7 +94,7 @@ def classifier(
 def train_ml_model(row, level, params):
     logging.info(f"Training model for {row['home_name']} vs {row['away_name']}")
     features = [
-        #'home_odds',
+        #'homeodds',
         'elo_prob',
         'elo_prob_home',
     ]
@@ -101,10 +102,12 @@ def train_ml_model(row, level, params):
     # pandas series to dataframe
     match_data = row.to_frame().T
 
-    #df["home_odds"] = 1 / df['home_odds']
+    match_data["homeodds"] = 1 / match_data['home_odds']
 
     df = match_data[features]
 
+    if level == 'facup':
+        params['match_table'] = AsIs('footballapi_championship')
     data = get_train_data(params)
 
     data['elo_prob'] = data['home_elo'] - data['away_elo']
@@ -112,7 +115,7 @@ def train_ml_model(row, level, params):
     data['elo_prob'] = data['elo_prob'].apply(probability_of_winning).round(2)
     data['elo_prob_home'] = data['elo_prob_home'].apply(probability_of_winning).round(2)
 
-    data["home_odds"] = 1/ data['home_odds']
+    data["homeodds"] = 1/ data['home_odds']
 
     #data = data[data['h2h_matches'] > 1]
     #data = data[data['common_opponents_count'] > 1]

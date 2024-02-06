@@ -93,6 +93,11 @@ def classifier(
 
 def train_ml_model(row, level, params):
     logging.info(f"Training model for {row['home_name']} vs {row['away_name']}")
+    home_name = row['home_name']
+    away_name = row['away_name']
+    odds_home = row['home_odds']
+    odds_away = row['away_odds']
+    odds_draw = row['draw_odds']
     features = [
         'homeodds',
         'elo_prob',
@@ -136,26 +141,36 @@ def train_ml_model(row, level, params):
     x_train = data[features]
     y_train = data[['winner_code']]
 
-    model = classifier(
+    model_logistic = classifier(
         x_train,
         y_train,
         features,
         None,
     )
 
-    local_path = os.getcwd() + '/tennisapi/ml/models/'
+    y_pred = model_logistic.predict_proba(df)
+
+    # log probabilities
+    prob_home = round(y_pred[0][0], 3)
+    prob_away = round(y_pred[0][1], 3)
+    prob_draw = round(y_pred[0][2], 3)
+
+    odds_limit_home = round(1 / prob_home, 3)
+    odds_limit_away = round(1 / prob_away, 3)
+    odds_limit_draw = round(1 / prob_draw, 3)
+    yield_home = round(odds_home * prob_home, 3)
+    yield_away = round(odds_away * prob_away, 3)
+    yield_draw = round(odds_draw * prob_draw, 3)
+
+    title = f"Model for {home_name} vs {away_name}"
+    table_str = tabulate(df, headers='keys', tablefmt='psql', showindex=True)
+    # Prepend the title to the table string
+    log_output = f"{title}\n{table_str}"
+    # Log the table with the title
+    logging.info("\n" + log_output)
+
+    logging.info(f"Odds: {round(1/odds_home, 2)}:{round(1/odds_draw, 2)}:{round(1/odds_away, 2)}")
 
     logging.info(
-    f"DataFrame:\n{tabulate(df, headers='keys', tablefmt='psql', showindex=True)}")
-    y_pred = model.predict(df)
-    logging.info(f"Predicted: {y_pred}")
-    # log probabilities
-    logging.info(f""
-                 f"Probabilities: 1:{round(model.predict_proba(df)[0][0] , 3)}"
-                 f" X:{round(model.predict_proba(df)[0][2] , 3)}"
-                 f" 2:{round(model.predict_proba(df)[0][1] , 3)}"
-                 f"")
-    logging.info(f"Odds: {round(1/match_data['home_odds'].values[0], 2)}:{round(1/match_data['draw_odds'].values[0], 2)}:{round(1/match_data['away_odds'].values[0], 2)}")
-    file_name = "test"
-    file_path = local_path + file_name
-    joblib.dump(model, file_path)
+        f"Probabilities: {prob_home} {prob_draw} {prob_away} Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away}")
+    logging.info(f"Odds: {odds_home} {odds_draw} {odds_away} Yield {yield_home} {yield_draw} {yield_away}")

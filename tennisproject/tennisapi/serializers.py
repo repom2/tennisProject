@@ -45,6 +45,10 @@ class BetSerializer(serializers.Serializer):
     preview = serializers.CharField()
     reasoning = serializers.CharField()
     startAt = serializers.DateTimeField(source='start_at')
+    homeProb = serializers.FloatField(source='home_prob')
+    awayProb = serializers.FloatField(source='away_prob')
+    homeYield = serializers.FloatField(source='home_yield')
+    awayYield = serializers.FloatField(source='away_yield')
 
     class Meta:
         model = Bet

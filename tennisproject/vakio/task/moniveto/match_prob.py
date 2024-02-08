@@ -15,8 +15,8 @@ def objective_func(goals_avg, desired_probabilities):
     prob_home_win, prob_draw, prob_away_win = 0, 0, 0
 
     # Calculate joint probabilities for all match outcomes
-    for i in range(max_goals+1):
-        for j in range(max_goals+1):
+    for i in range(0, max_goals+1):
+        for j in range(0, max_goals+1):
             match_prob = poisson_teamA[i] * poisson_teamB[j]
 
             # Check the match outcome
@@ -40,16 +40,22 @@ def match_probability(
     desired_prob_away_win =  odds_away_win
 
     # Initial guess
-    x0 = np.array([4.0, 4.0])
+    x0 = np.array([2.0, 2.0])
     print("Initial guess: {}".format(x0))
 
     desired_probabilities = np.array([
         desired_prob_home_win,
-        desired_prob_draw, desired_prob_away_win
+        desired_prob_draw,
+        desired_prob_away_win
     ])
 
     # Optimization
-    result = minimize(objective_func, x0, args=(desired_probabilities), method='Nelder-Mead')
+    result = minimize(
+        objective_func,
+        x0,
+        args=(desired_probabilities),
+        method='Nelder-Mead'
+    )
     estimated_avg_goals = result.x
     #print("Average goals for team A: {:.2f}".format(estimated_avg_goals[0]))
     #print("Average goals for team B: {:.2f}".format(estimated_avg_goals[1]))

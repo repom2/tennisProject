@@ -150,6 +150,18 @@ components:
         awayOdds:
           type: number
           description: "Away Odds"
+        homeProb:
+          type: number
+          description: "Home Probability"
+        awayProb:
+          type: number
+          description: "Away Probability"
+        homeYield:
+          type: number
+          description: "Home yield"
+        awayYield:
+          type: number
+          description: "Away yield"
         eloProb:
           type: number
           description: "Elo Probability"

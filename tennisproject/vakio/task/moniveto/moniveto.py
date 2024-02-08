@@ -7,21 +7,21 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = 63290
-list_index = 1
+moniveto_id = 63296
+list_index = 7
 
 lst = [
-    [0, 0.593, 0.217, 0.19],
-    [1, 0.257, 0.272, 0.471],
-    [2, 0.675, 0.187, 0.138],
-    #[3, 0.572, 0.209, 0.219],
+    [0, 0.53, 0.20, 0.27],
+    [1, 0.30, 0.20, 0.50],
+    #[2, 0.27, 0.26, 0.47],
+    #[3, 0.52, 0.25, 0.23],
 ]
 
 matches_to_bet = len(lst)
 
 estimated_avg_goals = [
-    [0, 1.9, 2.8],
-    [1, 2.51, 2.833],
+    [0, 2.6, 2.3],
+    [1, 2.3, 2.6],
     #[2, 2.51, 2.8],
     #[3, 2.1, 1.0],
 ]
@@ -49,8 +49,8 @@ def estimated_avg_goals_calc(i):
     laliga_avg_conceded_home = 1.2
     bundes_avg_goals_home = 1.98
     bundes_avg_conceded_home = 1.44
-    liiga_avg_goals_home = 2.82
-    liiga_avg_conceded_home = 2.54
+    liiga_avg_goals_home = 2.66
+    liiga_avg_conceded_home = 2.3
     mestis_avg_goals_home = 3.35
     mestis_avg_conceded_home = 2.98
     ligue1_avg_goals_home = 1.45
@@ -98,22 +98,22 @@ def estimated_avg_goals_calc(i):
 
 def moniveto():
     estimated_avg_goals = [
-        [0, 1.9, 2.8],
-        [1, 2.51, 2.833],
-        [2, 2.51, 2.8],
+        [0, 2.6, 2.3],
+        [1, 2.3, 2.6],
+        #[2, 2.51, 2.8],
         # [3, 2.1, 1.0],
     ]
-    is_using_own_data = False
+    is_using_own_data = True
     if is_using_own_data:
         for i, item in enumerate(lst):
             arbitrage_check(item)
-            estimated_goals = estimated_avg_goals_calc(goals[i])
-            logging.info( estimated_goals)
+            #estimated_goals = estimated_avg_goals_calc(goals[i])
+            #logging.info( estimated_goals)
             calculate_poisson(
-                #estimated_avg_goals[i][1],
-                estimated_goals[1],
-                #estimated_avg_goals[i][2],
-                estimated_goals[2],
+                estimated_avg_goals[i][1],
+                #estimated_goals[1],
+                estimated_avg_goals[i][2],
+                #estimated_goals[2],
                 item[0],
                 moniveto_id,
                 list_index,

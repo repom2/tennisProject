@@ -45,7 +45,8 @@ def get_train_data(params):
                 away_odds,
                 h.name as home_name,
                 aw.name as away_name,
-                winner_code,
+                case when home_score = away_score then 3 else winner_code end as winner_code,
+                winner_code as winner_code_ml,
                 (select elo from %(elo_table)s elo where elo.team_id=home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
                 (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
                 (select elo from %(elo_home)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
@@ -53,7 +54,7 @@ def get_train_data(params):
             from %(match_table)s b
             left join icehockeyapi_teams h on h.id = b.home_team_id
             left join icehockeyapi_teams aw on aw.id = b.away_team_id
-            where (winner_code=1 or winner_code=2 or winner_code=3)
+            where (winner_code=1 or winner_code=2)
             order by start_at
         """
     df = pd.read_sql(query, connection, params=params)
@@ -63,12 +64,14 @@ def get_train_data(params):
 
 def classifier(
         x_train,
-        y_train,
+        data,
         features,
         round_mapping,
 ):
 
     classifier = LogisticRegression(max_iter=500)
+    classifier_multi = LogisticRegression(multi_class='multinomial', solver='lbfgs',
+                                    max_iter=1000)
     # classifier = RandomForestClassifier(n_estimators=1000)
     scaler = None
     pipeline = Pipeline([
@@ -76,9 +79,18 @@ def classifier(
         #('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False))),
         ('classifier', classifier)
     ])
+    pipeline_multi = Pipeline([
+        ('preprocessor', scaler),
+        # ('feature_selection', SelectFromModel(LinearSVC(penalty="l1", dual=False))),
+        ('classifier', classifier_multi)
+    ])
+
+    y_train = data[['winner_code_ml']]
+    y_train_multi = data[['winner_code']]
 
     #pipeline = make_pipeline(scaler, classifier)
     model = pipeline.fit(x_train, y_train.values.ravel())
+    model_multi = pipeline_multi.fit(x_train, y_train_multi.values.ravel())
     # GradientBoostingClassifier
     #model.feature_importances = model.steps[1][1].feature_importances_
     # RandomForestClassifier
@@ -88,11 +100,16 @@ def classifier(
     model.feature_names = features
     model.round_mapping = round_mapping
 
-    return model
+    return model, model_multi
 
 
 def train_ml_model(row, level, params):
     logging.info(f"Training model for {row['home_name']} vs {row['away_name']}")
+    home_name = row['home_name']
+    away_name = row['away_name']
+    odds_home = row['home_odds']
+    odds_away = row['away_odds']
+    # odds_draw = row['draw_odds']
     features = [
         'homeodds',
         'elo_prob',
@@ -118,7 +135,7 @@ def train_ml_model(row, level, params):
     #data = data[data['h2h_matches'] > 1]
     #data = data[data['common_opponents_count'] > 1]
 
-    f = features + ['winner_code'] + ['start_at', 'home_name', 'away_name']
+    f = features + ['winner_code', 'winner_code_ml'] + ['start_at', 'home_name', 'away_name']
 
     data = data[f]
     data_length = len(data)
@@ -132,23 +149,38 @@ def train_ml_model(row, level, params):
     #data, round_mapping = balance_train_data(data)
 
     x_train = data[features]
-    y_train = data[['winner_code']]
 
-    model = classifier(
+    model_logistic, model_multi = classifier(
         x_train,
-        y_train,
+        data,
         features,
         None,
     )
 
-    logging.info(
-    f"DataFrame:\n{tabulate(df, headers='keys', tablefmt='psql', showindex=True)}")
-    y_pred = model.predict(df)
-    logging.info(f"Predicted: {y_pred}")
+    title = f"Model for {home_name} vs {away_name}"
+    table_str = tabulate(df, headers='keys', tablefmt='psql', showindex=True)
+    # Prepend the title to the table string
+    log_output = f"{title}\n{table_str}"
+
+    # Log the table with the title
+    logging.info("\n" + log_output)
+    y_pred = model_logistic.predict_proba(df)
+    y_pred_multi = model_multi.predict_proba(df)
+
     # log probabilities
-    logging.info(f""
-                 f"Probabilities: 1:{round(model.predict_proba(df)[0][0] , 3)}"
-                 f" 2:{round(model.predict_proba(df)[0][1] , 3)}"
-                 f"")
-    logging.info(f"Odds: {round(1/match_data['home_odds'].values[0], 2)}:{round(1/match_data['away_odds'].values[0], 2)}")
+    prob_home = round(y_pred[0][0], 3)
+    prob_home_multi = round(y_pred_multi[0][0], 3)
+    prob_away = round(y_pred[0][1], 3)
+    prob_away_multi = round(y_pred_multi[0][1], 3)
+    prob_draw_multi = round(y_pred_multi[0][2], 3)
+    odds_limit_home = round(1 / prob_home_multi, 3)
+    odds_limit_away = round(1 / prob_away_multi, 3)
+    odds_limit_draw = round(1 / prob_draw_multi, 3)
+    yield_home = round(odds_home * prob_home, 3)
+    yield_away = round(odds_away * prob_away, 3)
+
+    logging.info(
+        f"Probabilities: {prob_home_multi} - {prob_draw_multi} - {prob_away_multi}")
+    logging.info(f"Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away} ML: {prob_home}/{prob_away}")
+    logging.info(f"Odds: {odds_home} {odds_away} Yield {yield_home} {yield_away}")
 

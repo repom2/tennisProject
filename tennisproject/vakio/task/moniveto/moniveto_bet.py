@@ -121,8 +121,12 @@ def get_balance(session):
 
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
-def moniveto_bet(bet, max_bet_eur):
+def moniveto_bet(bet, max_bet_eur, index, id):
     start = datetime.now()
+    if index:
+        list_index = index
+    if id:
+        moniveto_id = id
 
     if m == 3 or m == 2:
         line_cost = 0.2
@@ -181,7 +185,7 @@ def moniveto_bet(bet, max_bet_eur):
     if len(data) == 0:
         print("No bets")
         exit(0)
-    yield_limit = 1.6
+    yield_limit = 1.0
     df = data[data['yield'] > yield_limit]
     #df = df[df['share'] > 0.1]
     #df = df[df['yield'] < 15.0]
@@ -195,6 +199,27 @@ def moniveto_bet(bet, max_bet_eur):
     df = df.head(max_bet)
     logging.info("Lines to bet: " + str(len(df)) + " with " + str(max_bet) + " max bet")
     end = datetime.now()
+    scores = {}
+    for index, row in df.iterrows():
+        match_scores = row['combination'].split(",")
+        for i, score in enumerate(match_scores):
+            if str(i) not in scores:
+                scores[str(i)] = {}
+            if score not in scores[str(i)]:
+                scores[str(i)][score] = 1
+            else:
+                scores[str(i)][score] += 1
+
+    # Sort each match's values from biggest to smallest and place into a new dictionary
+    sorted_matches = {
+        match: dict(sorted(score.items(), key=lambda item: item[1], reverse=True))
+        for match, score in scores.items()
+    }
+
+    # Using logging to output the result
+    logging.info("Sorted Matches:")
+    for match, players in sorted_matches.items():
+        logging.info(f"Match {match}: {players}")
     logging.info('Script ended')
     logging.info('Time elapsed: {}'.format(end - start))
     if bet != 'bet':

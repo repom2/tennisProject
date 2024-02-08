@@ -32,6 +32,22 @@ export type Bets = {
      */
     awayOdds?: number;
     /**
+     * Home Probability
+     */
+    homeProb?: number;
+    /**
+     * Away Probability
+     */
+    awayProb?: number;
+    /**
+     * Home yield
+     */
+    homeYield?: number;
+    /**
+     * Away yield
+     */
+    awayYield?: number;
+    /**
      * Elo Probability
      */
     eloProb?: number;

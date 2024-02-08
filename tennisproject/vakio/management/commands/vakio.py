@@ -84,6 +84,8 @@ class Command(BaseCommand):
         list_sports_cmd.add_argument("bet", nargs='?', type=str,
                                  help='If not provided no bets', default=None)
         list_sports_cmd.add_argument("stake", nargs='?', type=int, default=30)
+        list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
+        list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
 
         list_sports_cmd = subparsers.add_parser("parse-odds")
         list_sports_cmd.set_defaults(subcommand=self.parse_score_odds)
@@ -148,7 +150,9 @@ class Command(BaseCommand):
     def place_moniveto_bet(self, options):
         bet = options["bet"]
         stake = options["stake"]
-        moniveto_bet(bet, stake)
+        index = options["index"]
+        id = options["id"]
+        moniveto_bet(bet, stake, index, id)
 
     def parse_score_odds(self, options):
         parse_odds()

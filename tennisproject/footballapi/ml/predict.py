@@ -76,6 +76,9 @@ def predict(level):
         elo_table = 'footballapi_championshipelo'
         elo_home = 'footballapi_championshipelohome'
         elo_away = 'footballapi_championshipeloaway'
+        elo_table = 'footballapi_premierelo'
+        elo_home = 'footballapi_premierelohome'
+        elo_away = 'footballapi_premiereloaway'
     else:
         match_qs = Championship.objects.all()
         match_table = 'footballapi_championship'
@@ -87,7 +90,7 @@ def predict(level):
         'elo_table': AsIs(elo_table),
         'elo_home': AsIs(elo_home),
         'elo_away': AsIs(elo_away),
-        'start_at': '2024-02-06 00:00:00',
+        'start_at': '2024-02-07 20:00:00',
         'end_at': '2024-02-08 22:00:00',
     }
     data = get_data(params)

@@ -106,13 +106,12 @@ def train_ml_model(row, level, params):
 
     # pandas series to dataframe
     match_data = row.to_frame().T
-
     match_data["homeodds"] = 1 / match_data['home_odds']
 
     df = match_data[features]
 
     if level == 'facup':
-        params['match_table'] = AsIs('footballapi_championship')
+        params['match_table'] = AsIs('footballapi_premierleague')
     data = get_train_data(params)
 
     data['elo_prob'] = data['home_elo'] - data['away_elo']
@@ -158,9 +157,9 @@ def train_ml_model(row, level, params):
     odds_limit_home = round(1 / prob_home, 3)
     odds_limit_away = round(1 / prob_away, 3)
     odds_limit_draw = round(1 / prob_draw, 3)
-    yield_home = round(odds_home * prob_home, 3)
-    yield_away = round(odds_away * prob_away, 3)
-    yield_draw = round(odds_draw * prob_draw, 3)
+    yield_home = None#round(odds_home * prob_home, 3)
+    yield_away = None#round(odds_away * prob_away, 3)
+    yield_draw = None#round(odds_draw * prob_draw, 3)
 
     title = f"Model for {home_name} vs {away_name}"
     table_str = tabulate(df, headers='keys', tablefmt='psql', showindex=True)
@@ -169,7 +168,7 @@ def train_ml_model(row, level, params):
     # Log the table with the title
     logging.info("\n" + log_output)
 
-    logging.info(f"Odds: {round(1/odds_home, 2)}:{round(1/odds_draw, 2)}:{round(1/odds_away, 2)}")
+    #logging.info(f"Odds: {round(1/odds_home, 2)}:{round(1/odds_draw, 2)}:{round(1/odds_away, 2)}")
 
     logging.info(
         f"Probabilities: {prob_home} {prob_draw} {prob_away} Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away}")

@@ -544,6 +544,10 @@ class Bet(models.Model):
     preview = models.TextField(null=True)
     reasoning = models.TextField(null=True)
     start_at = models.DateTimeField(null=True)
+    home_prob = models.FloatField(null=True)
+    away_prob = models.FloatField(null=True)
+    home_yield = models.FloatField(null=True)
+    away_yield = models.FloatField(null=True)
 
 
 class BetWta(models.Model):
@@ -588,3 +592,7 @@ class BetWta(models.Model):
     preview = models.TextField(null=True)
     reasoning = models.TextField(null=True)
     start_at = models.DateTimeField(null=True)
+    home_prob = models.FloatField(null=True)
+    away_prob = models.FloatField(null=True)
+    home_yield = models.FloatField(null=True)
+    away_yield = models.FloatField(null=True)

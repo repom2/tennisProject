@@ -163,7 +163,7 @@ def train_ml_model(row, level, params):
         'elo_prob',
         'year_elo_prob',
         'stats_win',
-        #'fatigue',
+        'fatigue',
         'h2h_win',
         #'home_fatigue',
         #'away_fatigue',
@@ -182,11 +182,14 @@ def train_ml_model(row, level, params):
     df["home_odds"] = 1 / df['home_odds']
     #df['home_fatigue'] = 3
     #df["away_fatigue"] = 0.1
-    #df["fatigue"] = df['home_fatigue'] - df['away_fatigue']
-
-    if df["home_fatigue"].isnull().values.any() or df["away_fatigue"].isnull().values.any():
-        features.remove("home_fatigue")
-        features.remove("away_fatigue")
+    df["fatigue"] = df['home_fatigue'] - df['away_fatigue']
+    if "fatigue" in features:
+        if df["fatigue"].isnull().values.any():
+            features.remove("fatigue")
+    if "home_fatigue" in features:
+        if df["home_fatigue"].isnull().values.any() or df["away_fatigue"].isnull().values.any():
+            features.remove("home_fatigue")
+            features.remove("away_fatigue")
 
     if "h2h_win" in features:
         try:
@@ -261,3 +264,4 @@ def train_ml_model(row, level, params):
     #file_name = "test"
     #file_path = local_path + file_name
     #joblib.dump(model, file_path)
+    return prob_home, prob_away, yield_home, yield_away

@@ -38,6 +38,9 @@ class Command(BaseCommand):
         list_sections_cmd = subparsers.add_parser("sections")
         list_sections_cmd.set_defaults(subcommand=self.list_sections)
 
+        list_league_by_section_cmd = subparsers.add_parser("leagues-by-section")
+        list_league_by_section_cmd.set_defaults(subcommand=self.list_leagues_by_section_id)
+
         list_leagues_cmd = subparsers.add_parser("leagues")
         list_leagues_cmd.set_defaults(subcommand=self.list_leagues)
 
@@ -93,8 +96,7 @@ class Command(BaseCommand):
 
     # SECTION ID
     def list_sections(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/4/sections"
-        sport_score_key = settings.SPORT_SCORE_KEY
+        url = "https://sportscore1.p.rapidapi.com/sports/2/sections"
         headers = {
             "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
@@ -108,13 +110,32 @@ class Command(BaseCommand):
         data_df = data['data']
         df = pd.DataFrame(data_df)
         # sort by priority field
-        df = df.sort_values(by='priority', ascending=False)
+        df = df.sort_values(by='name', ascending=False)
         logging.info(
             f"DataFrame:\n{tabulate(df[['id', 'name', 'priority']], headers='keys', tablefmt='psql', showindex=False)}")
 
+    def list_leagues_by_section_id(self, options):
+        url =  'https://sportscore1.p.rapidapi.com/sections/145/leagues'
+
+        headers = {
+            "X-RapidAPI-Key": sport_score_key,
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        response = requests.request(
+            "GET", url, headers=headers)
+
+        data = response.text
+        data = json.loads(data)
+        data_df = data['data']
+        columns = ['id', 'slug', 'start_date', 'priority', 'facts']
+        df = pd.DataFrame(data_df)
+        logging.info(
+            f"DataFrame:\n{tabulate(df[columns], headers='keys', tablefmt='psql', showindex=False)}")
+
+
     def list_leagues(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/leagues"
-        sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
             "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
@@ -217,7 +238,14 @@ class Command(BaseCommand):
 
     # Update database
     def football_events_by_leagues(self, options):
-        football_leagues = ['317', '326', '318']
+        football_leagues = [
+            '317', # Premier League
+            '326', # FA Cup
+            '251', # La Liga
+            '512', # Bundesliga
+            '498', # Ligue 1
+            '592', # Serie A
+        ]
 
         for league_id in football_leagues:
             events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id + "/events"

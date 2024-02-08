@@ -9,11 +9,7 @@ export const Tips: React.FC = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     const handleItemClick = (index: number) => {
-        if (openIndex === index) {
-            setOpenIndex(null); // close if already open
-        } else {
-            setOpenIndex(index); // open clicked item
-        }
+        setOpenIndex(index === openIndex ? null : index);
     };
     const {isLoading, isError, data, error} = useQuery("bets", getData);
 
@@ -23,81 +19,74 @@ export const Tips: React.FC = () => {
 
     return (
         <div className="main">
-            <ul className="player-list">
-                <li className="player-list-item player-list-item-header">
-                    <div>
-                        <strong>Home</strong>
-                    </div>
-                    <div>
-                        <strong>Away</strong>
-                    </div>
-                    <div>
-                        <strong>1</strong>
-                    </div>
-                    <div>
-                        <strong>2</strong>
-                    </div>
-                    <div>
-                        <strong>Elo</strong>
-                    </div>
-                    <div>
-                        <strong>YElo</strong>
-                    </div>
-                    <div>
-                        <strong>Win%</strong>
-                    </div>
-                    <div>
-                        <strong>H2H%</strong>
-                    </div>
-                    <div>
-                        <strong>COpp%</strong>
-                    </div>
-                    <div>
-                        <strong>S/RPW1</strong>
-                    </div>
-                    <div>
-                        <strong>S/RPW2</strong>
-                    </div>
-                </li>
+            <table className="table">
+            <thead>
+                <tr className="header">
+                    <th>Match</th>
+                    <th>Odds</th>
+                    <th>Yield</th>
+                    <th>Prob</th>
+                    <th>Elo</th>
+                    <th>YElo</th>
+                    <th>Win%</th>
+                    <th>H2H%</th>
+                    <th>COpp%</th>
+                    <th>S/RPW1</th>
+                    <th>S/RPW2</th>
+                </tr>
+            </thead>
+            <tbody>
                 {data &&
                     data.data &&
                     data.data.map((player: Bets, index: number) => (
-                        <React.Fragment key={player.matchId}>
-                            <li
+                        <React.Fragment key={index}>
+                            <tr
                                 key={player.matchId}
-                                className="player-list-item"
+                                className="row"
                                 onClick={() => handleItemClick(index)}
                             >
-                                <div>{player.homeName}</div>
-                                <div>{player.awayName}</div>
-                                <div>{player.homeOdds}</div>
-                                <div>{player.awayOdds}</div>
-                                <div>{player.eloProb}</div>
-                                <div>{player.yearEloProb}</div>
-                                <div>{player.statsWin}</div>
-                                <div>
+                                <td>
+                                  <div>{player.homeName}</div>
+                                  <div>{player.awayName}</div>
+                                </td>
+                                <td>
+                                  <div>{player.homeOdds}</div>
+                                  <div>{player.awayOdds}</div>
+                                </td>
+                                <td>
+                                  <div>{player.homeYield}</div>
+                                  <div>{player.awayYield}</div>
+                                </td>
+                                <td>{player.homeProb}</td>
+                                <td>{player.eloProb}</td>
+                                <td>{player.yearEloProb}</td>
+                                <td>{player.statsWin}</td>
+                                <td>
                                     {player.h2hWin}/{player.h2hMatches}
-                                </div>
-                                <div>
+                                </td>
+                                <td>
                                     {player.commonOpponents}/{player.commonOpponentsCount}
-                                </div>
-                                <div>
+                                </td>
+                                <td>
                                     {player.homeSpw}/{player.homeRpw}
-                                </div>
-                                <div>
+                                </td>
+                                <td>
                                     {player.awaySpw}/{player.awayRpw}
-                                </div>
-                            </li>
+                                </td>
+                            </tr>
                             {openIndex === index && (
-                                <li>
-                                    {/* Whatever you want to display when clicked */}
-                                    <div>{player.preview}</div>
-                                    <div>{player.reasoning}</div>
-                                </li>
+                                <tr>
+                                    <td colSpan={11} >
+                                        {/* Whatever you want to display when clicked */}
+                                        <div>{player.preview}</div>
+                                        <div>{player.reasoning}</div>
+                                    </td>
+                                </tr>
                             )}
                         </React.Fragment>
                     ))}
-            </ul>
+            </tbody>
+            </table>
         </div>
     );
 };

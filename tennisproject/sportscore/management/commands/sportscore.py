@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
-from sportscore.models import Leagues, Events, Players, Teams, Stats, FootballEvents, IceHockeyEvents
+from sportscore.models import TennisTournaments, Leagues, Events, Players, Teams, Stats, FootballEvents, IceHockeyEvents
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
@@ -40,6 +40,9 @@ class Command(BaseCommand):
 
         list_league_by_section_cmd = subparsers.add_parser("leagues-by-section")
         list_league_by_section_cmd.set_defaults(subcommand=self.list_leagues_by_section_id)
+
+        list_tennis_tournaments_cmd = subparsers.add_parser("tennis-tournaments")
+        list_tennis_tournaments_cmd.set_defaults(subcommand=self.list_tennis_tournaments)
 
         list_leagues_cmd = subparsers.add_parser("leagues")
         list_leagues_cmd.set_defaults(subcommand=self.list_leagues)
@@ -605,3 +608,53 @@ class Command(BaseCommand):
                 m = Stats(id=id, data=data)
                 m.save()
                 pbar.update(1)
+
+
+    # Tennis tournaments by section id
+    def list_tennis_tournaments(self, options):
+        section_ids =  [
+            '145', # ATP
+            '143', # Challenger
+            '137', # Grand Slam
+            '139', # Davis Cup
+            '142', # Challenger women
+            '141', # Itf Women
+            '144', # WTA
+            '138', # Federation Cup women
+            ]
+        for section_id in section_ids:
+            url = f"https://sportscore1.p.rapidapi.com/sections/{section_id}/leagues"
+            headers = {
+                "X-RapidAPI-Key": sport_score_key,
+                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+            }
+
+            response = requests.request(
+                "GET", url, headers=headers)
+
+            data = response.text
+            data = json.loads(data)
+            data_df = data['data']
+            last_page = data['meta']["last_page"]
+
+            with tqdm(total=last_page) as pbar:
+                for page in range(2, last_page + 1):
+                    querystring = {"page": str(page)}
+                    response = requests.request(
+                        "GET", url, headers=headers, params=querystring
+                    )
+                    data = response.text
+                    data = json.loads(data)
+                    try:
+                        data_df.extend(data["data"])
+                    except KeyError:
+                        print(data)
+                        pass
+                    pbar.update(1)
+                    time.sleep(1)
+
+            with tqdm(total=len(data_df)) as pbar:
+                for item in data_df:
+                    m = TennisTournaments(**item)
+                    m.save()
+                    pbar.update(1)

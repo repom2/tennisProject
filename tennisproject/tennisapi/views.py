@@ -11,6 +11,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAdminUser
 from django.db.models import F, Max, Subquery, OuterRef
+from django.db.models.functions import Greatest
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 import logging
@@ -64,9 +65,10 @@ class BetList(generics.ListAPIView):
 
     def list(self, request):
         now = timezone.now()
-        from_date = now - relativedelta(hours=18)
+        from_date = now - relativedelta(hours=5)
         queryset = self.get_queryset().filter(start_at__gte=from_date).order_by('start_at')
-        log.info(f"queryset: {queryset}")
+        queryset = queryset.annotate(
+            max_value=Greatest(F('home_yield'), F('away_yield'))
+        ).order_by('-max_value')
         serializer = BetSerializer(queryset, many=True)
-        log.info(f"serializer: {serializer}")
         return Response(serializer.data)

@@ -22,6 +22,7 @@ def player_stats(player_id, start_at, params):
                opponen_service_points - opponen_firstwon - opponen_secondwon as return_points_won
             from (
             select
+            distinct on (date)
                t.date,
                case when winner_id = %(player_id)s
                then w_svpt

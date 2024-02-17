@@ -163,8 +163,8 @@ def train_ml_model(row, level, params):
         'elo_prob',
         'year_elo_prob',
         'stats_win',
-        'fatigue',
-        'h2h_win',
+        #'fatigue',
+        #'h2h_win',
         #'home_fatigue',
         #'away_fatigue',
         #'walkover_home',
@@ -199,7 +199,7 @@ def train_ml_model(row, level, params):
         except Exception as e:
             features.remove("h2h_win")
     if "common_opponents" in features:
-        if df['common_opponents'].isnull().values.any() or df['common_opponents_count'].iloc[0] < 2:
+        if df['common_opponents'].isnull().values.any() or df['common_opponents_count'].iloc[0] < 5:
             features.remove("common_opponents")
     if df['year_elo_prob'].isnull().values.any():
         features.remove("year_elo_prob")
@@ -254,8 +254,12 @@ def train_ml_model(row, level, params):
     prob_away_rf = round(y_pred_rf[0][1], 3)
     odds_limit_home = round(1/prob_home, 3)
     odds_limit_away = round(1/prob_away, 3)
-    yield_home = round(odds_home * prob_home, 3)
-    yield_away = round(odds_away * prob_away, 3)
+    try:
+        yield_home = round(odds_home * prob_home, 3)
+        yield_away = round(odds_away * prob_away, 3)
+    except TypeError:
+        yield_home = 0
+        yield_away = 0
 
     logging.info(f"Probabilities: {prob_home} - {prob_away} Odds: {odds_limit_home}/{odds_limit_away} RF: {prob_home_rf}/{prob_away_rf}")
     logging.info(f"Odds: {odds_home} {odds_away} Yield {yield_home} {yield_away}")

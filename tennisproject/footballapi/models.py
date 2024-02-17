@@ -193,3 +193,319 @@ class ChampionshipEloAway(models.Model):
     elo_change = models.IntegerField()
     games = models.IntegerField()
     date = models.DateField(null=True)
+
+
+class LaLiga(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_laliga_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_laliga_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True)
+
+class LaLigaElo(models.Model):
+    match = models.ForeignKey(
+        'LaLiga',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_laliga",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_laliga",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class LaLigaEloHome(models.Model):
+    match = models.ForeignKey(
+        'LaLiga',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_laliga",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_laliga",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class LaLigaEloAway(models.Model):
+    match = models.ForeignKey(
+        'LaLiga',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_laliga",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_laliga",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class SerieA(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_seriea_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_seriea_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True)
+
+class SerieAElo(models.Model):
+    match = models.ForeignKey(
+        'SerieA',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_seriea",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_seriea",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class SerieAEloHome(models.Model):
+    match = models.ForeignKey(
+        'SerieA',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_seriea",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_seriea",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class SerieAEloAway(models.Model):
+    match = models.ForeignKey(
+        'SerieA',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_seriea",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_seriea",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class Bundesliga(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_bundesliga_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_bundesliga_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True)
+
+class BundesligaElo(models.Model):
+    match = models.ForeignKey(
+        'Bundesliga',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_bundesliga",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_bundesliga",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class BundesligaEloHome(models.Model):
+    match = models.ForeignKey(
+        'Bundesliga',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_bundesliga",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_bundesliga",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class BundesligaEloAway(models.Model):
+    match = models.ForeignKey(
+        'Bundesliga',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_bundesliga",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_bundesliga",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class Ligue1(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_ligue1_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_ligue1_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True)
+
+class Ligue1Elo(models.Model):
+    match = models.ForeignKey(
+        'Ligue1',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_ligue1",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_ligue1",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class Ligue1EloHome(models.Model):
+    match = models.ForeignKey(
+        'Ligue1',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_ligue1",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_home_ligue1",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class Ligue1EloAway(models.Model):
+    match = models.ForeignKey(
+        'Ligue1',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_ligue1",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_away_ligue1",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)

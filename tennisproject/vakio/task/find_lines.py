@@ -140,7 +140,7 @@ def find_lines():
     logging.info("Number of lines: %d", len(data))
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'value', 'share']
-    #df = df[df['yield'] >= 0.0]
+    df = df[df['yield'] >= 1]
     #df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]
     print("Profitable lines:", len(df))

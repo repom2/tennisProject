@@ -22,10 +22,10 @@ moniveto_id = moniveto.moniveto_id
 list_index = moniveto.list_index
 bonus = 0
 scores = [
-        "0,1,2,3,4,5,6-0,1,2,3,4,5,6",
-        "0,1,2,3,4,5,6-0,1,2,3,4,5,6",
-        #"0,1,2,3,4,5-0,1,2,3,4,5",
-        #"1,2,3,4,5-0,1,2,3,4,5",
+        "0,1,2,3,4,5,6-0,1,2,3",
+        "0,1,2,3,4-0,1,2,3,4",
+        "0,1,2,3,4-0,1,2,3,4",
+        #"0,1,2,3,4-0,1,2,3,4",
     ]
 
 
@@ -111,12 +111,12 @@ def get_odds(data, page):
     matches = json.dumps(data)
     try:
         odds = get_sport_winshare(moniveto_id, matches, scores)
-    except requests.exceptions.SSLError as e:
+    except (requests.exceptions.SSLError, TypeError) as e:
         logging.error(e)
         time.sleep(5)
         try:
             odds = get_sport_winshare(moniveto_id, matches, scores)
-        except requests.exceptions.SSLError as e:
+        except (requests.exceptions.SSLError, TypeError) as e:
             logging.error(e)
             time.sleep(5)
             odds = get_sport_winshare(moniveto_id, matches, scores)

@@ -9,7 +9,7 @@ import joblib
 import logging
 import sys
 from psycopg2.extensions import AsIs
-from footballapi.models import Teams, PremierLeague, Championship
+from footballapi.models import Teams, PremierLeague, Championship, LaLiga, SerieA, Bundesliga, Ligue1
 from footballapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
@@ -71,6 +71,30 @@ def predict(level):
         elo_table = 'footballapi_premierelo'
         elo_home = 'footballapi_premierelohome'
         elo_away = 'footballapi_premiereloaway'
+    elif level == 'laliga':
+        match_qs = LaLiga.objects.all()
+        match_table = 'footballapi_laliga'
+        elo_table = 'footballapi_laligaelo'
+        elo_home = 'footballapi_laligaelohome'
+        elo_away = 'footballapi_laligaeloaway'
+    elif level == 'bundesliga':
+        match_qs = Bundesliga.objects.all()
+        match_table = 'footballapi_bundesliga'
+        elo_table = 'footballapi_bundesligaelo'
+        elo_home = 'footballapi_bundesligaelohome'
+        elo_away = 'footballapi_bundesligaeloaway'
+    elif level == 'seriea':
+        match_qs = SerieA.objects.all()
+        match_table = 'footballapi_seriea'
+        elo_table = 'footballapi_serieaelo'
+        elo_home = 'footballapi_serieaelohome'
+        elo_away = 'footballapi_serieaeloaway'
+    elif level == 'ligue1':
+        match_qs = Ligue1.objects.all()
+        match_table = 'footballapi_ligue1'
+        elo_table = 'footballapi_ligue1elo'
+        elo_home = 'footballapi_ligue1elohome'
+        elo_away = 'footballapi_ligue1eloaway'
     elif level == 'facup':
         match_table = 'footballapi_facup'
         elo_table = 'footballapi_championshipelo'
@@ -90,8 +114,8 @@ def predict(level):
         'elo_table': AsIs(elo_table),
         'elo_home': AsIs(elo_home),
         'elo_away': AsIs(elo_away),
-        'start_at': '2024-02-07 20:00:00',
-        'end_at': '2024-02-08 22:00:00',
+        'start_at': '2024-02-16 00:00:00',
+        'end_at': '2024-02-16 23:00:00',
     }
     data = get_data(params)
     l = len(data.index)

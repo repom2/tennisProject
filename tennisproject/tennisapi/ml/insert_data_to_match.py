@@ -149,7 +149,7 @@ def label_round(data, mapping):
 
 
 def insert_data_to_match(level, tour):
-    surface = 'clay'
+    surface = 'hard'
     if level == 'atp':
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()

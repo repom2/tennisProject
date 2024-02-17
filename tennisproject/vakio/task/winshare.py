@@ -35,7 +35,11 @@ def get_sport_winshare(draw, matches):
             })
     j = r.json()
     odds_list = []
-
+    #logging.info(f"Winshare: {j}")
+    try:
+        j["winShares"]
+    except KeyError as e:
+        exit(1)
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
         board = []
@@ -92,8 +96,15 @@ def get_values(data, page):
 def get_win_share():
     start = datetime.now()
     matches = [["1", "X", "2"]] * number_of_matches
-    #matches = [["1", "2"]] * number_of_matches
-    nro_of_combinations = pow(3, number_of_matches)
+    matches[1] = "2"
+    #matches[1] = ["1", "X"]
+    #matches[2] = ["1", "X"]
+    nro_of_combinations = 1
+    for row in matches:
+        nro_of_combinations = nro_of_combinations * len(row)
+    #number_of_matches = 12
+    logging.info(f"Matches: {matches}")
+    #nro_of_combinations = pow(3, 12)
     logging.info(f"Total combinations: {nro_of_combinations}")
 
     data = create_sport_wager("", 0, matches, False)

@@ -99,26 +99,30 @@ class Command(BaseCommand):
 
     # SECTION ID
     def list_sections(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/2/sections"
+        url = "https://sportscore1.p.rapidapi.com/sports/1/sections"
         headers = {
             "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
+        querystring = {"page": "2"}
+
         response = requests.request(
-            "GET", url, headers=headers)
+            "GET", url, headers=headers, params=querystring
+        )
 
         data = response.text
         data = json.loads(data)
         data_df = data['data']
         df = pd.DataFrame(data_df)
         # sort by priority field
-        df = df.sort_values(by='name', ascending=False)
+        df = df.sort_values(by='priority', ascending=False)
         logging.info(
             f"DataFrame:\n{tabulate(df[['id', 'name', 'priority']], headers='keys', tablefmt='psql', showindex=False)}")
+        logging.info(data["meta"])
 
     def list_leagues_by_section_id(self, options):
-        url =  'https://sportscore1.p.rapidapi.com/sections/145/leagues'
+        url =  'https://sportscore1.p.rapidapi.com/sections/40/leagues'
 
         headers = {
             "X-RapidAPI-Key": sport_score_key,
@@ -242,16 +246,17 @@ class Command(BaseCommand):
     # Update database
     def football_events_by_leagues(self, options):
         football_leagues = [
-            '317', # Premier League
-            '326', # FA Cup
-            '251', # La Liga
-            '512', # Bundesliga
-            '498', # Ligue 1
-            '592', # Serie A
+            ['317', 'Premier League'],
+            ['326', 'FA Cup'],
+            ['251', 'La Liga'],
+            ['512', 'Bundesliga'],
+            ['498', 'Ligue 1'],
+            ['592', 'Serie A']
         ]
 
         for league_id in football_leagues:
-            events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id + "/events"
+            logging.info(f"League: {league_id[1]}")
+            events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id[0] + "/events"
 
             headers = {
                 "X-RapidAPI-Key": sport_score_key,
@@ -290,7 +295,8 @@ class Command(BaseCommand):
                     data = json.loads(data)
                     try:
                         data_df.extend(data["data"])
-                    except json.JSONDecodeError:
+                    except json.JSONDecodeError as e:
+                        logging.error(data)
                         continue
                     per_page += data['meta']["per_page"]
                     meta_to = data['meta']["to"]

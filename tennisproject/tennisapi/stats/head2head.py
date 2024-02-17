@@ -18,7 +18,8 @@ def head_to_head_win_percentage(params):
             
             from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
             where 
-            a.date < date(%(start_at)s) and (
+            date(a.date) < (date(%(start_at)s) - interval '1 days')
+            and (
             (winner_id = %(player1)s and loser_id = %(player2)s)
             or
             (winner_id = %(player2)s and loser_id = %(player1)s) )

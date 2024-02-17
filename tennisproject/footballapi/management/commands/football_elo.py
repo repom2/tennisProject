@@ -11,6 +11,8 @@ from footballapi.elo_ratings.bundesliga_elo import bundesliga_elorate
 from footballapi.elo_ratings.bundesliga_elo_home import bundesliga_elo_home
 from footballapi.elo_ratings.ligue1_elo import ligue1_elorate
 from footballapi.elo_ratings.ligue1_elo_home import ligue1_elo_home
+from icehockeyapi.elo_ratings.liiga_elo import liiga_elorate
+from icehockeyapi.elo_ratings.liiga_elo_home import liiga_elo_home
 
 
 class Command(BaseCommand):
@@ -20,6 +22,9 @@ class Command(BaseCommand):
         subparsers = parser.add_subparsers(
             title="subcommands", dest="subcommand", required=True
         )
+
+        all_cmd = subparsers.add_parser("all")
+        all_cmd.set_defaults(subcommand=self.elo_run_all)
 
         premier_cmd = subparsers.add_parser("premier")
         premier_cmd.set_defaults(subcommand=self.premier)
@@ -60,6 +65,22 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         options["subcommand"](options)
+
+    def elo_run_all(self, options):
+        premier_elorate()
+        premier_elo_home()
+        championship_elorate()
+        championship_elo_home()
+        laliga_elorate()
+        laliga_elo_home()
+        seriea_elorate()
+        seriea_elo_home()
+        bundesliga_elorate()
+        bundesliga_elo_home()
+        ligue1_elorate()
+        ligue1_elo_home()
+        liiga_elorate()
+        liiga_elo_home()
 
     def premier(self, options):
         premier_elorate()

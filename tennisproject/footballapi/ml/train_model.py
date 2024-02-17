@@ -157,9 +157,9 @@ def train_ml_model(row, level, params):
     odds_limit_home = round(1 / prob_home, 3)
     odds_limit_away = round(1 / prob_away, 3)
     odds_limit_draw = round(1 / prob_draw, 3)
-    yield_home = None#round(odds_home * prob_home, 3)
-    yield_away = None#round(odds_away * prob_away, 3)
-    yield_draw = None#round(odds_draw * prob_draw, 3)
+    yield_home = round(odds_home * prob_home, 3)
+    yield_away = round(odds_away * prob_away, 3)
+    yield_draw = round(odds_draw * prob_draw, 3)
 
     title = f"Model for {home_name} vs {away_name}"
     table_str = tabulate(df, headers='keys', tablefmt='psql', showindex=True)
@@ -173,3 +173,12 @@ def train_ml_model(row, level, params):
     logging.info(
         f"Probabilities: {prob_home} {prob_draw} {prob_away} Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away}")
     logging.info(f"Odds: {odds_home} {odds_draw} {odds_away} Yield {yield_home} {yield_draw} {yield_away}")
+
+    return {
+        "prob_home": prob_home,
+        "prob_draw": prob_draw,
+        "prob_away": prob_away,
+        "home_yield": yield_home,
+        "draw_yield": yield_draw,
+        "away_yield": yield_away,
+    }

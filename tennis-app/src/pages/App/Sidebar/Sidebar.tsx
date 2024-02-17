@@ -6,11 +6,16 @@ import {Link} from "react-router-dom";
 const Sidebar: React.FC = () => {
     return (
         <div className={styles.sidebar}>
-          <h2 className={styles.menuTitle}>Tennis Menu</h2>
+          <h2 className={styles.menuTitle}>Sport Menu</h2>
           <ul className={styles.list}>
             <li>
             <Link to="/tips" className={styles.link}>
-              <div className={styles.button}>Previews</div>
+              <div className={styles.button}>Tennis</div>
+            </Link>
+            </li>
+            <li>
+            <Link to="/footballtips" className={styles.link}>
+              <div className={styles.button}>Football</div>
             </Link>
             </li>
             <li>

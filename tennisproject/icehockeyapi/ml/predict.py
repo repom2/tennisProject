@@ -76,8 +76,8 @@ def predict(level):
         'elo_table': AsIs(elo_table),
         'elo_home': AsIs(elo_home),
         'elo_away': AsIs(elo_away),
-        'start_at': '2024-02-06 00:00:00',
-        'end_at': '2024-02-08 22:00:00',
+        'start_at': '2024-02-16 00:00:00',
+        'end_at': '2024-02-16 22:00:00',
     }
     data = get_data(params)
     l = len(data.index)

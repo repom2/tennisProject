@@ -3,6 +3,14 @@ from footballapi.elo_ratings.premier_elo import premier_elorate
 from footballapi.elo_ratings.championship_elo import championship_elorate
 from footballapi.elo_ratings.premier_elo_home import premier_elo_home
 from footballapi.elo_ratings.championship_elo_home import championship_elo_home
+from footballapi.elo_ratings.laliga_elo import laliga_elorate
+from footballapi.elo_ratings.laliga_elo_home import laliga_elo_home
+from footballapi.elo_ratings.seriea_elo import seriea_elorate
+from footballapi.elo_ratings.seriea_elo_home import seriea_elo_home
+from footballapi.elo_ratings.bundesliga_elo import bundesliga_elorate
+from footballapi.elo_ratings.bundesliga_elo_home import bundesliga_elo_home
+from footballapi.elo_ratings.ligue1_elo import ligue1_elorate
+from footballapi.elo_ratings.ligue1_elo_home import ligue1_elo_home
 
 
 class Command(BaseCommand):
@@ -25,6 +33,30 @@ class Command(BaseCommand):
         championship_home_cmd = subparsers.add_parser("championship-home")
         championship_home_cmd.set_defaults(subcommand=self.championship_home)
 
+        laliga_cmd = subparsers.add_parser("laliga")
+        laliga_cmd.set_defaults(subcommand=self.laliga)
+
+        laliga_home_cmd = subparsers.add_parser("laliga-home")
+        laliga_home_cmd.set_defaults(subcommand=self.laliga_home)
+
+        seriea_cmd = subparsers.add_parser("seriea")
+        seriea_cmd.set_defaults(subcommand=self.seriea)
+
+        seriea_home_cmd = subparsers.add_parser("seriea-home")
+        seriea_home_cmd.set_defaults(subcommand=self.seriea_home)
+
+        bundesliga_cmd = subparsers.add_parser("bundesliga")
+        bundesliga_cmd.set_defaults(subcommand=self.bundesliga)
+
+        bundesliga_home_cmd = subparsers.add_parser("bundesliga-home")
+        bundesliga_home_cmd.set_defaults(subcommand=self.bundesliga_home)
+
+        ligue1_cmd = subparsers.add_parser("ligue1")
+        ligue1_cmd.set_defaults(subcommand=self.ligue1)
+
+        ligue1_home_cmd = subparsers.add_parser("ligue1-home")
+        ligue1_home_cmd.set_defaults(subcommand=self.ligue1_home)
+
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -40,3 +72,27 @@ class Command(BaseCommand):
 
     def championship_home(self, options):
         championship_elo_home()
+
+    def laliga(self, options):
+        laliga_elorate()
+
+    def laliga_home(self, options):
+        laliga_elo_home()
+
+    def seriea(self, options):
+        seriea_elorate()
+
+    def seriea_home(self, options):
+        seriea_elo_home()
+
+    def bundesliga(self, options):
+        bundesliga_elorate()
+
+    def bundesliga_home(self, options):
+        bundesliga_elo_home()
+
+    def ligue1(self, options):
+        ligue1_elorate()
+
+    def ligue1_home(self, options):
+        ligue1_elo_home()

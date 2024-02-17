@@ -146,9 +146,9 @@ def label_round(data, mapping):
 
 def predict(level, tour):
     surface = 'hard'
-    start_at = '2024-02-06 00:00:00'
-    end_at ='2024-02-09 22:00:00'
-    start_at = datetime.strptime(start_at, '%Y-%m-%d %H:%M:%S') - timedelta(days=8)
+    start_at = '2024-02-17 00:00:00'
+    end_at ='2024-02-17 22:00:00'
+    start_at = datetime.strptime(start_at, '%Y-%m-%d %H:%M:%S') - timedelta(days=12)
     if level == 'atp':
         qs = AtpTour.objects.filter(
             name__icontains=tour,
@@ -200,7 +200,7 @@ def predict(level, tour):
         print("No data")
         return
 
-    date = timezone.now() - timedelta(hours=28)
+    date = timezone.now() - timedelta(hours=14)
     data = data[data['start_at'] > date]
     l = len(data.index)
     if l == 0:
@@ -337,7 +337,7 @@ def predict(level, tour):
             home_prob, away_prob, home_yield, away_yield = train_ml_model(row, level, params)
         except Exception as e:
             log.error(e)
-            pass
+            continue
         #break
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],

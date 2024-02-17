@@ -147,7 +147,7 @@ def moniveto_bet(bet, max_bet_eur, index, id):
         inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
         inner join vakio_monivetoprob e on e.combination=a.match4 and e.moniveto_id = a.moniveto_id and e.list_index = a.list_index
         where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-        order by share desc
+        order by yield desc
         """
     elif m == 3:
         query = f"""
@@ -162,7 +162,7 @@ def moniveto_bet(bet, max_bet_eur, index, id):
                 inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                 inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
                 where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                order by share desc
+                order by yield desc
                 """
     else:
         query = f"""
@@ -244,19 +244,23 @@ def moniveto_bet(bet, max_bet_eur, index, id):
         if balance < 0.0:
             break
         if balance < bankroll and is_bet_placed:
-            bet = MonivetoOdds.objects.update_or_create(
-                combination=row["combination"],
-                moniveto_id=moniveto_id,
-                list_index=list_index,
-                defaults={
-                    "bet": True,
-                }
-            )
-            MonivetoBet.objects.create(
-                combination=row["combination"],
-                moniveto_id=moniveto_id,
-                list_index=list_index,
-                bet=True,
-                value=winshare,
-            )
-            bankroll = balance
+            try:
+                bet = MonivetoOdds.objects.update_or_create(
+                    combination=row["combination"],
+                    moniveto_id=moniveto_id,
+                    list_index=list_index,
+                    defaults={
+                        "bet": True,
+                    }
+                )
+                MonivetoBet.objects.create(
+                    combination=row["combination"],
+                    moniveto_id=moniveto_id,
+                    list_index=list_index,
+                    bet=True,
+                    value=winshare,
+                )
+                bankroll = balance
+            except Exception as e:
+                logging.error(e)
+                continue

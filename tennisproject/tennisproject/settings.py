@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "vakio",
     "footballapi",
     "icehockeyapi",
+    "tennis_api",
 ]
 
 MIDDLEWARE = [

@@ -7,14 +7,14 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = 63296
-list_index = 7
+moniveto_id = 63322
+list_index = 2
 
 lst = [
-    [0, 0.53, 0.20, 0.27],
-    [1, 0.30, 0.20, 0.50],
-    #[2, 0.27, 0.26, 0.47],
-    #[3, 0.52, 0.25, 0.23],
+    [0, 0.808, 0.156, 0.037],
+    [1, 0.483, 0.287, 0.23],
+    [2, 0.33, 0.276, 0.394],
+    #[3, 0.459, 0.15, 0.273],
 ]
 
 matches_to_bet = len(lst)
@@ -103,17 +103,17 @@ def moniveto():
         #[2, 2.51, 2.8],
         # [3, 2.1, 1.0],
     ]
-    is_using_own_data = True
+    is_using_own_data = False
     if is_using_own_data:
         for i, item in enumerate(lst):
             arbitrage_check(item)
-            #estimated_goals = estimated_avg_goals_calc(goals[i])
-            #logging.info( estimated_goals)
+            estimated_goals = estimated_avg_goals_calc(goals[i])
+            logging.info( estimated_goals)
             calculate_poisson(
-                estimated_avg_goals[i][1],
-                #estimated_goals[1],
-                estimated_avg_goals[i][2],
-                #estimated_goals[2],
+                #estimated_avg_goals[i][1],
+                estimated_goals[1],
+                #estimated_avg_goals[i][2],
+                estimated_goals[2],
                 item[0],
                 moniveto_id,
                 list_index,

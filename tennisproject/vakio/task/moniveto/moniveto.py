@@ -1,5 +1,6 @@
 from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
+from vakio.task.moniveto.odds_from_stats import odds_from_stats
 import logging
 
 logging.basicConfig(
@@ -7,14 +8,14 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = 63322
-list_index = 2
+moniveto_id = 63325
+list_index = 5
 
 lst = [
-    [0, 0.808, 0.156, 0.037],
-    [1, 0.483, 0.287, 0.23],
-    [2, 0.33, 0.276, 0.394],
-    #[3, 0.459, 0.15, 0.273],
+    [0, 0.72, 0.204, 0.076, 'seriea'],
+    [1, 0.499, 0.248, 0.253, 'laliga'],
+    [2, 0.151, 0.277, 0.572, 'ligue1'],
+    #[3, 0.745, 0.159, 0.096, 'premier'],
 ]
 
 matches_to_bet = len(lst)
@@ -22,7 +23,7 @@ matches_to_bet = len(lst)
 estimated_avg_goals = [
     [0, 2.6, 2.3],
     [1, 2.3, 2.6],
-    #[2, 2.51, 2.8],
+    [2, 2.51, 2.8],
     #[3, 2.1, 1.0],
 ]
 
@@ -100,23 +101,36 @@ def moniveto():
     estimated_avg_goals = [
         [0, 2.6, 2.3],
         [1, 2.3, 2.6],
-        #[2, 2.51, 2.8],
+        [2, 2.51, 2.8],
         # [3, 2.1, 1.0],
     ]
-    is_using_own_data = False
-    if is_using_own_data:
+    is_using_own_data = True
+    ice_hockey = True
+    if is_using_own_data and not ice_hockey:
         for i, item in enumerate(lst):
             arbitrage_check(item)
             estimated_goals = estimated_avg_goals_calc(goals[i])
             logging.info( estimated_goals)
             calculate_poisson(
-                #estimated_avg_goals[i][1],
-                estimated_goals[1],
-                #estimated_avg_goals[i][2],
-                estimated_goals[2],
+                estimated_avg_goals[i][1],
+                #estimated_goals[1],
+                estimated_avg_goals[i][2],
+                #estimated_goals[2],
                 item[0],
                 moniveto_id,
                 list_index,
+            )
+            print("---------------------------")
+    elif ice_hockey:
+        for i, item in enumerate(lst):
+            odds_from_stats(
+                item[0],
+                moniveto_id,
+                list_index,
+                item[1],
+                item[2],
+                item[3],
+                item[4],
             )
             print("---------------------------")
     else:

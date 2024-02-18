@@ -13,6 +13,9 @@ class Command(BaseCommand):
         predict_matches_cmd.set_defaults(subcommand=self.predict_matches)
         predict_matches_cmd.add_argument("pred", type=str, default='premier')
 
+        predict_all_cmd = subparsers.add_parser("all")
+        predict_all_cmd.set_defaults(subcommand=self.predict_all_matches)
+
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -20,5 +23,13 @@ class Command(BaseCommand):
     def predict_matches(self, options):
         level = options["pred"]
         predict(level)
+
+    def predict_all_matches(self, options):
+        predict('premier')
+        predict('championship')
+        predict('ligue1')
+        predict('bundesliga')
+        predict('seriea')
+        predict('laliga')
 
 

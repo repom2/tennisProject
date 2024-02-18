@@ -6,6 +6,7 @@ import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 
 import {PlayerList} from "/app/src/components/Player/PlayerList";
 import {Tips} from "/app/src/components/Tips/Tips";
+import {FootballTips} from "/app/src/components/FootballTips/FootballTips";
 import queryClient from "/app/src/data/queryClient";
 
 import {Header} from "./Header/Header";
@@ -24,6 +25,7 @@ function App() {
                             <Routes>
                                 <Route path="/elo" element={<PlayerList />} />
                                 <Route path="/tips" element={<Tips />} />
+                                <Route path="/footballtips" element={<FootballTips />} />
                                 {/* ... Add as many routes as needed */}
                             </Routes>
                         </div>

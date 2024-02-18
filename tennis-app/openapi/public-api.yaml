@@ -65,6 +65,23 @@ paths:
                 $ref: '#/components/schemas/Bets'
         '404':
           description: Bet list not found
+  /football-bet-list:
+    get:
+      tags:
+        - bets
+      summary: Get football bets
+      operationId: getFootballBets
+      parameters:
+        - $ref: '#/components/parameters/leagueParam'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FootballBets'
+        '404':
+          description: Bet list not found
 servers:
   - url: /api/tennisapi
   - url: http://localhost:3000/api/metricsapi
@@ -77,6 +94,13 @@ components:
       schema:
         type: string
         example: "WTA"
+    leagueParam:
+      in: query
+      name: level
+      description: Football league
+      schema:
+        type: string
+        example: "bundesliga"
   schemas:
     Players:
       type: object
@@ -210,6 +234,68 @@ components:
         commonOpponentsCount:
           type: integer
           description: "Count of common opponents"
+        preview:
+          type: string
+          description: "Preview"
+        reasoning:
+          type: string
+          description: "Reasoning"
+        startAt:
+          type: string
+          format: date-time
+          description: "Start time"
+    FootballBets:
+      type: object
+      properties:
+        matchId:
+          type: string
+          example: 30a3c3d440e92221838639139110da3b
+          description: "Match ID"
+        homeId:
+          type: string
+          description: "Home Team ID"
+        awayId:
+          type: string
+          description: "Away Team ID"
+        homeName:
+          type: string
+          description: "Home Team Name"
+        awayName:
+          type: string
+          description: "Away Team Name"
+        homeOdds:
+          type: number
+          description: "Home Odds"
+        drawOdds:
+          type: number
+          description: "Draw Odds"
+        awayOdds:
+          type: number
+          description: "Away Odds"
+        homeProb:
+          type: number
+          description: "Home Probability"
+        drawProb:
+          type: number
+          description: "Draw Probability"
+        awayProb:
+          type: number
+          description: "Away Probability"
+        homeYield:
+          type: number
+          description: "Home yield"
+        drawYield:
+          type: number
+          description: "Draw yield"
+        awayYield:
+          type: number
+          description: "Away yield"
+        eloProb:
+          type: number
+          description: "Elo Probability"
+        eloProbHome:
+          type: number
+          description: "Home and Away Elo Probability"
         preview:
           type: string
           description: "Preview"

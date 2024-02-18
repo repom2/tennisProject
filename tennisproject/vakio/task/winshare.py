@@ -97,7 +97,9 @@ def get_win_share():
     start = datetime.now()
     matches = [["1", "X", "2"]] * number_of_matches
     matches[1] = "2"
-    #matches[1] = ["1", "X"]
+    matches[10] = ["1", "2"]
+    matches[4] = ["1", "X"]
+    matches[0] = ["1", "X"]
     #matches[2] = ["1", "X"]
     nro_of_combinations = 1
     for row in matches:

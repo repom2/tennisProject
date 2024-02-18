@@ -9,7 +9,8 @@ import joblib
 import logging
 import sys
 from psycopg2.extensions import AsIs
-from footballapi.models import Teams, PremierLeague, Championship, LaLiga, SerieA, Bundesliga, Ligue1
+from footballapi.models import Teams, PremierLeague, Championship, LaLiga, SerieA, Bundesliga, Ligue1, BetFootball
+from django.contrib.contenttypes.models import ContentType
 from footballapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
@@ -65,6 +66,7 @@ def label_round(data, mapping):
 
 def predict(level):
     teams_qs = Teams.objects.all()
+    bet_qs = BetFootball.objects.all()
     if level == 'premier':
         match_qs = PremierLeague.objects.all()
         match_table = 'footballapi_premierleague'
@@ -109,13 +111,18 @@ def predict(level):
         elo_table = 'footballapi_championshipelo'
         elo_home = 'footballapi_championshipelohome'
         elo_away = 'footballapi_championshipeloaway'
+
+    now = timezone.now().date()
+    end_at = now + timedelta(days=1)
+    logging.info(f"Predicting matches for {level} between {now} and {end_at}")
+
     params = {
         'match_table': AsIs(match_table),
         'elo_table': AsIs(elo_table),
         'elo_home': AsIs(elo_home),
         'elo_away': AsIs(elo_away),
-        'start_at': '2024-02-16 00:00:00',
-        'end_at': '2024-02-16 23:00:00',
+        'start_at': now,
+        'end_at': end_at,
     }
     data = get_data(params)
     l = len(data.index)
@@ -148,10 +155,36 @@ def predict(level):
     #exit()
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
-        train_ml_model(row, level, params)
-        """try:
-            train_ml_model(row, level, params)
-        except Exception as e:
-            logging.error(e)
-            pass"""
+        data = train_ml_model(row, level, params)
+        match = match_qs.get(id=row.match_id)
+        content_type = ContentType.objects.get_for_model(match)
+        object_id = match.id
+        bet_qs.update_or_create(
+            content_type=content_type,
+            object_id=object_id,
+            home=teams_qs.filter(id=row.home_team_id)[0],
+            away=teams_qs.filter(id=row.away_team_id)[0],
+            defaults={
+                "start_at": row.start_at,
+                "home_name": row.home_name,
+                "away_name": row.away_name,
+                "home_odds": row['home_odds'],
+                "draw_odds": row['draw_odds'],
+                "away_odds": row['away_odds'],
+                "elo_prob": row['elo_prob'],
+                "elo_prob_home": row['elo_prob_home'],
+                "home_elo": row['home_elo'],
+                "away_elo": row['away_elo'],
+                "elo_home": row['elo_home'],
+                "elo_away": row['elo_away'],
+                #"preview": preview,
+                #"reasoning": reasoning,
+                "home_prob": data['prob_home'],
+                "draw_prob": data['prob_draw'],
+                "away_prob": data['prob_away'],
+                "home_yield": data['home_yield'],
+                "draw_yield": data['draw_yield'],
+                "away_yield": data['away_yield'],
+            }
+        )
 

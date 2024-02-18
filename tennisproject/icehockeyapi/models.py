@@ -35,6 +35,10 @@ class Liiga(models.Model):
     draw_odds = models.FloatField(null=True)
     start_at = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def combined_score(self):
+        return f'{self.home_score}-{self.away_score}'
+
 
 class LiigaElo(models.Model):
     match = models.ForeignKey(

@@ -10,3 +10,5 @@ export const getPlayers = api.players.getPlayers.bind(api.players);
 export const getEloRatings = api.players.getEloRatings.bind(api.players);
 
 export const getBets = api.bets.getBets.bind(api.bets);
+
+export const getFootballBets = api.bets.getFootballBets.bind(api.bets);

@@ -83,7 +83,7 @@ class Command(BaseCommand):
         list_sports_cmd.set_defaults(subcommand=self.place_moniveto_bet)
         list_sports_cmd.add_argument("bet", nargs='?', type=str,
                                  help='If not provided no bets', default=None)
-        list_sports_cmd.add_argument("stake", nargs='?', type=int, default=30)
+        list_sports_cmd.add_argument("stake", nargs='?', type=int, default=35)
         list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
         list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
 

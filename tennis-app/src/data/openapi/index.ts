@@ -11,6 +11,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { Bets } from './models/Bets';
 export type { EloRatings } from './models/EloRatings';
+export type { FootballBets } from './models/FootballBets';
 export type { Players } from './models/Players';
 
 export { BetsService } from './services/BetsService';

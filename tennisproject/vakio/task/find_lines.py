@@ -11,7 +11,7 @@ from vakio.task import probs
 list_index = probs.list_index
 vakio_id = probs.vakio_id
 max_bet_eur = 16
-line_cost = 0.1
+line_cost = 0.25
 stake = line_cost * 100
 
 logging.basicConfig(

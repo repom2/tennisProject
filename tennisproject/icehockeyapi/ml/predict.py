@@ -71,13 +71,15 @@ def predict(level):
         elo_away = 'icehockeyapi_liigaeloaway'
     else:
         return
+    now = timezone.now().date()
+    end_at = now + timedelta(days=1)
     params = {
         'match_table': AsIs(match_table),
         'elo_table': AsIs(elo_table),
         'elo_home': AsIs(elo_home),
         'elo_away': AsIs(elo_away),
-        'start_at': '2024-02-16 00:00:00',
-        'end_at': '2024-02-16 22:00:00',
+        'start_at': now,
+        'end_at': end_at,
     }
     data = get_data(params)
     l = len(data.index)

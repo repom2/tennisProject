@@ -24,3 +24,4 @@ docker compose exec tennisproject poetry run python manage.py sportscore footbal
 docker compose exec tennisproject poetry run python manage.py sportscore ice-hockey-events-by-leagues
 docker compose exec tennisproject poetry run dbt run --project-dir dbt/football --profiles-dir dbt/football
 docker compose exec tennisproject poetry run python manage.py football_elo all
+docker compose exec tennisproject poetry run python manage.py football all

@@ -1,6 +1,19 @@
 from django.db import models
 
 
+class Player(models.Model):
+    id = models.TextField(primary_key=True)
+    dob = models.DateField(null=True)
+    hand = models.TextField(null=True)
+    country_code = models.TextField(null=True)
+    height = models.FloatField(null=True)
+    first_name = models.TextField(null=True)
+    last_name = models.TextField(null=True)
+    slug = models.TextField(null=True)
+    country = models.TextField(null=True)
+    prize_total_euros = models.IntegerField(null=True)
+
+
 class AtpTour(models.Model):
     id = models.IntegerField(primary_key=True)
     section_id = models.IntegerField()

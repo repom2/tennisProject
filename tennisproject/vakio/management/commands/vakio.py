@@ -7,8 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
-from sportscore.models import Leagues, Events, Players, Teams, Stats
-from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
+from vakio.models import Moniveto
 from tqdm import tqdm
 from django.conf import settings
 from vakio.task.winshare import get_win_share
@@ -20,7 +19,15 @@ from vakio.task.moniveto.moniveto import moniveto
 from vakio.task.moniveto.moniveto_winshare import moniveto_winshares
 from vakio.task.moniveto.moniveto_bet import moniveto_bet
 from vakio.task.moniveto.parse_odds import parse_odds
+import logging
+from tabulate import tabulate
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(name)s - %(levelname)s: %(message)s'
+)
+
+logger = logging.getLogger('MyLogger')
 
 pd.set_option('display.max_columns', None)
 
@@ -79,10 +86,18 @@ class Command(BaseCommand):
         list_sports_cmd = subparsers.add_parser("moniveto-winshares")
         list_sports_cmd.set_defaults(subcommand=self.get_moniveto_winshares)
 
+        list_sports_cmd = subparsers.add_parser("moni-bet")
+        list_sports_cmd.set_defaults(subcommand=self.place_moniveto)
+        list_sports_cmd.add_argument("bet", nargs='?', type=str,
+                                 help='If not provided no bets', default=None)
+        list_sports_cmd.add_argument("stake", nargs='?', type=int, default=35)
+        list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
+        list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
+
         list_sports_cmd = subparsers.add_parser("moniveto-bet")
         list_sports_cmd.set_defaults(subcommand=self.place_moniveto_bet)
         list_sports_cmd.add_argument("bet", nargs='?', type=str,
-                                 help='If not provided no bets', default=None)
+                                     help='If not provided no bets', default=None)
         list_sports_cmd.add_argument("stake", nargs='?', type=int, default=35)
         list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
         list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
@@ -110,7 +125,17 @@ class Command(BaseCommand):
         data = response.text
         data = json.loads(data)
         for row in data:
-            print(row['name'], row['id'], row['listIndex'])
+            close = time.strftime(
+                '%Y-%m-%d %H:%M:%S',
+                time.localtime(row['closeTime'] / 1000)
+            )
+            prize = row['gameRuleSet']['basePrice']
+            outcomes = row['rows']
+            for outcome in outcomes:
+                home = outcome['outcome']['home']['name']
+                away = outcome['outcome']['away']['name']
+                logger.info(home + '-' + away)
+            logger.info(row['name'] + ' ' + str(row['id']) + ' ' + str(row['listIndex']))
 
         response = s.get(
             'https://www.veikkaus.fi/api/sport-open-games/v1/games/MULTISCORE/draws',
@@ -124,7 +149,37 @@ class Command(BaseCommand):
         data = response.text
         data = json.loads(data)
         for row in data:
-            print(row['id'], row['listIndex'], row['rows'][0])
+            logging.info(str(row['id']) + ' ' + str(row['listIndex']))
+            close = time.strftime(
+                '%Y-%m-%d %H:%M:%S',
+                time.localtime(row['closeTime'] / 1000)
+            )
+            stake = row['gameRuleSet']['minStake']
+            outcomes = row['rows']  # ['outcome']
+            Moniveto.objects.update_or_create(
+                moniveto_id=row['id'],
+                list_index=row['listIndex'],
+                defaults={
+                    'close': close,
+                    'stake': stake,
+                }
+            )
+            for i, outcome in enumerate(outcomes):
+                #logger.info(outcome)
+                home = outcome['outcome']['home']['name']
+                away = outcome['outcome']['away']['name']
+                logger.info(home + '-' + away)
+                away_field = 'away' + str(i+1)
+                home_field = 'home' + str(i+1)
+                Moniveto.objects.update_or_create(
+                    moniveto_id=row['id'],
+                    list_index=row['listIndex'],
+                    defaults={
+                        away_field: away,
+                        home_field: home
+                    }
+                )
+
 
     def get_winshare(self, options):
         get_win_share()
@@ -145,13 +200,21 @@ class Command(BaseCommand):
         moniveto()
 
     def get_moniveto_winshares(self, options):
-        moniveto_winshares()
+        moniveto_winshares(None, None)
 
     def place_moniveto_bet(self, options):
         bet = options["bet"]
         stake = options["stake"]
         index = options["index"]
         id = options["id"]
+        moniveto_bet(bet, stake, index, id)
+
+    def place_moniveto(self, options):
+        bet = options["bet"]
+        stake = options["stake"]
+        index = options["index"]
+        id = options["id"]
+        moniveto_winshares(index, id)
         moniveto_bet(bet, stake, index, id)
 
     def parse_score_odds(self, options):

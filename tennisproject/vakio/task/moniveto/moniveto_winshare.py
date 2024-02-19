@@ -3,7 +3,7 @@ import requests
 import json
 from vakio.task.sport_wager import create_multiscore_wager
 from ast import literal_eval
-from vakio.models import MonivetoOdds
+from vakio.models import MonivetoOdds, Moniveto
 import os
 import time
 from datetime import datetime
@@ -18,17 +18,17 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
-moniveto_id = moniveto.moniveto_id
-list_index = moniveto.list_index
+moniveto_default = moniveto.moniveto_id
+index_default = moniveto.list_index
 bonus = 0
-scores = [
+scores_default = [
         "0,1,2,3,4,5-0,1,2,3,4,5",
         "0,1,2,3,4,5-0,1,2,3,4,5",
         "0,1,2,3,4,5-0,1,2,3,4,5",
     ]
 
 
-def get_sport_winshare(draw_id, matches, scores):
+def get_sport_winshare(draw_id, matches, moniveto_id, list_index):
     host = "https://www.veikkaus.fi"
     r = requests.post(
         host + f"/api/sport-odds/v1/games/MULTISCORE/draws/{draw_id}/odds",
@@ -104,27 +104,44 @@ def get_sport_winshare(draw_id, matches, scores):
     return odds_list
 
 
-def get_odds(data, page):
+def get_odds(data, page, moniveto_id, list_index):
     data['page'] = page
     data['selections'] = data["boards"][0]["selections"]
     matches = json.dumps(data)
     try:
-        odds = get_sport_winshare(moniveto_id, matches, scores)
+        odds = get_sport_winshare(moniveto_id, matches, moniveto_id, list_index)
     except (requests.exceptions.SSLError, TypeError) as e:
         logging.error(e)
         time.sleep(5)
         try:
-            odds = get_sport_winshare(moniveto_id, matches, scores)
+            odds = get_sport_winshare(moniveto_id, matches, moniveto_id, list_index)
         except (requests.exceptions.SSLError, TypeError) as e:
             logging.error(e)
             time.sleep(5)
-            odds = get_sport_winshare(moniveto_id, matches, scores)
+            odds = get_sport_winshare(moniveto_id, matches, moniveto_id, list_index)
     return odds
 
 
-def moniveto_winshares():
+def moniveto_winshares(list_index, moniveto_id):
+    if moniveto_id is None:
+        logging.error("No moniveto_id found")
+        moniveto_id = moniveto_default
+        list_index = index_default
     start = datetime.now()
     count = 1
+    logging.info(f"Moniveto_id: {moniveto_id}, list_index: {list_index}, type: {type(list_index)}")
+    saved_scores = Moniveto.objects.filter(moniveto_id=moniveto_id, list_index=list_index).values_list('scores', flat=True).first()
+
+    if saved_scores is None:
+        logging.error("No scores found")
+        scores = scores_default
+    else:
+        scores = saved_scores
+    logging.info(scores)
+    object = Moniveto.objects.filter(moniveto_id=moniveto_id, list_index=list_index).first()
+    # update score field to database using object
+    object.scores = scores
+    object.save()
     for score in scores:
         home, away = score.split('-')
         count = count * len(home.split(',')) * len(away.split(','))
@@ -142,7 +159,7 @@ def moniveto_winshares():
         print(f"Page: {page} / {page + batch}")
         objects = []
         with ThreadPoolExecutor(max_workers=20) as executor:
-            futures = [executor.submit(get_odds, data, i) for i in range(page, page + batch)]
+            futures = [executor.submit(get_odds, data, i, moniveto_id, list_index) for i in range(page, page + batch)]
             for future in concurrent.futures.as_completed(futures):
                 odds_data = future.result()
                 objects += odds_data

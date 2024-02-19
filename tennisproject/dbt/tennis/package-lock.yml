@@ -1,0 +1,4 @@
+packages:
+- git: https://github.com/fishtown-analytics/dbt-utils.git
+  revision: ac072a3c4b78d43a1c013e7de8b8fa6e290b544e
+sha1_hash: 9138d83137e82e4f87ce7a5718a2763a83715207

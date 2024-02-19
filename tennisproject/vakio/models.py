@@ -83,3 +83,28 @@ class MonivetoBet(models.Model):
     moniveto_id = models.IntegerField()
     bet = models.BooleanField(default=False)
     created_at = models.DateTimeField(null=True, auto_now_add=True)
+
+
+class Moniveto(models.Model):
+    moniveto_id = models.IntegerField()
+    list_index = models.IntegerField()
+    close = models.DateTimeField(null=True, auto_now_add=True)
+    stake = models.FloatField()
+    home1 = models.TextField()
+    away1 = models.TextField()
+    home2 = models.TextField()
+    away2 = models.TextField()
+    home3 = models.TextField()
+    away3 = models.TextField()
+    home4 = models.TextField()
+    away4 = models.TextField()
+    scores = models.JSONField(null=True, default=None)
+
+    # Composite primary key
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['list_index','moniveto_id'],
+                name='unique_moniveto_id'
+            )
+        ]

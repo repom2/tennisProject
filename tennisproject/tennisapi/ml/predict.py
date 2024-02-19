@@ -146,9 +146,9 @@ def label_round(data, mapping):
 
 def predict(level, tour):
     surface = 'hard'
-    start_at = '2024-02-17 00:00:00'
-    end_at ='2024-02-17 22:00:00'
-    start_at = datetime.strptime(start_at, '%Y-%m-%d %H:%M:%S') - timedelta(days=12)
+    now = timezone.now().date()
+    end_at = now + timedelta(days=1)
+
     if level == 'atp':
         qs = AtpTour.objects.filter(
             name__icontains=tour,
@@ -189,7 +189,7 @@ def predict(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
-        'start_at': start_at,
+        'start_at': now,
         'end_at': end_at,
         'surface': AsIs(surface),
     }
@@ -200,12 +200,6 @@ def predict(level, tour):
         print("No data")
         return
 
-    date = timezone.now() - timedelta(hours=14)
-    data = data[data['start_at'] > date]
-    l = len(data.index)
-    if l == 0:
-        print("No data")
-        return
     columns = [
         'start_at',
         'winner_fullname',

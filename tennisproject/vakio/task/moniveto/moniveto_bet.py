@@ -1,4 +1,4 @@
-from vakio.models import MonivetoOdds, MonivetoBet
+from vakio.models import MonivetoOdds, MonivetoBet, Moniveto
 import pandas as pd
 from vakio.task.sport_wager import create_sport_wager
 import requests
@@ -14,9 +14,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = moniveto.moniveto_id
-list_index = moniveto.list_index
-
 m = moniveto.matches_to_bet
 
 pd.set_option('display.max_rows', None)
@@ -29,19 +26,6 @@ headers = {
         'Accept': 'application/json',
         'X-ESA-API-Key': 'ROBOT'
 }
-
-params = {
-    "username": "repom",
-    "password": "_W14350300n1",
-    "game": "MULTISCORE",
-    "draw": "",
-    "listIndex": list_index,
-    "id": moniveto_id,
-    "miniVakio": False,
-    "input": "",
-    "stake": 0
-}
-
 
 def get_sport_winshare(draw_id, matches):
     host = "https://www.veikkaus.fi"
@@ -122,12 +106,26 @@ def get_balance(session):
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
 def moniveto_bet(bet, max_bet_eur, index, id):
+    moniveto_id = moniveto.moniveto_id
+    list_index = moniveto.list_index
+    qs = Moniveto.objects.filter(moniveto_id=moniveto_id, list_index=list_index).first()
     start = datetime.now()
     if index:
         list_index = index
     if id:
         moniveto_id = id
-
+    logging.info(f"Moniveto bet started [{list_index}] [{moniveto_id}]")
+    params = {
+        "username": "repom",
+        "password": "_W14350300n1",
+        "game": "MULTISCORE",
+        "draw": "",
+        "listIndex": list_index,
+        "id": moniveto_id,
+        "miniVakio": False,
+        "input": "",
+        "stake": 0
+    }
     if m == 3 or m == 2:
         line_cost = 0.2
     else:
@@ -150,6 +148,7 @@ def moniveto_bet(bet, max_bet_eur, index, id):
         order by share desc
         """
     elif m == 3:
+        logging.info("Moniveto 3 match")
         query = f"""
                 select a.id, a.combination,
                 (a.value * 0.01) * (b.prob * c.prob * d.prob) as yield, bet.bet,
@@ -183,12 +182,10 @@ def moniveto_bet(bet, max_bet_eur, index, id):
     data = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'prob',  'yield', 'win', 'share', 'bet']
     if len(data) == 0:
-        print("No bets")
+        logging.info("No data to bet")
         exit(0)
     yield_limit = 1.0
     df = data[data['yield'] > yield_limit]
-    #df = df[df['share'] > 0.1]
-    #df = df[df['yield'] < 15.0]
     df = df[columns]
 
     logging.info(df.head(80))
@@ -218,8 +215,17 @@ def moniveto_bet(bet, max_bet_eur, index, id):
 
     # Using logging to output the result
     logging.info("Sorted Matches:")
-    for match, players in sorted_matches.items():
-        logging.info(f"Match {match}: {players}")
+    i = 0
+    for match, scores in sorted_matches.items():
+        if i == 0:
+            logging.info(f"{qs.home1} - {qs.away1}: {scores}")
+        elif i == 1:
+            logging.info(f"{qs.home2} - {qs.away2}: {scores}")
+        elif i == 2:
+            logging.info(f"{qs.home3} - {qs.away3}: {scores}")
+        else:
+            logging.info(f"{qs.home4} - {qs.away4}: {scores}")
+        i += 1
     logging.info('Script ended')
     logging.info('Time elapsed: {}'.format(end - start))
     if bet != 'bet':

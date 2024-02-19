@@ -2,19 +2,22 @@ from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
 from vakio.task.moniveto.odds_from_stats import odds_from_stats
 import logging
+from vakio.models import Moniveto
+from footballapi.models import BetFootball
+from django.utils import timezone
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-moniveto_id = 63325
-list_index = 5
+moniveto_id = 63330
+list_index = 1
 
 lst = [
-    [0, 0.72, 0.204, 0.076, 'seriea'],
-    [1, 0.499, 0.248, 0.253, 'laliga'],
-    [2, 0.151, 0.277, 0.572, 'ligue1'],
+    [0, 0.2, 0.254, 0.546, 'seriea'],
+    [1, 0.531, 0.243, 0.227, 'laliga'],
+    [2,  0.419, 0.266, 0.314, 'ligue1'],
     #[3, 0.745, 0.159, 0.096, 'premier'],
 ]
 
@@ -98,6 +101,37 @@ def estimated_avg_goals_calc(i):
     return ['estimated_goals', home, away]
 
 def moniveto():
+    qs = Moniveto.objects.filter(moniveto_id=moniveto_id, list_index=list_index).values(
+        'home1', 'away1', 'home2', 'away2', 'home3', 'away3', 'home4', 'away4',
+    ).first()
+
+    lst = []
+    logging.info(qs)
+    probs1 = list(BetFootball.objects.filter(
+        home_name__contains=qs['home1'], away_name__contains=qs['away1'], start_at__gt=timezone.now()
+    ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
+    logging.info(probs1)
+    lst.append([0] + probs1)
+    probs2 = list(BetFootball.objects.filter(
+        home_name__contains=qs['home2'], away_name__contains=qs['away2']
+    ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
+    logging.info(probs2)
+    lst.append([1] + probs2)
+    try:
+        probs3 = list(BetFootball.objects.filter(
+            home_name__contains=qs['home3'], away_name__contains=qs['away3']
+        ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
+    except TypeError:
+        probs3 = [0.08, 0.18, 0.74, 'laliga']
+    logging.info(probs3)
+    lst.append([2] + probs3)
+    if qs['home4']:
+        probs4 = list(BetFootball.objects.filter(
+            home_name__contains=qs['home4'], away_name__contains=qs['away4']
+        ).values_list('home_prob', 'draw_prob', 'away_prob').first())
+        logging.info(probs4)
+        lst.append([3] + probs4)
+
     estimated_avg_goals = [
         [0, 2.6, 2.3],
         [1, 2.3, 2.6],

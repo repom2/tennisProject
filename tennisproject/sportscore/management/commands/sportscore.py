@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
-from sportscore.models import TennisTournaments, Leagues, Events, Players, Teams, Stats, FootballEvents, IceHockeyEvents
+from sportscore.models import TennisTournaments, Leagues, Events, Players, Teams, Stats, FootballEvents, IceHockeyEvents, TennisEvents
 from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
 from tqdm import tqdm
 from django.conf import settings
@@ -52,6 +52,11 @@ class Command(BaseCommand):
 
         football_events_by_leagues_cmd = subparsers.add_parser("football-events-by-leagues")
         football_events_by_leagues_cmd.set_defaults(subcommand=self.football_events_by_leagues)
+
+        tennis_events_by_sections_cmd = subparsers.add_parser(
+            "tennis-events-by-sections")
+        tennis_events_by_sections_cmd.set_defaults(
+            subcommand=self.tennis_events_by_sections)
 
         hockey_events_by_leagues_cmd = subparsers.add_parser(
             "ice-hockey-events-by-leagues")
@@ -99,13 +104,13 @@ class Command(BaseCommand):
 
     # SECTION ID
     def list_sections(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/1/sections"
+        url = "https://sportscore1.p.rapidapi.com/sports/2/sections"
         headers = {
             "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
-        querystring = {"page": "2"}
+        querystring = {"page": "1"}
 
         response = requests.request(
             "GET", url, headers=headers, params=querystring
@@ -116,9 +121,10 @@ class Command(BaseCommand):
         data_df = data['data']
         df = pd.DataFrame(data_df)
         # sort by priority field
-        df = df.sort_values(by='priority', ascending=False)
+        #df = df.sort_values(by='priority', ascending=False)
+        columns = ['id', 'name', 'priority']
         logging.info(
-            f"DataFrame:\n{tabulate(df[['id', 'name', 'priority']], headers='keys', tablefmt='psql', showindex=False)}")
+            f"DataFrame:\n{tabulate(df, headers='keys', tablefmt='psql', showindex=False)}")
         logging.info(data["meta"])
 
     def list_leagues_by_section_id(self, options):
@@ -366,6 +372,70 @@ class Command(BaseCommand):
                     pbar.update(1)
 
 
+    def tennis_events_by_sections(self, options):
+        tennis_sections = [
+            '145', # ATP
+            '144', # WTA
+            '143', # Challenger
+            '142', # Challenger-women
+            '141', # ITF
+            '139', # Davis Cup
+            '138', # Fed Cup
+        ]
+
+        for section_id in tennis_sections:
+            events_by_league_id = "https://sportscore1.p.rapidapi.com/sections/" + section_id + "/events"
+
+            headers = {
+                "X-RapidAPI-Key": sport_score_key,
+                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+            }
+
+            querystring = {"page": "1"}
+
+            response = requests.request(
+                "GET", events_by_league_id, headers=headers, params=querystring
+            )
+
+            data = response.text
+
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                continue
+            try:
+                data_df = data['data']
+            except:
+                continue
+            meta_from = data['meta']["from"]
+            current_page = data['meta']["current_page"]
+            per_page = data['meta']["per_page"]
+            meta_to = data['meta']["to"]
+
+            if meta_to is not None:
+                while meta_to >= per_page:
+                    current_page += 1
+                    querystring = {"page": str(current_page)}
+                    response = requests.request(
+                        "GET", events_by_league_id, headers=headers, params=querystring
+                    )
+                    data = response.text
+                    data = json.loads(data)
+                    try:
+                        data_df.extend(data["data"])
+                    except (json.JSONDecodeError, KeyError) as e:
+                        continue
+                    per_page += data['meta']["per_page"]
+                    meta_to = data['meta']["to"]
+                    if meta_to is None:
+                        break
+
+            with tqdm(total=len(data_df)) as pbar:
+                for item in data_df:
+                    m = TennisEvents(**item)
+                    m.save()
+                    pbar.update(1)
+
     # FIX TO PAGE
     def list_events(self, options):
         url = "https://sportscore1.p.rapidapi.com/sports/2/events"
@@ -494,7 +564,6 @@ class Command(BaseCommand):
         )
 
         data = response.text
-        print(data)
         data = json.loads(data)
         data_df = data['data']
         to = data['meta']["to"]
@@ -510,8 +579,17 @@ class Command(BaseCommand):
                 )
                 data = response.text
                 data = json.loads(data)
-                data_df.extend(data["data"])
-                per_page += data['meta']["per_page"]
+                try:
+                    data_df.extend(data["data"])
+                except KeyError:
+                    logging.error("No per_page in data")
+                    logging.error(data_df)
+                    continue
+                try:
+                    per_page += data['meta']["per_page"]
+                except KeyError:
+                    logging.error("No per_page in data")
+                    logging.error(data)
                 meta_to = data['meta']["to"]
                 if meta_to is None:
                     break
@@ -641,6 +719,8 @@ class Command(BaseCommand):
             data = response.text
             data = json.loads(data)
             data_df = data['data']
+            logging.info(data_df[0])
+            exit()
             last_page = data['meta']["last_page"]
 
             with tqdm(total=last_page) as pbar:

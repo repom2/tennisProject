@@ -171,7 +171,7 @@ def train_ml_model(row, level, params):
     #logging.info(f"Odds: {round(1/odds_home, 2)}:{round(1/odds_draw, 2)}:{round(1/odds_away, 2)}")
 
     logging.info(
-        f"Probabilities: {prob_home} {prob_draw} {prob_away} Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away}")
+        f"Probabilities: {prob_home}, {prob_draw}, {prob_away} Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away}")
     logging.info(f"Odds: {odds_home} {odds_draw} {odds_away} Yield {yield_home} {yield_draw} {yield_away}")
 
     return {

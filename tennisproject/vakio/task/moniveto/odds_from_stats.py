@@ -1,5 +1,5 @@
 from icehockeyapi.models import Liiga
-from footballapi.models import PremierLeague, LaLiga, Bundesliga, SerieA, Ligue1, Championship
+from footballapi.models import PremierLeague, LaLiga, Bundesliga, SerieA, Ligue1, Championship, AllLeagues
 from django.db.models import Value, CharField
 from django.db.models.functions import Concat, Cast
 from django.db.models import Count, Case, When, Value, F, FloatField, TextField
@@ -36,10 +36,11 @@ def odds_from_stats(
         league = Championship
     else:
         raise ValueError(f"Unknown league: {league}")
-    qs = league.objects.filter(
+    qs = AllLeagues.objects.filter(
         home_score__isnull=False,
         away_score__isnull=False
     )
+    logging.info(f"Total matches: {qs.count()}")
     predictions_qs  = qs.annotate(
         outcome=Case(
             When(home_score__gt=F('away_score'), then=Value('home_win')),
@@ -95,7 +96,6 @@ def odds_from_stats(
             prob_draw += match_prob
         score = row['combined_score']
         # logging.info(f"Probability of {score} score: {match_prob:.5f} odds: {1/match_prob:.3f}")
-
         MonivetoProb.objects.update_or_create(
             combination=f"{match_nro}-{score}",
             moniveto_id=moniveto_id,

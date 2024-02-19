@@ -14,6 +14,7 @@ from django.contrib.contenttypes.models import ContentType
 from footballapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
+import unicodedata
 
 logging.basicConfig(
     level=logging.INFO,
@@ -159,6 +160,8 @@ def predict(level):
         match = match_qs.get(id=row.match_id)
         content_type = ContentType.objects.get_for_model(match)
         object_id = match.id
+        home_name = unicodedata.normalize('NFKD', row.home_name).encode('ASCII', 'ignore').decode('ASCII')
+        away_name = unicodedata.normalize('NFKD', row.away_name).encode('ASCII', 'ignore').decode('ASCII')
         bet_qs.update_or_create(
             content_type=content_type,
             object_id=object_id,
@@ -166,8 +169,8 @@ def predict(level):
             away=teams_qs.filter(id=row.away_team_id)[0],
             defaults={
                 "start_at": row.start_at,
-                "home_name": row.home_name,
-                "away_name": row.away_name,
+                "home_name": home_name,
+                "away_name": away_name,
                 "home_odds": row['home_odds'],
                 "draw_odds": row['draw_odds'],
                 "away_odds": row['away_odds'],
@@ -185,6 +188,7 @@ def predict(level):
                 "home_yield": data['home_yield'],
                 "draw_yield": data['draw_yield'],
                 "away_yield": data['away_yield'],
+                "level": level,
             }
         )
 

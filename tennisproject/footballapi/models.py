@@ -383,6 +383,36 @@ class Bundesliga(models.Model):
     draw_odds = models.FloatField(null=True)
     start_at = models.DateTimeField(null=True, blank=True)
 
+
+class AllLeagues(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_all_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_all_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True)
+
+
 class BundesligaElo(models.Model):
     match = models.ForeignKey(
         'Bundesliga',
@@ -554,3 +584,4 @@ class BetFootball(models.Model):
     home_yield = models.FloatField(null=True)
     draw_yield = models.FloatField(null=True)
     away_yield = models.FloatField(null=True)
+    level = models.TextField(null=True)

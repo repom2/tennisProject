@@ -244,6 +244,12 @@ components:
           type: string
           format: date-time
           description: "Start time"
+        homeStatMatches:
+          type: integer
+          description: "Home player matches"
+        awayStatMatches:
+          type: integer
+          description: "Away player matches"
     FootballBets:
       type: object
       properties:

@@ -2,6 +2,7 @@ import pandas as pd
 import itertools
 from vakio.models import Combination
 import os
+from multiprocessing import Pool
 
 """
     13 kohdetta oikein 26 %
@@ -10,27 +11,25 @@ import os
     10 kohdetta oikein 15 %.
 """
 
-list_index = 2
-vakio_id = 55534
+list_index = 4
+vakio_id = 55549
 
 lst = [
-    [1, 0.224, 0.231, 0.546],
-    [2, 0.255, 0.237, 0.507],
-    [3, 0.2, 0.254, 0.546],
+    [1, 0.75, 0.15, 0.1],
+    [2, 0.4, 0.28, 0.32],
+    [3, 0.188, 0.295, 0.517],
 
-    [4, 0.235, 0.256, 0.509],
-    [5, 0.26, 0.283, 0.457],
-    [6, 0.538, 0.282, 0.181],
+    [4, 0.762, 0.172, 0.067],
+    [5, 0.696, 0.147, 0.157],
+    [6, 0.549, 0.244, 0.207],
 
-    [7, 0.47, 0.286, 0.244],
-    [8, 0.308, 0.28, 0.412],
-    [9, 0.531, 0.243, 0.227],
+    [7, 0.412, 0.264, 0.324],
+    [8, 0.391, 0.254, 0.355],
+    [9, 0.761, 0.205, 0.034],
 
-    [10, 0.407, 0.277, 0.316],
-    [11, 0.271, 0.336, 0.393],
-    [12, 0.419, 0.266, 0.314],
-    #[13, 0.346, 0.274, 0.381],
-    #[14, 2.4, 55, 1.65],
+    [10, 0.69, 0.19, 0.12],
+    [11, 0.37, 0.31, 0.32],
+    [12, 0.39, 0.29, 0.32]
 ]
 
 number_of_matches = len(lst)
@@ -43,6 +42,12 @@ def arbitrage_check(i):
 
 def join_set(s):
     return ''.join(s)
+
+
+def process_combination(combo):
+    if combo[0] != '1' and combo[1] == '1':
+        return calculate_prob(combo, df)
+    return None
 
 
 # Function to calculate probability
@@ -71,14 +76,24 @@ def calculate_probabilities():
 
     # Generate all possible combinations for 12 matches
     combinations = list(itertools.product(outcomes, repeat=len(df)))
-
     print('Number of combinations: ', len(combinations))
 
-    probabilities = [calculate_prob(combo, df) for combo in combinations]
+    combination_list = []
+    probabilities = []
+    for combo in combinations:
+        prob = calculate_prob(combo, df)
+        probabilities.append(prob)
+        combination_list.append(combo)
 
+    print('Number of combination_list: ', len(combination_list))
+
+    # probabilities = [calculate_prob(combo, df) for combo in combinations
+                     #if combo[5] == '1' and combo[4] != '2' and combo[2] != '2' and combo[1] != '1']
+
+    print('Number of probabilities: ', len(probabilities))
     df = pd.DataFrame({
         "prob": probabilities,
-        "combination": combinations,
+        "combination": combination_list,
     })
 
     df['combination'] = df['combination'].apply(join_set)

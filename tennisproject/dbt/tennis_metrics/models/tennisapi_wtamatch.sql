@@ -38,6 +38,8 @@ select
     match_num::integer,
     home_odds,
     away_odds,
+    home_score,
+    away_score,
     winner_code,
     coalesce(time1, 0) + coalesce(time2, 0) + coalesce(time3, 0) as court_time
 from (
@@ -51,6 +53,8 @@ from (
         round_info ->> 'name' as round_name,
         (main_odds ->> 'outcome_1')::json ->> 'value' as home_odds,
         (main_odds ->> 'outcome_2')::json ->> 'value' as away_odds,
+        (home_score ->> 'current')::integer as home_score,
+        (away_Score ->> 'current')::integer as away_score,
         (replace(periods_time, '''', '"')::json ->> 'period_1_time')::integer as time1,
 	    (replace(periods_time, '''', '"')::json ->> 'period_2_time')::integer as time2,
 	    (replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer as time3
@@ -67,7 +71,7 @@ from (
             --when league_id = '6878' then '580' --australia
             else league_id
             end as league_idd
-        from sportscore_events ) a inner join tennisapi_wtatour t
+        from sportscore_tennisevents ) a inner join tennisapi_wtatour t
     on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_idd)
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id

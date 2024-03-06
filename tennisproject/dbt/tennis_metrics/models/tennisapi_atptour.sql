@@ -15,7 +15,7 @@ select distinct
 	case when tourney_id is not null then tourney_id else CONCAT(EXTRACT('Year' FROM date(start_date)), '-', idd) end as id,
 	case when tourney_name is not null then tourney_name else tour_name end as name,
 	case when tourney_date is not null then tourney_date else date(start_date) end as date,
-	case when surface is not null then surface else (select ground_type from sportscore_events t
+	case when surface is not null then surface else (select ground_type from sportscore_tennisevents t
 													 where t.league_id = idd limit 1) end as surface
 from (
 (select * from (select
@@ -28,9 +28,7 @@ from (
 from tennis_atp_atpmatches) a left join (select * from (
 	select
 		id as idd,
-		case when start_date = '' then
-		(select date(min(start_at)) from sportscore_events q where q.league_id=g.id)
-		else date(start_date) end as start_date,
+		(select date(min(start_at)) from sportscore_tennisevents q where q.league_id=g.id) as start_date,
 		name_translations ->> 'en' as tour_name,
 		case when split_part(replace(slug, 'atp-', ''),'-',1) = 'open' then 'valencia'
 		when split_part(replace(slug, 'atp-', ''),'-',1) = 'montreal' then 'canada'
@@ -48,10 +46,10 @@ from tennis_atp_atpmatches) a left join (select * from (
 		when name_translations ->> 'en' ilike 'cologne  germany%' then 'cologne 1'
 		else split_part(replace(slug, 'atp-', ''),'-',1) end as slug,
 		case when start_date = '' then
-		(select EXTRACT('Year' FROM date(min(start_at))) from sportscore_events q where q.league_id=g.id)
+		(select EXTRACT('Year' FROM date(min(start_at))) from sportscore_tennisevents q where q.league_id=g.id)
 		else EXTRACT('Year' FROM date(start_date)) end as year,
 		trim('"' FROM (section -> 'flag')::text) as section_slug
-	from sportscore_leagues g where slug not like '%doubles%' and name_translations ->> 'en' not ilike '%double%' ) sl where section_slug like '%atp%'
+	from sportscore_tennistournaments g where slug not like '%doubles%' and name_translations ->> 'en' not ilike '%double%' ) sl where section_slug like '%atp%'
 ) b on tourney_name ilike '%' || slug || '%' and (start_date::timestamp - '11 day'::interval) < tourney_date
 and (start_date::timestamp + '11 day'::interval) > tourney_date order by tourney_name
 )
@@ -68,7 +66,7 @@ from tennis_atp_atpmatches) a right join (select * from (
 	select
 		id as idd,
 		case when start_date = '' then
-		(select date(min(start_at)) from sportscore_events q where q.league_id=gg.id)
+		(select date(min(start_at)) from sportscore_tennisevents q where q.league_id=gg.id)
 		else date(start_date) end as start_date,
 		name_translations ->> 'en' as tour_name,
 		case when split_part(replace(slug, 'atp-', ''),'-',1) = 'open' then 'valencia'
@@ -87,10 +85,10 @@ from tennis_atp_atpmatches) a right join (select * from (
 		when name_translations ->> 'en' ilike 'cologne  germany%' then 'cologne 1'
 		else split_part(replace(slug, 'atp-', ''),'-',1) end as slug,
 		case when start_date = '' then
-		(select EXTRACT('Year' FROM date(min(start_at))) from sportscore_events q where q.league_id=gg.id)
+		(select EXTRACT('Year' FROM date(min(start_at))) from sportscore_tennisevents q where q.league_id=gg.id)
 		else EXTRACT('Year' FROM date(start_date)) end as year,
 		trim('"' FROM (section -> 'flag')::text) as section_slug
-	from sportscore_leagues gg where slug not like '%doubles%' and name_translations ->> 'en' not ilike '%double%' ) sl where section_slug like '%atp%'
+	from sportscore_tennistournaments gg where slug not like '%doubles%' and name_translations ->> 'en' not ilike '%double%' ) sl where section_slug like '%atp%'
 ) b on tourney_name ilike '%' || slug || '%' and (start_date::timestamp - '11 day'::interval) < tourney_date
 and (start_date::timestamp + '11 day'::interval) > tourney_date order by tourney_name
 ) ) a ) ss where date is not null

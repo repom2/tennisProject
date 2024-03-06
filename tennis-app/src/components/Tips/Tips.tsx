@@ -32,7 +32,10 @@ export const Tips: React.FC = () => {
                     <th>H2H%</th>
                     <th>COpp%</th>
                     <th>S/RPW1</th>
+                    <th>Matches</th>
                     <th>S/RPW2</th>
+                    <th>Matches</th>
+                    <th>Start</th>
                 </tr>
             </thead>
             <tbody>
@@ -71,7 +74,16 @@ export const Tips: React.FC = () => {
                                     {player.homeSpw}/{player.homeRpw}
                                 </td>
                                 <td>
+                                    {player.homeStatMatches}
+                                </td>
+                                <td>
                                     {player.awaySpw}/{player.awayRpw}
+                                </td>
+                                <td>
+                                    {player.awayStatMatches}
+                                </td>
+                                <td>
+                                    {player.startAt ? new Date(player.startAt).toLocaleDateString() : 'N/A'}
                                 </td>
                             </tr>
                             {openIndex === index && (

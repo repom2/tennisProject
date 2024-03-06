@@ -5,6 +5,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Bet, AtpTour, AtpElo, AtpHardElo, BetWta
+from tennis_api.models import BetWta
 from .serializers import AtpEloSerializer, BetSerializer
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication

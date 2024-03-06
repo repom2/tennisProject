@@ -21,6 +21,9 @@ from vakio.task.moniveto.moniveto_bet import moniveto_bet
 from vakio.task.moniveto.parse_odds import parse_odds
 import logging
 from tabulate import tabulate
+import pytz
+import datetime
+from django.utils import timezone
 
 logging.basicConfig(
     level=logging.INFO,
@@ -125,17 +128,21 @@ class Command(BaseCommand):
         data = response.text
         data = json.loads(data)
         for row in data:
+            logger.info(
+                row['name'] + ' ' + str(row['id']) + ' ' + str(row['listIndex']))
             close = time.strftime(
                 '%Y-%m-%d %H:%M:%S',
                 time.localtime(row['closeTime'] / 1000)
             )
             prize = row['gameRuleSet']['basePrice']
             outcomes = row['rows']
-            for outcome in outcomes:
+            for i, outcome in enumerate(outcomes, 1):
                 home = outcome['outcome']['home']['name']
                 away = outcome['outcome']['away']['name']
-                logger.info(home + '-' + away)
-            logger.info(row['name'] + ' ' + str(row['id']) + ' ' + str(row['listIndex']))
+                logger.info(str(i) + '. ' + home + '-' + away)
+                if i == 3 or i == 6 or i == 9:
+                    logger.info('-' * 50)
+            logger.info('-' * 50)
 
         response = s.get(
             'https://www.veikkaus.fi/api/sport-open-games/v1/games/MULTISCORE/draws',
@@ -150,9 +157,13 @@ class Command(BaseCommand):
         data = json.loads(data)
         for row in data:
             logging.info(str(row['id']) + ' ' + str(row['listIndex']))
-            close = time.strftime(
-                '%Y-%m-%d %H:%M:%S',
-                time.localtime(row['closeTime'] / 1000)
+
+            # Your original code to get the time
+            timestamp = time.localtime(row['closeTime'] / 1000)
+            close_naive = time.strftime('%Y-%m-%d %H:%M:%S', timestamp)
+            close = timezone.make_aware(
+                datetime.datetime.strptime(close_naive, '%Y-%m-%d %H:%M:%S'),
+                timezone=pytz.timezone('UTC')
             )
             stake = row['gameRuleSet']['minStake']
             outcomes = row['rows']  # ['outcome']
@@ -179,7 +190,7 @@ class Command(BaseCommand):
                         home_field: home
                     }
                 )
-
+            logger.info('-' * 50)
 
     def get_winshare(self, options):
         get_win_share()

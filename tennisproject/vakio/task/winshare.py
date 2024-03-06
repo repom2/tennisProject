@@ -35,10 +35,11 @@ def get_sport_winshare(draw, matches):
             })
     j = r.json()
     odds_list = []
-    #logging.info(f"Winshare: {j}")
+
     try:
         j["winShares"]
     except KeyError as e:
+        logging.info(f"KeyError: {e}")
         exit(1)
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
@@ -58,6 +59,7 @@ def get_sport_winshare(draw, matches):
             bets=winshare["numberOfBets"],
         )
         odds_list.append(vakio_odds)
+
     return odds_list
 
 
@@ -75,6 +77,7 @@ def combine_strings(str1, str2):
 def get_values(data, page):
     data['page'] = page
     matches = json.dumps(data)
+    time.sleep(1)
     try:
         values = get_sport_winshare(vakio_id, matches)
     except (requests.exceptions.ConnectionError,
@@ -87,7 +90,7 @@ def get_values(data, page):
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.JSONDecodeError,
                 requests.exceptions.SSLError) as e:
-            logging.info('ConnectionError, waiting 5 seconds')
+            logging.info('ConnectionError, waiting 5 seconds, 2')
             time.sleep(5)
             values = get_sport_winshare(vakio_id, matches)
     return values
@@ -96,11 +99,15 @@ def get_values(data, page):
 def get_win_share():
     start = datetime.now()
     matches = [["1", "X", "2"]] * number_of_matches
-    #matches[1] = "2"
-    #matches[10] = ["1", "2"]
-    #matches[4] = ["1", "X"]
-    #matches[0] = ["1", "X"]
-    #matches[2] = ["1", "X"]
+
+    matches[0] = "1"
+    matches[3] = ["1", "X"]
+    matches[4] = ["1", "2"]
+    matches[8] = ["1", "X"]
+    matches[9] = ["1", "X"]
+
+    logging.info(f"List index: {list_index} - Vakio id: {vakio_id} - Number of matches: {number_of_matches}")
+
     nro_of_combinations = 1
     for row in matches:
         nro_of_combinations = nro_of_combinations * len(row)
@@ -125,7 +132,6 @@ def get_win_share():
             for future in concurrent.futures.as_completed(futures):
                 odds_data = future.result()
                 objects += odds_data
-
         # bulk_create will make only one query to the database.
         try:
             WinShare.objects.bulk_create(objects)

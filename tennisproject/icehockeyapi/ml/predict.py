@@ -9,10 +9,12 @@ import joblib
 import logging
 import sys
 from psycopg2.extensions import AsIs
-from icehockeyapi.models import Teams, Liiga
+from icehockeyapi.models import Teams, Liiga, BetIceHockey
 from icehockeyapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
+from django.contrib.contenttypes.models import ContentType
+import unicodedata
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,6 +44,10 @@ def get_data(params):
                 h.name as home_name,
                 aw.name as away_name,
                 winner_code,
+                (select avg(home_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_goals,
+				(select avg(away_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_conceded,
+				(select avg(away_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_goals,
+				(select avg(home_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_conceded,
                 (select elo from %(elo_table)s elo where elo.team_id=home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
                 (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
                 (select elo from %(elo_home)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
@@ -64,7 +70,10 @@ def label_round(data, mapping):
 
 
 def predict(level):
+    teams_qs = Teams.objects.all()
+    bet_qs = BetIceHockey.objects.all()
     if level == 'liiga':
+        match_qs = Liiga.objects.all()
         match_table = 'icehockeyapi_liiga'
         elo_table = 'icehockeyapi_liigaelo'
         elo_home = 'icehockeyapi_liigaelohome'
@@ -112,10 +121,43 @@ def predict(level):
     #exit()
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
-        train_ml_model(row, level, params)
-        """try:
-            train_ml_model(row, level, params)
-        except Exception as e:
-            logging.error(e)
-            pass"""
+        data = train_ml_model(row, level, params)
+        if data is None:
+            continue
+        match = match_qs.get(id=row.match_id)
+        content_type = ContentType.objects.get_for_model(match)
+        object_id = match.id
+        home_name = unicodedata.normalize(
+            'NFKD', row.home_name).encode('ASCII', 'ignore').decode('ASCII')
+        away_name = unicodedata.normalize(
+            'NFKD', row.away_name).encode('ASCII', 'ignore').decode('ASCII')
+        bet_qs.update_or_create(
+            content_type=content_type,
+            object_id=object_id,
+            home=teams_qs.filter(id=row.home_team_id)[0],
+            away=teams_qs.filter(id=row.away_team_id)[0],
+            defaults={
+                "start_at": row.start_at,
+                "home_name": home_name,
+                "away_name": away_name,
+                "home_odds": row['home_odds'],
+                "draw_odds": row['draw_odds'],
+                "away_odds": row['away_odds'],
+                "elo_prob": row['elo_prob'],
+                "elo_prob_home": row['elo_prob_home'],
+                "home_elo": row['home_elo'],
+                "away_elo": row['away_elo'],
+                "elo_home": row['elo_home'],
+                "elo_away": row['elo_away'],
+                # "preview": preview,
+                # "reasoning": reasoning,
+                "home_prob": data['prob_home'],
+                "draw_prob": data['prob_draw'],
+                "away_prob": data['prob_away'],
+                "home_yield": data['home_yield'],
+                "draw_yield": data['draw_yield'],
+                "away_yield": data['away_yield'],
+                "level": level,
+            }
+        )
 

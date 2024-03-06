@@ -4,6 +4,7 @@ from tennisapi.ml.predict import predict
 from tennisapi.ml.insert_data_to_match import insert_data_to_match
 from tennisapi.ml.model_interact import feature_importance
 from tennisapi.ml.train_model import train_ml_model
+from tennisapi.ml.bet_results import bet_results
 
 
 class Command(BaseCommand):
@@ -34,8 +35,14 @@ class Command(BaseCommand):
             subcommand=self.print_feature_importance
         )
 
+        results_cmd = subparsers.add_parser("results")
+        results_cmd.set_defaults(subcommand=self.results)
+
     def handle(self, *args, **options):
         options["subcommand"](options)
+
+    def results(self, options):
+        bet_results()
 
     def predict_matches(self, options):
         level = options["pred"]

@@ -353,6 +353,8 @@ class Match(models.Model):
     match_num = models.IntegerField(null=True)
     home_odds = models.TextField(null=True)
     away_odds = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
     winner_code = models.IntegerField(null=True)
     court_time = models.IntegerField(null=True)
 
@@ -448,6 +450,8 @@ class WtaMatch(models.Model):
     match_num = models.IntegerField(null=True)
     home_odds = models.TextField(null=True)
     away_odds = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
     winner_code = models.IntegerField(null=True)
     court_time = models.IntegerField(null=True)
 

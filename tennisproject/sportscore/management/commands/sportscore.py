@@ -8,7 +8,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
 from sportscore.models import TennisTournaments, Leagues, Events, Players, Teams, Stats, FootballEvents, IceHockeyEvents, TennisEvents
-from tennisapi.models import AtpMatches, AtpTour, ChTour, WtaTour, WtaMatches
+from tennisapi.models import AtpMatches, ChTour, WtaMatches
+from tennis_api.models import AtpMatch, WtaMatch, AtpTour, WtaTour
 from tqdm import tqdm
 from django.conf import settings
 import logging
@@ -80,6 +81,9 @@ class Command(BaseCommand):
 
         stats_cmd = subparsers.add_parser("stats")
         stats_cmd.set_defaults(subcommand=self.match_statistics)
+
+        tennis_stats_cmd = subparsers.add_parser("tennis-stats")
+        tennis_stats_cmd.set_defaults(subcommand=self.tennis_api_match_statistics)
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -190,13 +194,14 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpTour.objects.filter(date__gte='2023-11-01').values_list('id'))
-        wta_leagues = list(WtaTour.objects.filter(date__gte='2023-11-01').values_list('id'))
+        leagues = list(AtpTour.objects.filter(start_date__gte='2024-02-01').values_list('id'))
+        wta_leagues = list(WtaTour.objects.filter(start_date__gte='2024-02-01').values_list('id'))
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues #+ ch_leagues
         sport_score_key = settings.SPORT_SCORE_KEY
         for id in leagues:
-            id = id[0].split('-')[1]
+            print(id[0])
+            id = str(id[0])
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
 
             headers = {
@@ -245,7 +250,7 @@ class Command(BaseCommand):
 
             with tqdm(total=len(data_df)) as pbar:
                 for item in data_df:
-                    m = Events(**item)
+                    m = TennisEvents(**item)
                     m.save()
                     pbar.update(1)
 
@@ -376,11 +381,11 @@ class Command(BaseCommand):
         tennis_sections = [
             '145', # ATP
             '144', # WTA
-            '143', # Challenger
-            '142', # Challenger-women
-            '141', # ITF
-            '139', # Davis Cup
-            '138', # Fed Cup
+            #'143', # Challenger
+            #'142', # Challenger-women
+            #'141', # ITF
+            #'139', # Davis Cup
+            #'138', # Fed Cup
         ]
 
         for section_id in tennis_sections:
@@ -550,7 +555,7 @@ class Command(BaseCommand):
                 m.save()
 
     def list_teams(self, options):
-        url = "https://sportscore1.p.rapidapi.com/teams"
+        url = "https://sportscore1.p.rapidapi.com/sports/2/teams"
         sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
             "X-RapidAPI-Key": sport_score_key,
@@ -583,7 +588,7 @@ class Command(BaseCommand):
                     data_df.extend(data["data"])
                 except KeyError:
                     logging.error("No per_page in data")
-                    logging.error(data_df)
+                    logging.error(data)
                     continue
                 try:
                     per_page += data['meta']["per_page"]
@@ -648,15 +653,60 @@ class Command(BaseCommand):
 
     def match_statistics(self, options):
         sportscore_ids = list(
-            AtpMatches.objects.filter(Q(date__gte='2023-11-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list('event_id')
+            AtpMatch.objects.filter(Q(start_at__lt='2023-11-02') & Q(status='finished') & Q(w_ace__isnull=True)).values_list('event_id')
         )
         sportscore_wta_ids = list(
-            WtaMatches.objects.filter(
-                Q(date__gte='2023-11-02') & Q(event_id__isnull=False) & Q(w_ace__isnull=True)).values_list(
+            WtaMatch.objects.filter(
+                Q(start_at__lt='2023-11-02') & Q(status='finished') & Q(w_ace__isnull=True)).values_list(
                 'event_id')
         )
 
         sportscore_ids += sportscore_wta_ids
+
+        def fetch_date(id):
+            sport_score_key = settings.SPORT_SCORE_KEY
+            url = "https://sportscore1.p.rapidapi.com/events/" + str(id) + "/statistics"
+
+            headers = {
+                "X-RapidAPI-Key": sport_score_key,
+                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+            }
+
+            response = requests.request(
+                "GET", url, headers=headers,
+            )
+
+            data = response.text
+
+            return data
+
+        with tqdm(total=len(sportscore_ids)) as pbar:
+            for id in sportscore_ids:
+                id = id[0]
+                data = fetch_date(id)
+                if "rate limit per second" in data:
+                    time.sleep(0.5)
+                    data = fetch_date(id)
+                if "rate limit per second" in data:
+                    time.sleep(0.5)
+                    data = fetch_date(id)
+                try:
+                    data = json.loads(data)
+                except json.decoder.JSONDecodeError:
+                    continue
+                m = Stats(id=id, data=data)
+                m.save()
+                pbar.update(1)
+
+
+    def tennis_api_match_statistics(self, options):
+        sportscore_ids = list(
+            AtpMatch.objects.filter(Q(start_at__gte='2024-02-02') &  Q(w_ace__isnull=True)).values_list('event_id')
+        )
+
+        sportscore_ids += list(
+            WtaMatch.objects.filter(Q(start_at__gte='2024-02-02') & Q(w_ace__isnull=True)).values_list('event_id')
+        )
 
         def fetch_date(id):
             sport_score_key = settings.SPORT_SCORE_KEY
@@ -719,8 +769,8 @@ class Command(BaseCommand):
             data = response.text
             data = json.loads(data)
             data_df = data['data']
-            logging.info(data_df[0])
-            exit()
+            #logging.info(data_df[0])
+
             last_page = data['meta']["last_page"]
 
             with tqdm(total=last_page) as pbar:

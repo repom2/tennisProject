@@ -10,7 +10,7 @@ from vakio.task import probs
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-max_bet_eur = 16
+max_bet_eur = 3
 line_cost = 0.1
 stake = line_cost * 100
 
@@ -138,6 +138,7 @@ def find_lines():
     """
     data = WinShare.objects.raw(query)
     logging.info("Number of lines: %d", len(data))
+    logging.info(params)
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'value', 'share']
     df = df[df['yield'] >= 1]

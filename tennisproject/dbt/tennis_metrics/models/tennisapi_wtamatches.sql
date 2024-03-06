@@ -125,7 +125,7 @@ from (
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer, 0)
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_4_time')::integer, 0)
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_5_time')::integer, 0) as court_time
-    from sportscore_events a inner join tennisapi_wtatour t
+    from sportscore_tennisevents a inner join tennisapi_wtatour t
     on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_id)
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id

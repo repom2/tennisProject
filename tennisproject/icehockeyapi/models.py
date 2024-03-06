@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 
 class Teams(models.Model):
@@ -89,3 +91,47 @@ class LiigaEloAway(models.Model):
     elo_change = models.IntegerField()
     games = models.IntegerField()
     date = models.DateField(null=True)
+
+
+class BetIceHockey(models.Model):
+    # This holds the reference to the content type (league table)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    # This is the primary key of the related object from the league table
+    object_id = models.TextField()
+    # This is the actual reference to the league object (from Bundesliga, SerieA, etc.)
+    match = GenericForeignKey('content_type', 'object_id')
+    home = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="home_bet",
+    )
+    away = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name="away_bet",
+    )
+    home_name = models.TextField(null=True)
+    away_name = models.TextField(null=True)
+    home_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    home_elo = models.FloatField(null=True)
+    away_elo = models.FloatField(null=True)
+    elo_home = models.FloatField(null=True)
+    elo_away = models.FloatField(null=True)
+    elo_prob = models.FloatField(null=True)
+    elo_prob_home = models.FloatField(null=True)
+    preview = models.TextField(null=True)
+    reasoning = models.TextField(null=True)
+    start_at = models.DateTimeField(null=True)
+    home_prob = models.FloatField(null=True)
+    draw_prob = models.FloatField(null=True)
+    away_prob = models.FloatField(null=True)
+    home_yield = models.FloatField(null=True)
+    draw_yield = models.FloatField(null=True)
+    away_yield = models.FloatField(null=True)
+    level = models.TextField(null=True)

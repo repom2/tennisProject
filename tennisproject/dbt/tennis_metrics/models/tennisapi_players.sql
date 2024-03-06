@@ -55,7 +55,7 @@ full join
         to_date(substring(details->> 'date_of_birth'
     from '\((.+)\)'), 'DD Mon YYY') dob
     from  sportscore_teams a
-    inner join sportscore_events b on (home_team_id=a.id or away_team_id=a.id)
+    inner join sportscore_tennisevents b on (home_team_id=a.id or away_team_id=a.id)
     where a.sport_id='2' and section ->> 'id' = '145'
     and season ->> 'name' not ilike '%atp%cup%' and name_full not like '%/%' and status = 'finished') b
     on a.dob=b.dob and

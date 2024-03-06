@@ -1,6 +1,7 @@
 import scipy.stats as sps
 import numpy as np
 from vakio.models import MonivetoProb
+from numpy import random
 
 
 def calculate_poisson(
@@ -10,7 +11,7 @@ def calculate_poisson(
         moniveto_id,
         list_index,
 ):
-
+    print(f"Team A: {average_goals_team_a} Team B: {average_goals_team_b}")
     # All possible number of goals scored
     max_goals = 9
 
@@ -24,7 +25,7 @@ def calculate_poisson(
     for i in range(max_goals + 1):
         for j in range(max_goals + 1):
             match_prob = poisson_team_a[i] * poisson_team_b[j]
-            print(f"Probability of {i}-{j} score: {match_prob:.3f} odds: {1/match_prob:.3f}")
+            #print(f"Probability of {i}-{j} score: {match_prob:.3f} odds: {1/match_prob:.3f}")
             MonivetoProb.objects.update_or_create(
                 combination=f"{match_nro}-{i}-{j}",
                 moniveto_id=moniveto_id,

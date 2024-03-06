@@ -17,17 +17,7 @@ select
     home_id::integer,
     away_id::integer,
     start_at::timestamp with time zone,
-    case when round_name = 'F' then 'Final'
-    when round_name = 'Round of 128' then 'R128'
-    when round_name = 'Round of 64' then 'R64'
-    when round_name = 'Round of 32' then 'R32'
-    when round_name = '1/32' then 'R32'
-    when round_name = 'Round of 16' then 'R16'
-    when round_name = '1/16' then 'R16'
-    when round_name = 'SF' then 'Semifinal'
-    when round_name = 'QF' then 'Quarterfinal'
-    when round_name = '1/8' then 'Quarterfinal'
-    else round_name end as round_name,
+    round_name,
     court_time,
     w_ace::integer,
     w_df::integer,
@@ -48,7 +38,14 @@ select
     l_bpsaved::integer,
     l_bpfaced::integer,
     event_id,
-    winner_code
+    winner_code,
+    status,
+	status_more,
+	challenge_id::integer,
+	home_odds::float,
+	away_odds::float,
+	home_score::integer,
+	away_score::integer
 from (
     select
         a.id,
@@ -76,16 +73,23 @@ from (
         l_bpsaved,
         l_bpfaced,
         a.id as event_id,
-        winner_code,
+        winner_code::integer,
         coalesce((replace(periods_time, '''', '"')::json ->> 'period_1_time')::integer, 0)
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_2_time')::integer, 0)
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer, 0)
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_4_time')::integer, 0)
-	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_5_time')::integer, 0) as court_time
+	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_5_time')::integer, 0) as court_time,
+	    status,
+	    status_more,
+	    challenge_id::integer,
+	    (main_odds ->> 'outcome_1')::json ->> 'value' as home_odds,
+        (main_odds ->> 'outcome_2')::json ->> 'value' as away_odds,
+        (home_score ->> 'current')::integer as home_score,
+        (away_Score ->> 'current')::integer as away_score
     from sportscore_tennisevents a inner join tennis_api_atptour t
     on t.id::text=a.league_id
-    left join tennis_api_player b on home_team_id::integer = b.id
-    left join tennis_api_player c on away_team_id::integer = c.id
+    inner join tennis_api_player b on home_team_id::integer = b.id
+    inner join tennis_api_player c on away_team_id::integer = c.id
     left join (
         select
             event,
@@ -188,5 +192,5 @@ from (
         ) stats
         ) end_stats group by event
     ) s_stats on event=a.id::text
-    where sport_id='2' and section_id='145'
+    where sport_id='2' and section_id='145' and status !='canceled'
 ) s

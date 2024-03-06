@@ -19,28 +19,18 @@ def odds_from_stats(
         draw,
         away_win,
         league,
+        sport,
 ):
-    if league == 'liiga':
+    if sport == 'hockey':
         league =  Liiga
-    elif league == 'premier':
-        league = PremierLeague
-    elif league == 'laliga':
-        league = LaLiga
-    elif league == 'bundesliga':
-        league = Bundesliga
-    elif league == 'seriea':
-        league = SerieA
-    elif league == 'ligue1':
-        league = Ligue1
-    elif league == 'championship':
-        league = Championship
     else:
-        raise ValueError(f"Unknown league: {league}")
-    qs = AllLeagues.objects.filter(
+        league = AllLeagues
+
+    qs = league.objects.filter(
         home_score__isnull=False,
         away_score__isnull=False
     )
-    logging.info(f"Total matches: {qs.count()}")
+
     predictions_qs  = qs.annotate(
         outcome=Case(
             When(home_score__gt=F('away_score'), then=Value('home_win')),
@@ -55,7 +45,7 @@ def odds_from_stats(
         'draw': predictions_qs.filter(outcome='draw').count() / predictions_qs.count(),
         'away_win': predictions_qs.filter(outcome='away_win').count() / predictions_qs.count(),
     }
-    logging.info(f"Original totals: {original_totals}")
+    logging.info(f"Total matches: {qs.count()}, {league}, Original totals: {original_totals['home_win']:.2f}, {original_totals['draw']:.2f}, {original_totals['away_win']:.2f}")
 
     total_matches = qs.count()
     qs = qs.annotate(
@@ -107,6 +97,4 @@ def odds_from_stats(
             }
         )
 
-    print(f"Probability of home win: {prob_home_win:.2f}")
-    print(f"Probability of draw: {prob_draw:.2f}")
-    print(f"Probability of away win: {prob_away_win:.2f}")
+    print(f"Probabilities {prob_home_win:.2f} {prob_draw:.2f} {prob_away_win:.2f}")

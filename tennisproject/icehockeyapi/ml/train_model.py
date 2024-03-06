@@ -47,6 +47,10 @@ def get_train_data(params):
                 aw.name as away_name,
                 case when home_score = away_score then 3 else winner_code end as winner_code,
                 winner_code as winner_code_ml,
+                (select avg(home_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_goals,
+				(select avg(away_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_conceded,
+				(select avg(away_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_goals,
+				(select avg(home_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_conceded,
                 (select elo from %(elo_table)s elo where elo.team_id=home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
                 (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
                 (select elo from %(elo_home)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
@@ -114,6 +118,10 @@ def train_ml_model(row, level, params):
         'homeodds',
         'elo_prob',
         'elo_prob_home',
+        'home_goals',
+        'home_conceded',
+        'away_goals',
+        'away_conceded',
     ]
 
     # pandas series to dataframe
@@ -180,7 +188,15 @@ def train_ml_model(row, level, params):
     yield_away = round(odds_away * prob_away, 3)
 
     logging.info(
-        f"Probabilities: {prob_home_multi} - {prob_draw_multi} - {prob_away_multi}")
-    logging.info(f"Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away} ML: {prob_home}/{prob_away}")
-    logging.info(f"Odds: {odds_home} {odds_away} Yield {yield_home} {yield_away}")
+        f"Probabilities: {prob_home_multi}, {prob_draw_multi}, {prob_away_multi} Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away}")
+    logging.info(
+        f"Odds: {odds_home} {odds_away} Yield {yield_home} {yield_away}")
 
+    return {
+        "prob_home": prob_home_multi,
+        "prob_draw": prob_draw_multi,
+        "prob_away": prob_away_multi,
+        "home_yield": yield_home,
+        "draw_yield": None,
+        "away_yield": yield_away,
+    }

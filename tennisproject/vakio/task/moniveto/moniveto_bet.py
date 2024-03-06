@@ -8,6 +8,7 @@ from datetime import datetime
 from vakio.task.sport_wager import create_multiscore_wager
 import logging
 from vakio.task.moniveto import moniveto
+from tabulate import tabulate
 
 logging.basicConfig(
     level=logging.INFO,
@@ -188,7 +189,8 @@ def moniveto_bet(bet, max_bet_eur, index, id):
     df = data[data['yield'] > yield_limit]
     df = df[columns]
 
-    logging.info(df.head(80))
+    logging.info(
+        f"DataFrame:\n{tabulate(df.head(80), headers='keys', tablefmt='psql', showindex=False)}")
     logging.info("Profitable lines:" + str(len(df)) + " of " + str(len(data)) + ' ' + str(round((len(df)/len(data)*100),2)) + "%")
     logging.info("Yield limit:" + str(yield_limit))
 

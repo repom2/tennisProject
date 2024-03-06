@@ -123,5 +123,13 @@ export type Bets = {
      * Start time
      */
     startAt?: string;
+    /**
+     * Home player matches
+     */
+    homeStatMatches?: number;
+    /**
+     * Away player matches
+     */
+    awayStatMatches?: number;
 };
 

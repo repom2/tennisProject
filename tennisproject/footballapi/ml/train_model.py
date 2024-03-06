@@ -46,10 +46,14 @@ def get_train_data(params):
                 h.name as home_name,
                 aw.name as away_name,
                 winner_code,
-                (select elo from %(elo_table)s elo where elo.team_id=home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
-                (select elo from %(elo_table)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
-                (select elo from %(elo_home)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
-                (select elo from %(elo_away)s elo where elo.team_id=away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_away
+                (select avg(home_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_goals,
+				(select avg(away_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_conceded,
+				(select avg(away_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_goals,
+				(select avg(home_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_conceded,
+                (select elo from %(elo_table)s elo where elo.team_id=b.home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
+                (select elo from %(elo_table)s elo where elo.team_id=b.away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
+                (select elo from %(elo_home)s elo where elo.team_id=b.away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
+                (select elo from %(elo_away)s elo where elo.team_id=b.away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_away
             from %(match_table)s b
             left join footballapi_teams h on h.id = b.home_team_id
             left join footballapi_teams aw on aw.id = b.away_team_id
@@ -98,10 +102,19 @@ def train_ml_model(row, level, params):
     odds_home = row['home_odds']
     odds_away = row['away_odds']
     odds_draw = row['draw_odds']
+    if odds_home is None or odds_away is None or odds_draw is None:
+        logging.info(f"Odds are not available for {home_name} vs {away_name}")
+        return None
     features = [
-        'homeodds',
+        'draw_odds',
+        'away_odds',
+        'home_odds',
         'elo_prob',
         'elo_prob_home',
+        'home_goals',
+        'home_conceded',
+        'away_goals',
+        'away_conceded',
     ]
 
     # pandas series to dataframe
@@ -147,7 +160,11 @@ def train_ml_model(row, level, params):
         None,
     )
 
-    y_pred = model_logistic.predict_proba(df)
+    try:
+        y_pred = model_logistic.predict_proba(df)
+    except Exception as e:
+        logging.error(f"Error in prediction for {home_name} vs {away_name}: {e}")
+        return None
 
     # log probabilities
     prob_home = round(y_pred[0][0], 3)

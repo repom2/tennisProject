@@ -147,13 +147,15 @@ def label_round(data, mapping):
 def predict(level, tour):
     surface = 'hard'
     now = timezone.now().date()
-    end_at = now + timedelta(days=1)
+    end_at = now + timedelta(days=5)
+    from_at = now - timedelta(days=1)
 
     if level == 'atp':
         qs = AtpTour.objects.filter(
             name__icontains=tour,
-            date__gte=start_at
-        ).values_list('surface', flat=True)
+            atptours__date__gte=from_at
+        ).values_list('surface', flat=True).first()
+        logging.info('Surface: %s', qs)
         if 'Clay' in qs:
             surface = 'clay'
         logging.info('Surface: %s', surface)
@@ -224,12 +226,14 @@ def predict(level, tour):
         'date': date,
     }
     event_spw, event_rpw = event_stats(params)
+
     if event_spw is None:
         if level == 'atp':
-            tour_spw, tour_rpw = 0.645, 0.355
+            event_spw, tour_spw, tour_rpw = 0.645, 0.645, 0.355
         else:
-            tour_spw, tour_rpw = 0.565, 0.435
-
+            event_spw, tour_spw, tour_rpw = 0.565, 0.565, 0.435
+    print(event_spw)
+    print(type(event_spw))
     data[['home_spw', 'home_rpw']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], params)),
         index=data.index)

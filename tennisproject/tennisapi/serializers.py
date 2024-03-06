@@ -1,4 +1,5 @@
 from .models import AtpElo, AtpMatches, AtpTour, Players, Bet
+from tennis_api.models import BetWta
 from rest_framework import serializers
 
 
@@ -49,9 +50,11 @@ class BetSerializer(serializers.Serializer):
     awayProb = serializers.FloatField(source='away_prob')
     homeYield = serializers.FloatField(source='home_yield')
     awayYield = serializers.FloatField(source='away_yield')
+    homeStatMatches = serializers.IntegerField(source='home_stat_matches')
+    awayStatMatches = serializers.IntegerField(source='away_stat_matches')
 
     class Meta:
-        model = Bet
+        model = BetWta
         fields = '__all__'
 
 

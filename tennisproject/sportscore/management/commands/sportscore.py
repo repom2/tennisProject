@@ -653,11 +653,11 @@ class Command(BaseCommand):
 
     def match_statistics(self, options):
         sportscore_ids = list(
-            AtpMatch.objects.filter(Q(start_at__lt='2023-11-02') & Q(status='finished') & Q(w_ace__isnull=True)).values_list('event_id')
+            AtpMatch.objects.filter(Q(start_at__gt='2024-03-02') & Q(status='finished') & Q(w_ace__isnull=True)).values_list('event_id')
         )
         sportscore_wta_ids = list(
             WtaMatch.objects.filter(
-                Q(start_at__lt='2023-11-02') & Q(status='finished') & Q(w_ace__isnull=True)).values_list(
+                Q(start_at__gt='2024-02-17') & Q(status='finished') & Q(w_ace__isnull=True)).values_list(
                 'event_id')
         )
 

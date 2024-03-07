@@ -10,7 +10,7 @@ from vakio.task import probs
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-max_bet_eur = 3
+max_bet_eur = 15
 line_cost = 0.1
 stake = line_cost * 100
 
@@ -141,7 +141,7 @@ def find_lines():
     logging.info(params)
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'value', 'share']
-    df = df[df['yield'] >= 1]
+    #df = df[df['yield'] >= 1]
     #df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]
     print("Profitable lines:", len(df))
@@ -174,7 +174,7 @@ def find_lines():
     for i in range(len(matches)):
         matches[i] = [round(x / len(df), 2) for x in matches[i]]
         logging.info(matches[i])
-    #exit()
+    exit()
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         print(row['combination'])

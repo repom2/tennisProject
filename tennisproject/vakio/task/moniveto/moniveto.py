@@ -15,8 +15,8 @@ logging.basicConfig(
 )
 
 # docker compose exec tennisproject poetry run python manage.py vakio moniveto
-moniveto_id = 63378
-list_index = 7
+moniveto_id = 63384
+list_index = 2
 
 lst = [
     [0, 0.2, 0.254, 0.546, 'seriea'],
@@ -105,7 +105,7 @@ def moniveto():
     lst = []
 
     sport = 'hockey'
-    #sport = 'football'
+    sport = 'football'
     if sport == 'football':
         bet_table = BetFootball
     elif sport == 'hockey':
@@ -173,10 +173,10 @@ def moniveto():
         lst.append([3] + probs4)
 
     estimated_avg_goals = [
-        [0, 2.2, 0.7],
-        [1, 1.4, 1.25],
-        [2, 2.2, 1.25],
-        [3, 3.15, 0.5],
+        [0, 1.0, 1.9],
+        [1, 0.9, 2.2],
+        [2, 1.8, 0.9],
+        #[3, 3.15, 0.5],
     ]
     is_using_own_data = True
     ice_hockey = False

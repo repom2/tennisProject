@@ -35,11 +35,12 @@ def get_sport_winshare(draw, matches):
             })
     j = r.json()
     odds_list = []
-
+    logging.info(j)
     try:
         j["winShares"]
     except KeyError as e:
         logging.info(f"KeyError: {e}")
+        logging.info(j)
         exit(1)
     for winshare in j["winShares"]:
         # each winshare has only one selection that contains the board (outcomes)
@@ -100,11 +101,15 @@ def get_win_share():
     start = datetime.now()
     matches = [["1", "X", "2"]] * number_of_matches
 
-    matches[0] = "1"
-    matches[3] = ["1", "X"]
-    matches[4] = ["1", "2"]
-    matches[8] = ["1", "X"]
-    matches[9] = ["1", "X"]
+    matches[0] = "2"
+    matches[1] = "2"
+    matches[2] = "1"
+    matches[5] = "1"
+    matches[6] = "1"
+    matches[7] = "1"
+    #matches[4] = ["1", "2"]
+    #matches[8] = ["1", "X"]
+    #matches[9] = ["1", "X"]
 
     logging.info(f"List index: {list_index} - Vakio id: {vakio_id} - Number of matches: {number_of_matches}")
 

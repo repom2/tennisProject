@@ -112,7 +112,7 @@ class AtpMatch(models.Model):
 
 
 class WtaMatch(models.Model):
-    id = models.TextField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     tour = models.ForeignKey(
         to=WtaTour,
         on_delete=models.DO_NOTHING,

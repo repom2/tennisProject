@@ -11,29 +11,26 @@ from multiprocessing import Pool
     10 kohdetta oikein 15 %.
 """
 
-list_index = 6
-vakio_id = 55551
+list_index = 1
+vakio_id = 100440
 
 lst = [
-    [1, 0.15, 0.25, 0.60],
-    [2, 0.1, 0.19, 0.71],
-    [3, 0.55, 0.25, 0.2],
+    [1, 0.8, 0.13, 0.07],
+    [2, 0.441, 0.227, 0.332],
+    [3, 0.518, 0.218, 0.264],
 
-    [4, 0.35, 0.3, 0.35],
-    [5, 0.55, 0.25, 0.20],
-    [6, 0.71, 0.19, 0.1],
+    [4, 0.632, 0.19, 0.178],
+    [5, 0.379, 0.25, 0.371],
+    [6, 0.65, 0.21, 0.14],
 
-    [7, 0.62, 0.21, 0.17],
-    [8, 0.2, 0.25, 0.55],
-    [9, 0.27, 0.28, 0.45],
+    [7, 0.322, 0.261, 0.417],
+    [8, 0.42, 0.28, 0.30],
+    [9, 0.338, 0.27, 0.393],
 
-    [10, 0.32, 0.28, 0.40],
-    [11, 0.6, 0.25, 0.15],
-    [12, 0.45, 0.29, 0.26],
-
-    [13, 0.15, 0.25, 0.60],
-    [14, 0.45, 0.29, 0.26],
-    [15, 0.4, 0.29, 0.31],
+    [10, 0.43, 0.28, 0.29],
+    [11, 0.51, 0.27, 0.22],
+    [12, 0.75, 0.18, 0.07],
+    [13, 0.21, 0.26, 0.53],
 ]
 
 number_of_matches = len(lst)
@@ -85,10 +82,10 @@ def calculate_probabilities():
     combination_list = []
     probabilities = []
     for combo in combinations:
-        if combo[0] != '2' and combo[1] == '2' and combo[2] == '1':
-            prob = calculate_prob(combo, df)
-            probabilities.append(prob)
-            combination_list.append(combo)
+        #if combo[0] != '2' and combo[1] == '2' and combo[2] == '1':
+        prob = calculate_prob(combo, df)
+        probabilities.append(prob)
+        combination_list.append(combo)
 
     print('Number of combination_list: ', len(combination_list))
 

@@ -30,13 +30,7 @@ def atp_elorate(surface):
         status='finished',
         winner_code__isnull=False,
     ).filter(
-        Q(round_name='Final') |
-        Q(round_name='Semifinal') |
-        Q(round_name='Quarterfinal') |
-        Q(round_name='R16') |
-        Q(round_name='R32') |
-        Q(round_name='R64') |
-        Q(round_name='R128')
+        ~Q(round_name__icontains='qualific')
     ).filter(Q(home_score=2) | Q(away_score=2)).order_by('start_at').distinct()
 
     if surface == 'clay':

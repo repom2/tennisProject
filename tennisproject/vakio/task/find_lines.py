@@ -10,8 +10,8 @@ from vakio.task import probs
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-max_bet_eur = 15
-line_cost = 0.1
+max_bet_eur = 0.25
+line_cost = 0.25
 stake = line_cost * 100
 
 logging.basicConfig(
@@ -104,7 +104,7 @@ def place_wagers(wager_req, session):
 
     if r.status_code == 200:
         j = r.json()
-        print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.datetime.now(), rt, j["serialNumber"][:17]))
+        # print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.datetime.now(), rt, j["serialNumber"][:17]))
         return True
     else:
         print("Request failed:\n" + r.text)
@@ -140,8 +140,8 @@ def find_lines():
     logging.info("Number of lines: %d", len(data))
     logging.info(params)
     df = pd.DataFrame([item.__dict__ for item in data])
-    columns = ['combination', 'bets', 'prob', 'win', 'yield', 'value', 'share']
-    #df = df[df['yield'] >= 1]
+    columns = ['combination', 'bets', 'prob', 'win', 'yield', 'share']
+    df = df[df['yield'] >= 1]
     #df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]
     print("Profitable lines:", len(df))
@@ -173,13 +173,11 @@ def find_lines():
                     matches[i][2] += 1
     for i in range(len(matches)):
         matches[i] = [round(x / len(df), 2) for x in matches[i]]
-        logging.info(matches[i])
-    exit()
+        logging.info(f"{matches[i]}" + '  [' + str(i) + ']')
+
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
-        print(row['combination'])
         line = list(row['combination'])
-
         # Data for wager
         data = create_sport_wager(params["listIndex"], stake, line, False)
         # Data for winshare
@@ -190,12 +188,11 @@ def find_lines():
         if bet_limit < 1.0:
             print("BET LIMIT EXCEEDED, bet limit:", bet_limit)
             continue
-        print("BET:", "winshare:", winshare, "bet limit:", bet_limit)
+        # print("BET:", "winshare:", winshare, "bet limit:", bet_limit)
         is_bet_placed = place_wagers(data, session)
-
         balance = get_balance(session)
-        print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         if is_bet_placed:
+            logging.info("Line: %s, winshare: %.2f, balance: %.2f" % (row['combination'], winshare*0.01, balance / 100.0))
             Combination.objects.update_or_create(
                 combination=row["combination"],
                 vakio_id=params["id"],

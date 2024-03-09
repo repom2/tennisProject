@@ -194,12 +194,14 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpTour.objects.filter(start_date__gte='2024-02-01').values_list('id'))
-        wta_leagues = list(WtaTour.objects.filter(start_date__gte='2024-02-01').values_list('id'))
+        leagues = list(AtpMatch.objects.filter(start_at__gte='2024-02-01').values_list('tour__id').distinct('tour__id'))
+        wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2024-02-01').values_list('tour__id').distinct('tour__id'))
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues #+ ch_leagues
+        logging.info(f"Leagues: {len(leagues)}")
         sport_score_key = settings.SPORT_SCORE_KEY
         for id in leagues:
+            logging.info(f"League: {id}")
             print(id[0])
             id = str(id[0])
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"

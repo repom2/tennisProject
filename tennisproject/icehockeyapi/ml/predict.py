@@ -15,6 +15,9 @@ import logging
 from tabulate import tabulate
 from django.contrib.contenttypes.models import ContentType
 import unicodedata
+from django.db.models import Avg
+from icehockeyapi.stats.estimated_goals import estimated_goals
+from icehockeyapi.stats.poisson import calculate_poisson
 
 logging.basicConfig(
     level=logging.INFO,
@@ -74,12 +77,19 @@ def predict(level):
     bet_qs = BetIceHockey.objects.all()
     if level == 'liiga':
         match_qs = Liiga.objects.all()
+        league_avg_home_goals = Liiga.objects.aggregate(
+            home_goals=Avg('home_score'))
+        league_avg_away_goals = Liiga.objects.aggregate(
+            away_goals=Avg('away_score'))
         match_table = 'icehockeyapi_liiga'
         elo_table = 'icehockeyapi_liigaelo'
         elo_home = 'icehockeyapi_liigaelohome'
         elo_away = 'icehockeyapi_liigaeloaway'
     else:
         return
+    logging.info(f'Average home goals: {league_avg_home_goals}')
+    logging.info(f'Average away goals: {league_avg_away_goals}')
+
     now = timezone.now().date()
     end_at = now + timedelta(days=1)
     params = {
@@ -118,10 +128,32 @@ def predict(level):
     data['elo_prob_home'] = data['elo_prob_home'].apply(probability_of_winning).round(2)
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
-    #exit()
+    data[['home_est_goals', 'away_est_goals']] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(estimated_goals, otypes=['O'])(
+                league_avg_home_goals['home_goals'],
+                league_avg_away_goals['away_goals'],
+                data['home_goals'],
+                data['home_conceded'],
+                data['away_goals'],
+                data['away_conceded']
+            )
+        ), index=data.index)
+
+    data[['home_poisson', 'draw_poisson', 'away_poisson']] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(calculate_poisson, otypes=['O'])(
+                data['home_est_goals'],
+                data['away_est_goals'],
+            )
+        ), index=data.index)
+    logging.info(
+        f"DataFrame:\n{tabulate(data[['home_name', 'away_name', 'home_est_goals', 'away_est_goals', 'home_poisson', 'draw_poisson', 'away_poisson', 'home_goals', 'home_conceded', 'away_goals', 'away_conceded', ]], headers='keys', tablefmt='psql', showindex=True)}")
+
+
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
-        data = train_ml_model(row, level, params)
+        data = train_ml_model(row, level, params, league_avg_home_goals, league_avg_away_goals)
         if data is None:
             continue
         match = match_qs.get(id=row.match_id)
@@ -157,6 +189,11 @@ def predict(level):
                 "home_yield": data['home_yield'],
                 "draw_yield": data['draw_yield'],
                 "away_yield": data['away_yield'],
+                "home_est_goals": row['home_est_goals'],
+                "away_est_goals": row['away_est_goals'],
+                "home_poisson": row['home_poisson'],
+                "draw_poisson": row['draw_poisson'],
+                "away_poisson": row['away_poisson'],
                 "level": level,
             }
         )

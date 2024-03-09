@@ -25,6 +25,9 @@ from tennisapi.models import Bet
 import logging
 from tabulate import tabulate
 from psycopg2.extensions import AsIs
+from footballapi.stats.estimated_goals import estimated_goals
+from footballapi.stats.poisson import calculate_poisson
+import numpy as np
 
 # Retrieve the root logger
 logging = logging.getLogger(__name__)
@@ -32,7 +35,7 @@ logging = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
 
 
-def get_train_data(params):
+def get_train_data(params, league_avg_home_goals, league_avg_away_goals):
     query = \
         """
             select 
@@ -61,6 +64,26 @@ def get_train_data(params):
             order by start_at
         """
     df = pd.read_sql(query, connection, params=params)
+
+    df[['home_est_goals', 'away_est_goals']] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(estimated_goals, otypes=['O'])(
+                league_avg_home_goals['home_goals'],
+                league_avg_away_goals['away_goals'],
+                df['home_goals'],
+                df['home_conceded'],
+                df['away_goals'],
+                df['away_conceded']
+            )
+        ), index=df.index)
+
+    df[['home_poisson', 'draw_poisson', 'away_poisson']] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(calculate_poisson, otypes=['O'])(
+                df['home_est_goals'],
+                df['away_est_goals'],
+            )
+        ), index=df.index)
 
     return df
 
@@ -95,7 +118,7 @@ def classifier(
     return model
 
 
-def train_ml_model(row, level, params):
+def train_ml_model(row, level, params, league_avg_home_goals, league_avg_away_goals):
     logging.info(f"Training model for {row['home_name']} vs {row['away_name']}")
     home_name = row['home_name']
     away_name = row['away_name']
@@ -106,15 +129,14 @@ def train_ml_model(row, level, params):
         logging.info(f"Odds are not available for {home_name} vs {away_name}")
         return None
     features = [
-        'draw_odds',
-        'away_odds',
-        'home_odds',
+        #'draw_odds',
+        #'away_odds',
+        #'home_odds',
         'elo_prob',
-        'elo_prob_home',
-        'home_goals',
-        'home_conceded',
-        'away_goals',
-        'away_conceded',
+        #'elo_prob_home',
+        'home_poisson',
+        'draw_poisson',
+        'away_poisson',
     ]
 
     # pandas series to dataframe
@@ -125,7 +147,7 @@ def train_ml_model(row, level, params):
 
     if level == 'facup':
         params['match_table'] = AsIs('footballapi_premierleague')
-    data = get_train_data(params)
+    data = get_train_data(params, league_avg_home_goals, league_avg_away_goals)
 
     data['elo_prob'] = data['home_elo'] - data['away_elo']
     data['elo_prob_home'] = data['elo_home'] - data['elo_away']

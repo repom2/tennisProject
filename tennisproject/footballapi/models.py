@@ -585,3 +585,8 @@ class BetFootball(models.Model):
     draw_yield = models.FloatField(null=True)
     away_yield = models.FloatField(null=True)
     level = models.TextField(null=True)
+    home_est_goals = models.FloatField(null=True)
+    away_est_goals = models.FloatField(null=True)
+    home_poisson = models.FloatField(null=True)
+    draw_poisson = models.FloatField(null=True)
+    away_poisson = models.FloatField(null=True)

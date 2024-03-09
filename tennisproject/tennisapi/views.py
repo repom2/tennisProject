@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Bet, AtpTour, AtpElo, AtpHardElo, BetWta
-from tennis_api.models import BetWta
+from tennis_api.models import BetWta, BetAtp
 from .serializers import AtpEloSerializer, BetSerializer
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -59,7 +59,7 @@ class AtpEloList(generics.ListAPIView):
 
 class BetList(generics.ListAPIView):
     queryset = BetWta.objects.all()
-    #queryset = Bet.objects.all()
+    #queryset = BetAtp.objects.all()
 
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     #permission_classes = [IsAdminUser]

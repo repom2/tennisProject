@@ -30,15 +30,12 @@ def wta_elorate(surface):
         status='finished',
         winner_code__isnull=False,
     ).filter(
-        Q(round_name='Final') |
-        Q(round_name='Semifinal') |
-        Q(round_name='Quarterfinal') |
-        Q(round_name='R16') |
-        Q(round_name='R32') |
-        Q(round_name='R64') |
-        Q(round_name='R128')
+        ~Q(round_name__icontains='qualific')
     ).filter(Q(home_score=2) | Q(away_score=2)).order_by('start_at').distinct()
     print(len(matches))
+    print(surface)
+    matches = matches.get(id=1355835)
+    print(matches)
     if surface == 'clay':
         matches = matches.filter(
             ~Exists(WtaEloClay.objects.filter(id=OuterRef('wta_elo_clay'))))
@@ -52,15 +49,17 @@ def wta_elorate(surface):
             ~Exists(WtaEloGrass.objects.filter(id=OuterRef('wta_elo_grass'))))
         elo_table = WtaEloGrass
     else:
+        print('Invalid surface')
         return
-
+    print(len(matches))
     for match in matches:
         # Get elo from database
         tour = WtaTour.objects.filter(id=match.tour_id)[0]
         try:
             home_id = Player.objects.filter(id=match.home_id)[0]
             away_id = Player.objects.filter(id=match.away_id)[0]
-        except:
+        except Exception as e:
+            print(e)
             continue
         home = elo_table.objects.filter(player__id=match.home_id).order_by('-games')
         away = elo_table.objects.filter(player__id=match.away_id).order_by('-games')
@@ -71,6 +70,7 @@ def wta_elorate(surface):
             winner = away
             loser = home
         else:
+            print('No winner')
             continue
         if not winner:
             winner_elo = 1500

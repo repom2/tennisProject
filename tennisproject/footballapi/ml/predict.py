@@ -15,6 +15,10 @@ from footballapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
 import unicodedata
+from django.db.models import Avg
+from footballapi.stats.estimated_goals import estimated_goals
+from footballapi.stats.poisson import calculate_poisson
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -74,30 +78,40 @@ def predict(level):
     bet_qs = BetFootball.objects.all()
     if level == 'premier':
         match_qs = PremierLeague.objects.all()
+        league_avg_home_goals = PremierLeague.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = PremierLeague.objects.aggregate(away_goals=Avg('away_score'))
         match_table = 'footballapi_premierleague'
         elo_table = 'footballapi_premierelo'
         elo_home = 'footballapi_premierelohome'
         elo_away = 'footballapi_premiereloaway'
     elif level == 'laliga':
         match_qs = LaLiga.objects.all()
+        league_avg_home_goals = LaLiga.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = LaLiga.objects.aggregate(away_goals=Avg('away_score'))
         match_table = 'footballapi_laliga'
         elo_table = 'footballapi_laligaelo'
         elo_home = 'footballapi_laligaelohome'
         elo_away = 'footballapi_laligaeloaway'
     elif level == 'bundesliga':
         match_qs = Bundesliga.objects.all()
+        league_avg_home_goals = Bundesliga.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = Bundesliga.objects.aggregate(away_goals=Avg('away_score'))
         match_table = 'footballapi_bundesliga'
         elo_table = 'footballapi_bundesligaelo'
         elo_home = 'footballapi_bundesligaelohome'
         elo_away = 'footballapi_bundesligaeloaway'
     elif level == 'seriea':
         match_qs = SerieA.objects.all()
+        league_avg_home_goals = SerieA.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = SerieA.objects.aggregate(away_goals=Avg('away_score'))
         match_table = 'footballapi_seriea'
         elo_table = 'footballapi_serieaelo'
         elo_home = 'footballapi_serieaelohome'
         elo_away = 'footballapi_serieaeloaway'
     elif level == 'ligue1':
         match_qs = Ligue1.objects.all()
+        league_avg_home_goals = Ligue1.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = Ligue1.objects.aggregate(away_goals=Avg('away_score'))
         match_table = 'footballapi_ligue1'
         elo_table = 'footballapi_ligue1elo'
         elo_home = 'footballapi_ligue1elohome'
@@ -112,11 +126,15 @@ def predict(level):
         elo_away = 'footballapi_premiereloaway'
     else:
         match_qs = Championship.objects.all()
+        league_avg_home_goals = Championship.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = Championship.objects.aggregate(away_goals=Avg('away_score'))
         match_table = 'footballapi_championship'
         elo_table = 'footballapi_championshipelo'
         elo_home = 'footballapi_championshipelohome'
         elo_away = 'footballapi_championshipeloaway'
-
+    logging.info(f'Average home goals: {league_avg_home_goals}')
+    logging.info(f'Average away goals: {league_avg_away_goals}')
+    
     now = timezone.now().date()
     end_at = now + timedelta(days=1)
     logging.info(f"Predicting matches for {level} between {now} and {end_at}")
@@ -157,10 +175,32 @@ def predict(level):
     data['elo_prob_home'] = data['elo_prob_home'].apply(probability_of_winning).round(2)
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
-    #exit()
+
+    data[['home_est_goals', 'away_est_goals']] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(estimated_goals, otypes=['O'])(
+                league_avg_home_goals['home_goals'],
+                league_avg_away_goals['away_goals'],
+                data['home_goals'], 
+                data['home_conceded'], 
+                data['away_goals'], 
+                data['away_conceded']
+            )
+        ), index=data.index)
+
+    data[['home_poisson', 'draw_poisson', 'away_poisson']] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(calculate_poisson, otypes=['O'])(
+                data['home_est_goals'],
+                data['away_est_goals'],
+            )
+        ), index=data.index)
+    logging.info(
+        f"DataFrame:\n{tabulate(data[['home_name', 'away_name', 'home_est_goals', 'away_est_goals', 'home_poisson', 'draw_poisson', 'away_poisson', 'home_goals', 'home_conceded', 'away_goals', 'away_conceded',]], headers='keys', tablefmt='psql', showindex=True)}")
+
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
-        data = train_ml_model(row, level, params)
+        data = train_ml_model(row, level, params, league_avg_home_goals, league_avg_away_goals)
         if data is None:
             continue
         match = match_qs.get(id=row.match_id)
@@ -194,6 +234,11 @@ def predict(level):
                 "home_yield": data['home_yield'],
                 "draw_yield": data['draw_yield'],
                 "away_yield": data['away_yield'],
+                "home_est_goals": row['home_est_goals'],
+                "away_est_goals": row['away_est_goals'],
+                "home_poisson": row['home_poisson'],
+                "draw_poisson": row['draw_poisson'],
+                "away_poisson": row['away_poisson'],
                 "level": level,
             }
         )

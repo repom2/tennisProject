@@ -293,7 +293,7 @@ class WtaEloHard(models.Model):
     player = models.ForeignKey(
         to=Player,
         on_delete=models.DO_NOTHING,
-        related_name="wta_elo_hard",
+        related_name="wta_elo_hard_player",
     )
     elo = models.IntegerField()
     elo_change = models.IntegerField()

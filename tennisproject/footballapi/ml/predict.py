@@ -18,6 +18,7 @@ import unicodedata
 from django.db.models import Avg
 from footballapi.stats.estimated_goals import estimated_goals
 from footballapi.stats.poisson import calculate_poisson
+from footballapi.stats.league_stats import league_stats
 
 
 logging.basicConfig(
@@ -134,7 +135,10 @@ def predict(level):
         elo_away = 'footballapi_championshipeloaway'
     logging.info(f'Average home goals: {league_avg_home_goals}')
     logging.info(f'Average away goals: {league_avg_away_goals}')
-    
+
+    # Print stats
+    league_stats(match_qs)
+
     now = timezone.now().date()
     end_at = now + timedelta(days=1)
     logging.info(f"Predicting matches for {level} between {now} and {end_at}")

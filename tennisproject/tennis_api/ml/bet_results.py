@@ -64,7 +64,7 @@ def home_away_bet(bet, bankroll):
 def bet_results():
     qs = BetWta.objects.all().order_by('start_at')
     bankroll = 1000
-    use = 'stats_win'
+    use = 'prob'
     bet_count = 0
     for bet in qs:
         outcome = bet.match.winner_code
@@ -78,6 +78,11 @@ def bet_results():
 
         if bet.home_yield is None or bet.away_yield is None or bet.home_odds is None or bet.away_odds is None:
             continue
+        if use == 'prob':
+            if bet.elo_prob is None:
+                continue
+            home_yield = bet.home_odds * bet.home_prob
+            away_yield = bet.away_odds * bet.away_prob
         if use == 'elo_prob':
             if bet.elo_prob is None:
                 continue
@@ -103,10 +108,10 @@ def bet_results():
             away_yield = bet.away_yield
         bets = []
         total_yield = 0
-        if home_yield > 1.0 and bet.home_odds > 1.89:# and bet.home_odds > 1.1:
+        if home_yield > 1.0:# and bet.home_odds > 1.89:
             bets.append('1')
             total_yield += home_yield
-        if away_yield > 1.0 and bet.away_odds > 1.89:# and bet.away_odds > 1.1:
+        if away_yield > 1.0:# and bet.away_odds > 1.89:
             bets.append('2')
             total_yield += away_yield
         logging.info(bets)

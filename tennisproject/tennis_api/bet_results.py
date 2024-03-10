@@ -1,4 +1,4 @@
-from tennisapi.models import BetWta
+from tennis_api.models import BetWta
 import logging
 from tabulate import tabulate
 

@@ -1,25 +1,6 @@
 from django.db import models
 
 
-# Create your models here.
-class Tournaments(models.Model):
-    id = models.IntegerField(primary_key=True)
-    section_id = models.IntegerField(null=True)
-    section_slug = models.TextField(null=True)
-    section_name = models.TextField(null=True)
-    priority = models.TextField(null=True)
-    name = models.TextField(null=True)
-    slug = models.TextField()
-    continent = models.TextField(null=True)
-    end_date = models.DateTimeField(null=True, blank=True)
-    start_date = models.DateTimeField(null=True, blank=True)
-    ground_type = models.TextField(null=True)
-    number_of_competitors = models.IntegerField(null=True)
-    number_of_sets = models.IntegerField(null=True)
-    prize_currency = models.TextField(null=True)
-    total_prize_money = models.IntegerField(null=True)
-
-
 class Players(models.Model):
     id = models.TextField(primary_key=True)
     sportscore_id = models.IntegerField(null=True)
@@ -53,13 +34,6 @@ class WTAPlayers(models.Model):
 
 
 class AtpTour(models.Model):
-    id = models.TextField(primary_key=True)
-    name = models.TextField(null=True)
-    date = models.DateField(null=True)
-    surface = models.TextField(null=True)
-
-
-class AtpTourTest(models.Model):
     id = models.TextField(primary_key=True)
     name = models.TextField(null=True)
     date = models.DateField(null=True)
@@ -359,38 +333,6 @@ class Match(models.Model):
     court_time = models.IntegerField(null=True)
 
 
-class MatchTest(models.Model):
-    id = models.TextField(primary_key=True)
-    tour = models.ForeignKey(
-        to=AtpTour,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="matchestest",
-    )
-    home = models.ForeignKey(
-        to=Players,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="hometest",
-    )
-    away = models.ForeignKey(
-        to=Players,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="awaytest",
-    )
-    start_at = models.DateTimeField(null=True)
-    round_name = models.TextField(null=True)
-    match_num = models.IntegerField(null=True)
-    home_odds = models.TextField(null=True)
-    away_odds = models.TextField(null=True)
-    winner_code = models.IntegerField(null=True)
-    court_time = models.IntegerField(null=True)
-
-
 class ChMatch(models.Model):
     id = models.TextField(primary_key=True)
     tour = models.ForeignKey(
@@ -454,56 +396,6 @@ class WtaMatch(models.Model):
     away_score = models.IntegerField(null=True)
     winner_code = models.IntegerField(null=True)
     court_time = models.IntegerField(null=True)
-
-
-class WtaMatchRolandG(models.Model):
-    id = models.TextField(primary_key=True)
-    tour_id = models.TextField()
-    home = models.ForeignKey(
-        to=WTAPlayers,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="homerg",
-    )
-    away = models.ForeignKey(
-        to=WTAPlayers,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="awayrg",
-    )
-    start_at = models.DateTimeField(null=True)
-    round_name = models.TextField(null=True)
-    match_num = models.IntegerField(null=True)
-    home_odds = models.TextField(null=True)
-    away_odds = models.TextField(null=True)
-    winner_code = models.IntegerField(null=True)
-
-
-class MatchRolandG(models.Model):
-    id = models.TextField(primary_key=True)
-    tour_id = models.TextField()
-    home = models.ForeignKey(
-        to=Players,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="homerg",
-    )
-    away = models.ForeignKey(
-        to=Players,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="awayrg",
-    )
-    start_at = models.DateTimeField(null=True)
-    round_name = models.TextField(null=True)
-    match_num = models.IntegerField(null=True)
-    home_odds = models.TextField(null=True)
-    away_odds = models.TextField(null=True)
-    winner_code = models.IntegerField(null=True)
 
 
 class Bet(models.Model):

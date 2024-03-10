@@ -102,8 +102,7 @@ def get_win_share():
     matches = [["1", "X", "2"]] * number_of_matches
 
     #matches[0] = "2"
-    matches[0] = ["1", "X"]
-    matches[11] = ["1", "X"]
+    #matches[0] = ["1", "X"]
 
     logging.info(f"List index: {list_index} - Vakio id: {vakio_id} - Number of matches: {number_of_matches}")
 

@@ -10,8 +10,8 @@ from vakio.task import probs
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-max_bet_eur = 0.25
-line_cost = 0.25
+max_bet_eur = 12
+line_cost = 0.1
 stake = line_cost * 100
 
 logging.basicConfig(
@@ -174,7 +174,7 @@ def find_lines():
     for i in range(len(matches)):
         matches[i] = [round(x / len(df), 2) for x in matches[i]]
         logging.info(f"{matches[i]}" + '  [' + str(i) + ']')
-
+    #exit()
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         line = list(row['combination'])

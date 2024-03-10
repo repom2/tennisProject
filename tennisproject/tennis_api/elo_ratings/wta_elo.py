@@ -33,9 +33,6 @@ def wta_elorate(surface):
         ~Q(round_name__icontains='qualific')
     ).filter(Q(home_score=2) | Q(away_score=2)).order_by('start_at').distinct()
     print(len(matches))
-    print(surface)
-    matches = matches.get(id=1355835)
-    print(matches)
     if surface == 'clay':
         matches = matches.filter(
             ~Exists(WtaEloClay.objects.filter(id=OuterRef('wta_elo_clay'))))

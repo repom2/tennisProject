@@ -131,5 +131,45 @@ export type Bets = {
      * Away player matches
      */
     awayStatMatches?: number;
+    /**
+     * Home player matches
+     */
+    homeMatches?: string;
+    /**
+     * Away player matches
+     */
+    awayMatches?: string;
+    /**
+     * Home player plays
+     */
+    homePlays?: string;
+    /**
+     * Away player plays
+     */
+    awayPlays?: string;
+    /**
+     * Home player current rank
+     */
+    homeCurrentRank?: number;
+    /**
+     * Away player current rank
+     */
+    awayCurrentRank?: number;
+    /**
+     * Home player peak rank
+     */
+    homePeakRank?: number;
+    /**
+     * Away player peak rank
+     */
+    awayPeakRank?: number;
+    /**
+     * Home player dominance ratio
+     */
+    homeDr?: number;
+    /**
+     * Away player dominance ratio
+     */
+    awayDr?: number;
 };
 

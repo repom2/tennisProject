@@ -17,7 +17,7 @@ from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.analysis import match_analysis
-from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers, BetWta, AtpTour, WtaTour
+from tennisapi.models import AtpMatches, Bet, Match, Players, WtaMatch, WTAPlayers, BetWta, AtpTour, WtaTour
 from tennisapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
@@ -40,7 +40,13 @@ def get_data(params):
                 match_id,
                 home_id,
                 away_id,
+                home_player_id,
+                away_player_id,
                 start_at,
+                home_fullname,
+                away_fullname,
+                atp_home_fullname,
+                atp_away_fullname,
                 case when winner_first_name is not null then 
                 winner_first_name || ' ' || winner_name 
                 else winner_name end as winner_fullname,
@@ -81,6 +87,12 @@ def get_data(params):
                 away_id,
                 b.start_at,
                 b.id as match_id,
+                h.name_full as home_fullname,
+                aw.name_full as away_fullname,
+                h.atp_name_full as atp_home_fullname,
+                aw.atp_name_full as atp_away_fullname,
+                h.player_id as home_player_id,
+                aw.player_id as away_player_id,
                 home_odds,
                 away_odds,
                 h.first_name as winner_first_name,
@@ -92,44 +104,43 @@ def get_data(params):
                 (select elo from %(grass_elo)s el where el.player_id=home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_grasselo,
                 (select elo from %(hard_elo)s el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo,
                 (select count(*) from %(hard_elo)s c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games,
-                (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games,
-                (select sum(elo_change) from %(hard_elo)s c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as winner_year_elo,
-                (select count(*) from %(grass_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_grass_games,
+                (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_games,
+                (select sum(elo_change) from %(hard_elo)s c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_elo,
+                (select count(*) from %(grass_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_grass_games,
                 (select elo from %(grass_elo)s el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo,
                 (select elo from %(hard_elo)s el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,
                 (select count(*) from %(hard_elo)s c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games,
-                (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games,
-                (select sum(elo_change) from %(hard_elo)s c where c.player_id=b.away_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM a.date)) as loser_year_elo,
-                (select count(*) from %(grass_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_grass_games,
+                (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_games,
+                (select sum(elo_change) from %(hard_elo)s c where c.player_id=b.away_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_elo,
+                (select count(*) from %(grass_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_grass_games,
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end)
                  from %(hard_elo)s c
                  inner join %(matches_table)s aa on aa.id=c.match_id
-                 where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_win,
+                 where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_win,
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end)
                  from %(grass_elo)s c
                  inner join %(matches_table)s aa on aa.id=c.match_id
-                 where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_grass_win,
+                 where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_grass_win,
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end)
                  from %(hard_elo)s c
                  inner join %(matches_table)s aa on aa.id=c.match_id
-                 where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win,
+                 where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_win,
             (select sum(case when aa.winner_id=c.player_id then 1 else 0 end)
                  from %(grass_elo)s c
                  inner join %(matches_table)s aa on aa.id=c.match_id
-                 where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_grass_win,
+                 where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_grass_win,
                 (select sum(court_time) from %(match_table)s c
                 where c.start_at between (b.start_at - interval '14 days') and c.start_at and
                 c.start_at < b.start_at and (c.home_id=b.home_id or c.away_id=b.home_id)) as home_court_time,
                 (select sum(court_time) from %(match_table)s c
                 where c.start_at between (b.start_at - interval '14 days') and c.start_at and
                 c.start_at < b.start_at and (c.home_id=b.away_id or c.away_id=b.away_id)) as away_court_time
-            from %(tour_table)s a
-            inner join %(match_table)s b on b.tour_id=a.id
+            from %(match_table)s b
             left join %(player_table)s h on h.id = b.home_id
             left join %(player_table)s aw on aw.id = b.away_id
-            where surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
+            where b.surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
             and (
-            (name ilike '%%%(tour)s%%' ))
+            (tourney_name ilike '%%%(tour)s%%' ))
             ) 
             ss where winner_name is not null and loser_name is not null order by start_at
     """
@@ -149,11 +160,12 @@ def predict(level, tour):
     now = timezone.now().date()
     end_at = now + timedelta(days=5)
     from_at = now - timedelta(days=1)
+    #now = '2023-12-24'
 
     if level == 'atp':
-        qs = AtpTour.objects.filter(
-            name__icontains=tour,
-            atptours__date__gte=from_at
+        qs = AtpMatches.objects.filter(
+            tourney_name__icontains=tour,
+            date__gte=from_at
         ).values_list('surface', flat=True).first()
         logging.info('Surface: %s', qs)
         if 'Clay' in qs:
@@ -206,8 +218,14 @@ def predict(level, tour):
         'start_at',
         'winner_fullname',
         'loser_fullname',
-        'home_id',
-        'away_id',
+        #'home_id',
+        #'away_id',
+        'home_player_id',
+        'away_player_id',
+        'home_fullname',
+        'away_fullname',
+        'atp_home_fullname',
+        'atp_away_fullname',
     ]
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")

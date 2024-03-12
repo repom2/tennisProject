@@ -7,6 +7,8 @@ from tennisapi.stats.prob_by_serve.winning_match import matchProb
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from psycopg2.extensions import AsIs
+from tennisapi.scrape.wta_site import wta_scrape
+from tennisapi.scrape.tennisabstract_site import tennisabstract_scrape
 
 
 class Command(BaseCommand):
@@ -34,11 +36,23 @@ class Command(BaseCommand):
         common_opponent_cmd = subparsers.add_parser("common-opponent")
         common_opponent_cmd.set_defaults(subcommand=self.commonn_opponent_stats)
 
+        scrape_cmd = subparsers.add_parser("scrape")
+        scrape_cmd.set_defaults(subcommand=self.scrape_stats)
+
+        scrape_cmd = subparsers.add_parser("ta")
+        scrape_cmd.set_defaults(subcommand=self.tennisabstract_stats)
+
     def handle(self, *args, **options):
         options["subcommand"](options)
 
     def serve_stats(self, options):
         serve_points()
+
+    def scrape_stats(self, options):
+        wta_scrape()
+
+    def tennisabstract_stats(self, options):
+        tennisabstract_scrape()
 
     def surface_correlation(self, options):
         surface_weighting()

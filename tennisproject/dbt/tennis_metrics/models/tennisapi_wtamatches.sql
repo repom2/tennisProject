@@ -22,6 +22,8 @@ select
       ]
     ) }} as id,
     tour_id,
+    tourney_name,
+    surface,
     winner_id,
     loser_id,
     date,
@@ -61,6 +63,8 @@ select
 from (
     select distinct
         match_num,
+        tourney_name,
+        surface,
         tourney_id as tour_id,
         case when b.id is null then winner_id else b.id end as winner_id,
         case when c.id is null then winner_id else c.id end as loser_id,
@@ -87,15 +91,21 @@ from (
         null as event_id,
         null as winner_code,
         minutes::integer * 60 as court_time
-    from tennis_atp_wtamatches a left join tennisapi_wtaplayers b on winner_id = b.player_id::text
-    left join tennisapi_wtaplayers c on loser_id = c.player_id::text
-    inner join tennisapi_wtatour t on a.tourney_id=t.id where date <= '2023-02-27'
+    from tennis_atp_wtamatches a
+    inner join tennisapi_wtaplayers b on winner_id = b.player_id::text
+    inner join tennisapi_wtaplayers c on loser_id = c.player_id::text
 
     union all
 
     select
         a.id as match_num,
-        t.id as tour_id,
+        league ->> 'slug' as tourney_name,
+        (
+          SELECT value
+          FROM jsonb_array_elements(facts) AS elements
+          WHERE (elements ->> 'name') ilike '%ground%type%'
+        )::json ->> 'value' AS surface,
+        league_id as tour_id,
         case when winner_code = '1' then b.id else c.id end winner_id,
 	    case when winner_code = '2' then b.id else c.id end loser_id,
         date(start_at) as date,
@@ -125,8 +135,8 @@ from (
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer, 0)
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_4_time')::integer, 0)
 	    + coalesce((replace(periods_time, '''', '"')::json ->> 'period_5_time')::integer, 0) as court_time
-    from sportscore_tennisevents a inner join tennisapi_wtatour t
-    on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_id)
+    from sportscore_tennisevents a
+    left join sportscore_tennistournaments t on a.league_id = t.id
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id
     left join (
@@ -225,8 +235,9 @@ from (
         ) stats
         ) end_stats group by event
     ) s_stats on event=a.id
-    where start_at::timestamp > '2023-02-27'
-    and sport_id='2'
+    where start_at::timestamp > '2023-12-24'
+    and a.sport_id='2'
+    and a.section ->> 'id'='144' and status !='canceled'
     and status = 'finished'
     and (winner_code = '1' or winner_code = '2')
 ) s

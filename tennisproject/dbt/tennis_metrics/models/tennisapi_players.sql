@@ -32,7 +32,9 @@ select
     name_first as first_name,
     lower(CONCAT(name_first, '-', name_last)) as slug,
     country,
-    prize_total_euros::integer as prize_total_euros
+    prize_total_euros::integer as prize_total_euros,
+    name_full,
+    name_first || ' ' || name_last as atp_name_full
 from
     (select
         case when dob != 'nan' then to_date(dob, 'YYYYMMDD') else null end as dob,

@@ -25,7 +25,7 @@ def calculate_k_factor(matches, o, c, s):
 
 def wta_elorate(surface):
     matches = WtaMatches.objects.filter(
-        tour__surface__icontains=surface,
+        surface__icontains=surface,
         round_name__isnull=False,
     ).filter(
         Q(round_name='Final') |
@@ -53,8 +53,6 @@ def wta_elorate(surface):
         return
 
     for match in matches:
-        # Get elo from database
-        tour = WtaTour.objects.filter(id=match.tour_id)[0]
         try:
             winner_id = WTAPlayers.objects.filter(id=match.winner_id)[0]
         except:
@@ -110,8 +108,8 @@ def wta_elorate(surface):
         print(
             match.id,
             match.date,
-            tour.surface,
-            tour.name,
+            match.surface,
+            match.tourney_name,
             winner_id.last_name,
             round(winner_elo, 0),
             round(winner_elo - winner_change, 0),

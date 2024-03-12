@@ -23,34 +23,34 @@ def standard_deviation(params):
         winner_id,
         surface,
         count(*) as wins
-        from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
+        from %(matches_table)s a 
         where 
-        t.date > %(date)s
-        group by t.surface, winner_id) s
+        a.date > %(date)s
+        group by a.surface, winner_id) s
         inner join (
             select 
             loser_id,
             surface, 
             count(*) as loses
-            from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
+            from %(matches_table)s a
             where 
-            t.date > %(date)s
+            a.date > %(date)s
             group by surface, loser_id
         ) l 
         on l.loser_id=s.winner_id and l.surface=s.surface
         ) std 
         where player_id in (
             select a.loser_id from (
-        (select distinct loser_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-        where surface = %(surface_b)s and t.date > %(date)s) a inner join (select distinct loser_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-        where surface = %(surface_a)s and t.date > %(date)s) b on b.loser_id=a.loser_id
+        (select distinct loser_id from %(matches_table)s a
+        where surface = %(surface_b)s and a.date > %(date)s) a inner join (select distinct loser_id from %(matches_table)s a
+        where surface = %(surface_a)s and a.date > %(date)s) b on b.loser_id=a.loser_id
             )
         )
             and player_id in (
             select a.winner_id from (
-        (select distinct winner_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-        where surface = %(surface_b)s and t.date > %(date)s) a inner join (select distinct winner_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-        where surface = %(surface_a)s and t.date > %(date)s) b on b.winner_id=a.winner_id) 
+        (select distinct winner_id from %(matches_table)s a
+        where surface = %(surface_b)s and a.date > %(date)s) a inner join (select distinct winner_id from %(matches_table)s a
+        where surface = %(surface_a)s and a.date > %(date)s) b on b.winner_id=a.winner_id) 
             )
         group by surface;
     """
@@ -83,34 +83,34 @@ def surface_correlation(params):
             winner_id,
             surface,
             count(*) as wins
-            from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
+            from %(matches_table)s a 
             where 
-            t.date > %(date)s
-            group by t.surface, winner_id) s
+            a.date > %(date)s
+            group by a.surface, winner_id) s
             inner join (
                 select 
                 loser_id,
                 surface, 
                 count(*) as loses
-                from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
+                from %(matches_table)s a 
                 where 
-                t.date > %(date)s
+                a.date > %(date)s
                 group by surface, loser_id
             ) l 
             on l.loser_id=s.winner_id and l.surface=s.surface
             ) std 
             where player_id in (
                 select a.loser_id from (
-            (select distinct loser_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-            where surface = %(surface_b)s and t.date > %(date)s) a inner join (select distinct loser_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-            where surface = %(surface_a)s and t.date > %(date)s) b on b.loser_id=a.loser_id
+            (select distinct loser_id from %(matches_table)s a
+            where a.surface = %(surface_b)s and a.date > %(date)s) a inner join (select distinct loser_id from %(matches_table)s a
+            where a.surface = %(surface_a)s and a.date > %(date)s) b on b.loser_id=a.loser_id
                 )
             )
                 and player_id in (
                 select a.winner_id from (
-            (select distinct winner_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-            where surface = %(surface_b)s and t.date > %(date)s) a inner join (select distinct winner_id from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
-            where surface = %(surface_a)s and t.date > %(date)s) b on b.winner_id=a.winner_id) 
+            (select distinct winner_id from %(matches_table)s a
+            where a.surface = %(surface_b)s and a.date > %(date)s) a inner join (select distinct winner_id from %(matches_table)s a
+            where a.surface = %(surface_a)s and a.date > %(date)s) b on b.winner_id=a.winner_id) 
                 ) and  (surface = %(surface_a)s or surface = %(surface_b)s)
             ) ss group by player_id
                 ) sss;

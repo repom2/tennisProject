@@ -9,6 +9,7 @@ import joblib
 import logging
 import sys
 from tennisapi.stats.player_stats import player_stats
+from tennisapi.stats.tennisabstract_site import tennisabstract_scrape
 from tennisapi.stats.prob_by_serve.winning_match import matchProb
 from tennisapi.stats.fatigue_modelling import fatigue_modelling
 from tennisapi.stats.injury_modelling import injury_modelling
@@ -17,27 +18,14 @@ from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.analysis import match_analysis
-from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers, BetWta
+from tennisapi.models import AtpMatches, Bet, Match, Players, WtaMatch, WTAPlayers, BetWta, AtpTour, WtaTour
+from tennisapi.ml.train_model import train_ml_model
 import logging
+from tabulate import tabulate
 
 log = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore")
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
-
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(formatter)
-
-file_handler = logging.FileHandler('logs.log')
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(stdout_handler)
 
 
 def probability_of_winning(x):
@@ -53,14 +41,30 @@ def get_data(params):
                 match_id,
                 home_id,
                 away_id,
+                home_player_id,
+                away_player_id,
                 start_at,
-                winner_first_name,
-                loser_first_name,
+                home_fullname,
+                away_fullname,
+                case when atp_home_fullname is not null then atp_home_fullname 
+                else TRIM(split_part(home_fullname, ',', 2)) || ' ' || TRIM(split_part(home_fullname, ',', 1)) end as atp_home_fullname,
+                case when atp_away_fullname is not null then atp_away_fullname 
+                else TRIM(split_part(away_fullname, ',', 2)) || ' ' || TRIM(split_part(away_fullname, ',', 1)) end as atp_away_fullname,
+                case when winner_first_name is not null then 
+                winner_first_name || ' ' || winner_name 
+                else winner_name end as winner_fullname,
+                case when loser_first_name is not null then 
+                loser_first_name || ' ' || loser_name 
+                else loser_name end as loser_fullname,
                 winner_name,
                 loser_name,
                 home_odds,
                 away_odds,
                 round_name,
+                case when (round_name ilike '%%ifinal%%' or round_name ilike '%%quarterfi%%') then 0
+                    when (round_name ilike '%%r32%%' or round_name ilike '%%r16%%')  then 1 
+                    when (round_name ilike '%%r64%%' or round_name ilike '%%r128%%')  then 2 
+                else 3 end as round_code,
                 winner_grasselo,
                 winner_hardelo,
                 winner_games,
@@ -86,6 +90,12 @@ def get_data(params):
                 away_id,
                 b.start_at,
                 b.id as match_id,
+                h.name_full as home_fullname,
+                aw.name_full as away_fullname,
+                h.atp_name_full as atp_home_fullname,
+                aw.atp_name_full as atp_away_fullname,
+                h.player_id as home_player_id,
+                aw.player_id as away_player_id,
                 home_odds,
                 away_odds,
                 h.first_name as winner_first_name,
@@ -131,7 +141,9 @@ def get_data(params):
             from %(match_table)s b
             left join %(player_table)s h on h.id = b.home_id
             left join %(player_table)s aw on aw.id = b.away_id
-            where surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
+            where b.surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
+            and (
+            (tourney_name ilike '%%%(tour)s%%' ))
             ) 
             ss where winner_name is not null and loser_name is not null order by start_at
     """
@@ -146,9 +158,22 @@ def label_round(data, mapping):
     return data
 
 
-def insert_data_to_match(level, tour):
+def predict_ta(level, tour):
     surface = 'hard'
+    now = timezone.now().date()
+    end_at = now + timedelta(days=3)
+    from_at = now - timedelta(days=1)
+    #now = '2023-12-24'
+
     if level == 'atp':
+        qs = AtpMatches.objects.filter(
+            tourney_name__icontains=tour,
+            date__gte=from_at
+        ).values_list('surface', flat=True).first()
+        logging.info('Surface: %s', qs)
+        if 'Clay' in qs:
+            surface = 'clay'
+        logging.info('Surface: %s', surface)
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
         player_qs = Players.objects.all()
@@ -161,7 +186,6 @@ def insert_data_to_match(level, tour):
         clay_elo = 'tennisapi_atpelo'
         if surface == 'clay':
             hard_elo = clay_elo
-            clay_elo = 'tennisapi_atphardelo'
     else:
         bet_qs = BetWta.objects.all()
         match_qs = WtaMatch.objects.all()
@@ -182,20 +206,33 @@ def insert_data_to_match(level, tour):
         'grass_elo': AsIs(grass_elo),
         'clay_elo': AsIs(clay_elo),
         'tour': AsIs(tour),
+        'start_at': now,
+        'end_at': end_at,
         'surface': AsIs(surface),
-        'start_at': '2000-01-19 18:00:00',
-        'end_at': '20214-01-20 18:00:00',
     }
     data = get_data(params)
-
-    log.info(data)
-    log.info(data['start_at'].describe())
-    #exit(0)
+    #data= data.head(1)
     l = len(data.index)
     if l == 0:
-        log.info("No data")
+        print("No data")
         return
 
+    columns = [
+        'start_at',
+        'winner_fullname',
+        'loser_fullname',
+        #'home_id',
+        #'away_id',
+        'home_player_id',
+        'away_player_id',
+        'home_fullname',
+        'away_fullname',
+        'atp_home_fullname',
+        'atp_away_fullname',
+    ]
+    logging.info(
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
+    #exit()
     if level == 'atp':
         tour_spw, tour_rpw = 0.645, 0.355
     else:
@@ -204,28 +241,40 @@ def insert_data_to_match(level, tour):
     date = '2015-1-1'
     params = {
         'event': AsIs(tour),
+        'surface': AsIs(surface),
         'tour_table': AsIs(tour_table),
         'matches_table': AsIs(matches_table),
         'date': date,
-        'surface': AsIs(surface),
     }
     event_spw, event_rpw = event_stats(params)
+
     if event_spw is None:
         if level == 'atp':
-            tour_spw, tour_rpw = 0.645, 0.355
+            event_spw, tour_spw, tour_rpw = 0.645, 0.645, 0.355
         else:
-            tour_spw, tour_rpw = 0.565, 0.435
-
-    data[['spw1', 'rpw1']] = pd.DataFrame(
-        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], params)),
+            event_spw, tour_spw, tour_rpw = 0.565, 0.565, 0.435
+    print(event_spw)
+    print(tour_spw)
+    print(type(tour_spw))
+    data[['home_spw', 'home_rpw', 'home_dr', 'home_matches', 'home_peak_rank', 'home_current_rank', 'home_plays']] = pd.DataFrame(
+        np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_home_fullname'])),
         index=data.index)
-    data[['spw2', 'rpw2']] = pd.DataFrame(
-        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], data['start_at'], params)),
+    data[['away_spw', 'away_rpw', 'away_dr', 'away_matches', 'away_peak_rank', 'away_current_rank', 'away_plays']] = pd.DataFrame(
+        np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_away_fullname'])),
         index=data.index)
-    data['player1'] = data.apply(lambda x: event_spw + (x.spw1 - tour_spw) - (x.rpw2 - tour_rpw) if (x.rpw2 and x.spw1) else None, axis=1)
-    data['player2'] = data.apply(lambda x: event_spw + (x.spw2 - tour_spw) - (x.rpw1 - tour_rpw) if (x.rpw1 and x.spw2) else None, axis=1)
+    data['home_spw'] = data['home_spw'].astype(float)
+    data['home_rpw'] = data['home_rpw'].astype(float)
+    data['home_dr'] = data['home_dr'].astype(float)
+    data['away_spw'] = data['away_spw'].astype(float)
+    data['away_rpw'] = data['away_rpw'].astype(float)
+    data['away_dr'] = data['away_dr'].astype(float)
+    data['player1'] = data.apply(lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw) if (x.away_rpw and x.home_spw) else None, axis=1)
+    data['player2'] = data.apply(lambda x: tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw) if (x.home_rpw and x.away_spw) else None, axis=1)
 
-    data['win'] = data.apply(
+    cols = ['atp_home_fullname', 'atp_away_fullname','home_spw', 'home_rpw', 'home_dr', 'away_spw', 'away_rpw', 'away_dr', 'player1', 'player2']
+    logging.info(
+        f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}")
+    data['stats_win'] = data.apply(
         lambda x: matchProb(
             x.player1 if x.player1 else None,
             1-x.player2 if x.player2 else None,
@@ -233,7 +282,7 @@ def insert_data_to_match(level, tour):
         ), axis=1).round(2)
 
     # Common opponent
-    data[['spw1_c', 'spw2_c', 'count']] = pd.DataFrame(
+    data[['spw1_c', 'spw2_c', 'common_opponents_count']] = pd.DataFrame(
         np.row_stack(np.vectorize(common_opponent, otypes=['O'])(
             params,
             data['home_id'],
@@ -243,14 +292,14 @@ def insert_data_to_match(level, tour):
         )
         ), index=data.index)
 
-    data['win_c'] = data.apply(
+    data['common_opponents'] = data.apply(
         lambda x: matchProb(
             x.spw1_c,
             1 - x.spw2_c,
             gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
         ), axis=1).round(2)
 
-    data['f1'] = pd.DataFrame(
+    data['home_fatigue'] = pd.DataFrame(
         np.row_stack(np.vectorize(fatigue_modelling, otypes=['O'])(
             data['home_id'],
             params['tour_table'],
@@ -259,7 +308,7 @@ def insert_data_to_match(level, tour):
             )
         ),
         index=data.index)
-    data['f2'] = pd.DataFrame(
+    data['away_fatigue'] = pd.DataFrame(
         np.row_stack(np.vectorize(fatigue_modelling, otypes=['O'])(
             data['away_id'],
             params['tour_table'],
@@ -268,7 +317,7 @@ def insert_data_to_match(level, tour):
         )
         ),
         index=data.index)
-    data[['h2h', 'c']] = pd.DataFrame(
+    data[['h2h_win', 'h2h_matches']] = pd.DataFrame(
         np.row_stack(np.vectorize(head2head, otypes=['O'])(
             data['home_id'],
             data['away_id'],
@@ -279,7 +328,7 @@ def insert_data_to_match(level, tour):
         ),
         index=data.index)
     data['date'] = data['start_at'].dt.strftime('%Y-%m-%d')
-    data[['wo', 'inj']] = pd.DataFrame(
+    data[['walkover_home', 'home_inj_score']] = pd.DataFrame(
         np.row_stack(np.vectorize(injury_modelling, otypes=['O'])(
             data['date'],
             data['home_id'],
@@ -288,7 +337,7 @@ def insert_data_to_match(level, tour):
         )
         ),
         index=data.index)
-    data[['wo2', 'inj2']] = pd.DataFrame(
+    data[['walkover_away', 'away_inj_score']] = pd.DataFrame(
         np.row_stack(np.vectorize(injury_modelling, otypes=['O'])(
             data['date'],
             data['away_id'],
@@ -298,51 +347,27 @@ def insert_data_to_match(level, tour):
         ),
         index=data.index)
 
-    data['odds1'] = data['home_odds'].astype(float)
-    data['odds2'] = data['away_odds'].astype(float)
+    data['home_odds'] = data['home_odds'].astype(float)
+    data['away_odds'] = data['away_odds'].astype(float)
 
-    data['prob'] = data['winner_hardelo'] - data['loser_hardelo']
-    data['prob'] = data['prob'].apply(probability_of_winning).round(2)
+    data['elo_prob'] = data['winner_hardelo'] - data['loser_hardelo']
+    data['elo_prob'] = data['elo_prob'].apply(probability_of_winning).round(2)
 
-    data['prob_year'] = data['winner_year_elo'] - data['loser_year_elo']
-    data['prob_y'] = data['prob_year'].apply(probability_of_winning).round(2)
-
-    columns = [
-        #'start_at',
-        'winner_name',
-        'loser_name',
-        'odds1',
-        'odds2',
-        'prob',
-        'prob_y',
-        'spw1',
-        'rpw1',
-        'spw2',
-        'rpw2',
-        'win',
-        'f1',
-        'f2',
-        'h2h',
-        'c',
-        'wo',
-        'inj',
-        'wo2',
-        'inj2',
-        #'player1',
-        #'player2',
-        'win_c',
-        'count',
-        #'spw1_c',
-        #'spw2_c',
-        #'winner_hardelo',
-        #'loser_hardelo',
-    ]
+    data['year_elo_prob'] = data['winner_year_elo'] - data['loser_year_elo']
+    data['year_elo_prob'] = data['year_elo_prob'].apply(probability_of_winning).round(2)
 
     print('tour', tour_spw, tour_rpw)
     print('event', event_spw, event_rpw)
+    #data = data.where(pd.notnull(data), None)
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
         preview, reasoning = None, None#match_analysis(row)
+        try:
+            home_prob, away_prob, home_yield, away_yield = train_ml_model(row, level, params)
+        except Exception as e:
+            log.error(e)
+            continue
+        #break
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],
             home=player_qs.filter(id=row.home_id)[0],
@@ -351,26 +376,40 @@ def insert_data_to_match(level, tour):
                 "start_at": row.start_at,
                 "home_name": row.winner_name,
                 "away_name": row.loser_name,
-                "home_odds": row['odds1'],
-                "away_odds": row['odds2'],
-                "elo_prob": row['prob'],
-                "year_elo_prob": row['prob_y'],
-                "home_spw": row['spw1'],
-                "home_rpw": row['rpw1'],
-                "away_spw": row['spw2'],
-                "away_rpw": row['rpw2'],
-                "stats_win": row['win'],
-                "home_fatigue": row['f1'],
-                "away_fatigue": row['f2'],
-                "h2h_win": row['h2h'],
-                "h2h_matches": row['c'],
-                "walkover_home": row['wo'],
-                "walkover_away": row['wo2'],
-                "home_inj_score": row['inj'],
-                "away_inj_score": row['inj2'],
-                "common_opponents": row['win_c'],
-                "common_opponents_count": row['count'],
+                "home_odds": row['home_odds'],
+                "away_odds": row['away_odds'],
+                "elo_prob": row['elo_prob'],
+                "year_elo_prob": row['year_elo_prob'],
+                "home_spw": row['home_spw'],
+                "home_rpw": row['home_rpw'],
+                "away_spw": row['away_spw'],
+                "away_rpw": row['away_rpw'],
+                "stats_win": row['stats_win'],
+                "home_fatigue": row['home_fatigue'],
+                "away_fatigue": row['away_fatigue'],
+                "h2h_win": row['h2h_win'],
+                "h2h_matches": row['h2h_matches'],
+                "walkover_home": row['walkover_home'],
+                "walkover_away": row['walkover_away'],
+                "home_inj_score": row['home_inj_score'],
+                "away_inj_score": row['away_inj_score'],
+                "common_opponents": row['common_opponents'],
+                "common_opponents_count": row['common_opponents_count'],
                 "preview": preview,
                 "reasoning": reasoning,
+                "home_prob": home_prob,
+                "away_prob": away_prob,
+                "home_yield": home_yield,
+                "away_yield": away_yield,
+                "home_dr": row['home_dr'],
+                "away_dr": row['away_dr'],
+                "home_peak_rank": row['home_peak_rank'],
+                "away_peak_rank": row['away_peak_rank'],
+                "home_current_rank": row['home_current_rank'],
+                "away_current_rank": row['away_current_rank'],
+                "home_plays": row['home_plays'],
+                "away_plays": row['away_plays'],
+                "home_matches": row['home_matches'],
+                "away_matches": row['away_matches'],
             }
         )

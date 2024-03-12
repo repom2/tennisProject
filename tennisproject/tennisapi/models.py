@@ -15,6 +15,8 @@ class Players(models.Model):
     slug = models.TextField(null=True)
     country = models.TextField(null=True)
     prize_total_euros = models.IntegerField(null=True)
+    name_full = models.TextField(null=True)
+    atp_name_full = models.TextField(null=True)
 
 
 class WTAPlayers(models.Model):
@@ -31,6 +33,8 @@ class WTAPlayers(models.Model):
     slug = models.TextField(null=True)
     country = models.TextField(null=True)
     prize_total_euros = models.IntegerField(null=True)
+    name_full = models.TextField(null=True)
+    atp_name_full = models.TextField(null=True)
 
 
 class AtpTour(models.Model):
@@ -175,13 +179,9 @@ class WtaGrassElo(models.Model):
 
 class AtpMatches(models.Model):
     id = models.TextField(primary_key=True)
-    tour = models.ForeignKey(
-        to=AtpTour,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="atptours",
-    )
+    tour_id = models.TextField(null=True)
+    tourney_name = models.TextField(null=True)
+    surface = models.TextField(null=True)
     winner = models.ForeignKey(
         to=Players,
         on_delete=models.DO_NOTHING,
@@ -252,13 +252,9 @@ class ChMatches(models.Model):
 
 class WtaMatches(models.Model):
     id = models.TextField(primary_key=True)
-    tour = models.ForeignKey(
-        to=WtaTour,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="atptours",
-    )
+    tour_id = models.TextField(null=True)
+    tourney_name = models.TextField(null=True)
+    surface = models.TextField(null=True)
     winner = models.ForeignKey(
         to=WTAPlayers,
         on_delete=models.DO_NOTHING,
@@ -301,13 +297,7 @@ class WtaMatches(models.Model):
 
 class Match(models.Model):
     id = models.TextField(primary_key=True)
-    tour = models.ForeignKey(
-        to=AtpTour,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="matches",
-    )
+    tour_id = models.TextField(null=True)
     home = models.ForeignKey(
         to=Players,
         on_delete=models.DO_NOTHING,
@@ -331,6 +321,8 @@ class Match(models.Model):
     away_score = models.IntegerField(null=True)
     winner_code = models.IntegerField(null=True)
     court_time = models.IntegerField(null=True)
+    surface = models.TextField(null=True)
+    tourney_name = models.TextField(null=True)
 
 
 class ChMatch(models.Model):
@@ -366,13 +358,7 @@ class ChMatch(models.Model):
 
 class WtaMatch(models.Model):
     id = models.TextField(primary_key=True)
-    tour = models.ForeignKey(
-        to=WtaTour,
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name="wtamatches",
-    )
+    tour_id = models.TextField(null=True)
     home = models.ForeignKey(
         to=WTAPlayers,
         on_delete=models.DO_NOTHING,
@@ -396,6 +382,8 @@ class WtaMatch(models.Model):
     away_score = models.IntegerField(null=True)
     winner_code = models.IntegerField(null=True)
     court_time = models.IntegerField(null=True)
+    surface = models.TextField(null=True)
+    tourney_name = models.TextField(null=True)
 
 
 class Bet(models.Model):
@@ -444,6 +432,17 @@ class Bet(models.Model):
     away_prob = models.FloatField(null=True)
     home_yield = models.FloatField(null=True)
     away_yield = models.FloatField(null=True)
+    surface = models.TextField(null=True)
+    home_dr = models.FloatField(null=True)
+    away_dr = models.FloatField(null=True)
+    home_matches = models.TextField(null=True)
+    away_matches = models.TextField(null=True)
+    home_peak_rank = models.IntegerField(null=True)
+    away_peak_rank = models.IntegerField(null=True)
+    home_current_rank = models.IntegerField(null=True)
+    away_current_rank = models.IntegerField(null=True)
+    home_plays = models.TextField(null=True)
+    away_plays = models.TextField(null=True)
 
 
 class BetWta(models.Model):
@@ -492,3 +491,14 @@ class BetWta(models.Model):
     away_prob = models.FloatField(null=True)
     home_yield = models.FloatField(null=True)
     away_yield = models.FloatField(null=True)
+    surface = models.TextField(null=True)
+    home_dr = models.FloatField(null=True)
+    away_dr = models.FloatField(null=True)
+    home_matches = models.TextField(null=True)
+    away_matches = models.TextField(null=True)
+    home_peak_rank = models.IntegerField(null=True)
+    away_peak_rank = models.IntegerField(null=True)
+    home_current_rank = models.IntegerField(null=True)
+    away_current_rank = models.IntegerField(null=True)
+    home_plays = models.TextField(null=True)
+    away_plays = models.TextField(null=True)

@@ -250,6 +250,36 @@ components:
         awayStatMatches:
           type: integer
           description: "Away player matches"
+        homeMatches:
+          type: string
+          description: "Home player matches"
+        awayMatches:
+            type: string
+            description: "Away player matches"
+        homePlays:
+          type: string
+          description: "Home player plays"
+        awayPlays:
+          type: string
+          description: "Away player plays"
+        homeCurrentRank:
+          type: integer
+          description: "Home player current rank"
+        awayCurrentRank:
+            type: integer
+            description: "Away player current rank"
+        homePeakRank:
+          type: integer
+          description: "Home player peak rank"
+        awayPeakRank:
+          type: integer
+          description: "Away player peak rank"
+        homeDr:
+          type: number
+          description: "Home player dominance ratio"
+        awayDr:
+          type: number
+          description: "Away player dominance ratio"
     FootballBets:
       type: object
       properties:

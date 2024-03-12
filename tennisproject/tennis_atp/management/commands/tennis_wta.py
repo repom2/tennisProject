@@ -50,7 +50,7 @@ class Command(BaseCommand):
         WTAPlayers.objects.bulk_create(products)
 
     def list_wta_matches(self, options):
-        start_year = 1920
+        start_year = 1968
         end_year = 2023
         for i in range(start_year, end_year + 1):
             file_name = "/app/tennis_atp/wta_data/tennis_wta/wta_matches_" + str(i) + ".csv"

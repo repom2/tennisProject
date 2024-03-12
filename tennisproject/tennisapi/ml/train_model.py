@@ -54,13 +54,13 @@ def get_data_atp_data(params):
             h2h_matches,
             common_opponents_count
         from tennisapi_bet b
-        inner join tennisapi_match m on b.match_id=m.id inner join tennisapi_atptour t on m.tour_id=t.id
+        inner join tennisapi_match m on b.match_id=m.id
         where (winner_code=1 or winner_code=2) 
         --and (walkover_home is null or walkover_home is false)
         --and (walkover_away is null or walkover_home is false)
         --and home_inj_score > 20.00
         --and away_inj_score < 20.00
-        and surface ilike '%%%(surface)s%%'
+        and m.surface ilike '%%%(surface)s%%'
         --and (round_name ilike '%%ifinal%%' or round_name ilike '%%quarterfi%%' or round_name ilike '%%r16%%')
         """
     # --( m.tour_id like '%-580' or m.tour_id like '%-7117' );
@@ -95,13 +95,10 @@ def get_data_wta_data():
             h2h_matches,
             common_opponents_count
         from tennisapi_betwta b
-        inner join tennisapi_wtamatch m on b.match_id=m.id  inner join tennisapi_wtatour t on m.tour_id=t.id
+        inner join tennisapi_wtamatch m on b.match_id=m.id
         where 
-        --( m.tour_id like '%-580' or m.tour_id like '%-6878' ) and 
         (winner_code=1 or winner_code=2)
-        and surface ilike 'Hard'
-        --and (walkover_home is null or walkover_home is false)
-        --and (walkover_away is null or walkover_home is false)
+        and m.surface ilike '%hard%'
         order by b.start_at desc;
         """
     df = pd.read_sql(query, connection)#, params=params)
@@ -220,10 +217,11 @@ def train_ml_model(row, level, params):
 
     data = data[f]
     data_length = len(data)
+    logging.info(f"Lenght of Data All:{data_length} ")
     data = data.dropna()
-    """logging.info(f"Lenght of Data All:{data_length} "
+    logging.info(f"Lenght of Data All:{data_length} "
                  f"Home:{len(data[data['winner_code'] == 0])} "
-                 f"Away:{len(data[data['winner_code'] == 1])}")"""
+                 f"Away:{len(data[data['winner_code'] == 1])}")
 
     #data, round_mapping = balance_train_data(data)
 
@@ -255,8 +253,8 @@ def train_ml_model(row, level, params):
     odds_limit_home = round(1/prob_home, 3)
     odds_limit_away = round(1/prob_away, 3)
     try:
-        yield_home = round(odds_home * prob_home, 3)
-        yield_away = round(odds_away * prob_away, 3)
+        yield_home = round(odds_home * row['stats_win'], 3)
+        yield_away = round(odds_away * (1 - row['stats_win']), 3)
     except TypeError:
         yield_home = 0
         yield_away = 0

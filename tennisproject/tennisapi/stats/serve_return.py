@@ -32,7 +32,7 @@ def player_stats():
             "l_svpt as opponent_service_points, " \
             "l_firstwon as opponent_firstwon, " \
             "l_secondwon as opponent_secondwon " \
-        "from tennisapi_atpmatches t inner join tennisapi_atptour e on t.tour_id=e.id " \
+        "from tennisapi_atpmatches t " \
         "where " \
             "surface ilike '%%%(surface)s%%' and (name ilike '%us%pen%' ) " \
         ") a  " \
@@ -67,7 +67,7 @@ def player_stats_points():
             "l_svpt as opponent_service_points, " \
             "l_firstwon as opponent_firstwon, " \
             "l_secondwon as opponent_secondwon " \
-        "from tennisapi_atpmatches t inner join tennisapi_atptour e on t.tour_id=e.id " \
+        "from tennisapi_atpmatches t " \
         "where " \
             "surface ilike '%hard%' " \
         ") a ) s " \

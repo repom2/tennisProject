@@ -3,6 +3,7 @@ import itertools
 from vakio.models import Combination
 import os
 from multiprocessing import Pool
+from vakio import vakio
 
 """
     13 kohdetta oikein 26 %
@@ -11,27 +12,10 @@ from multiprocessing import Pool
     10 kohdetta oikein 15 %.
 """
 
-list_index = 2
-vakio_id = 55553
+list_index = vakio.list_index
+vakio_id = vakio.vakio_id
 
-lst = [
-    [1, 0.42, 0.25, 0.32],
-    [2, 0.619, 0.206, 0.175],
-    [3, 0.61, 0.22, 0.16],
-
-    [4, 0.67, 0.22, 0.11],
-    [5, 0.45, 0.27, 0.28],
-    [6, 0.382, 0.28, 0.338],
-
-    [7, 0.29, 0.30, 0.41],
-    [8, 0.73, 0.17, 0.1],
-    [9, 0.46, 0.27, 0.27],
-
-    [10, 0.466, 0.268, 0.267],
-    [11, 0.48, 0.25, 0.27],
-    [12, 0.71, 0.18, 0.11],
-    #[13, 0.21, 0.26, 0.53],
-]
+lst = vakio.lst
 
 number_of_matches = len(lst)
 

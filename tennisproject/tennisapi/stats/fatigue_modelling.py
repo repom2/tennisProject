@@ -12,13 +12,13 @@ def fatigue_score(params):
             select round((sum(court_time * pow(0.75 ,days)) / 3600)::numeric, 2) as fatigue_score from (
             select 
             court_time, EXTRACT(DAY from now() - a.date) as days, a.date
-            from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
+            from %(matches_table)s a 
             where 
             (
             winner_id = %(player_id)s
             or loser_id = %(player_id)s
             )
-            and t.date between (date(%(start_at)s) - interval '1 year') and %(start_at)s
+            and a.date between (date(%(start_at)s) - interval '1 year') and %(start_at)s
             order by a.date desc limit 14
                 ) s;
         """

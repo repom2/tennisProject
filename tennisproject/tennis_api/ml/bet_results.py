@@ -76,8 +76,8 @@ def bet_results():
         logging.info(str(bet.home_odds) + ' ' + str(bet.away_odds))
         logging.info(str(bet.home_yield) + ' ' + str(bet.away_yield))
 
-        if bet.home_yield is None or bet.away_yield is None or bet.home_odds is None or bet.away_odds is None:
-            continue
+        #if bet.home_yield is None or bet.away_yield is None or bet.home_odds is None or bet.away_odds is None:
+         #   continue
         if use == 'prob':
             if bet.elo_prob is None:
                 continue

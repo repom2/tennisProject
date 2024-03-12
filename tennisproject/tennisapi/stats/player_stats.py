@@ -42,7 +42,7 @@ def player_stats(player_id, start_at, params):
                case when winner_id = %(player_id)s
                then l_secondwon
                else w_secondwon end as opponen_secondwon
-            from %(matches_table)s t inner join %(tour_table)s e on t.tour_id=e.id
+            from %(matches_table)s t 
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
                and surface ilike '%%%(surface)s%%'
                and round_name not ilike 'qualification%%'

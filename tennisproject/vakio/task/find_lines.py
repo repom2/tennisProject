@@ -10,7 +10,7 @@ from vakio.task import probs
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-max_bet_eur = 12
+max_bet_eur = 7
 line_cost = 0.1
 stake = line_cost * 100
 

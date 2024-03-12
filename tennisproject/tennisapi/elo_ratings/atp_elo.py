@@ -25,7 +25,7 @@ def calculate_k_factor(matches, o, c, s):
 
 def atp_elorate(surface):
     matches = AtpMatches.objects.filter(
-        tour__surface__icontains=surface,
+        surface__icontains=surface,
         round_name__isnull=False,
     ).filter(
         Q(round_name='Final') |
@@ -53,8 +53,6 @@ def atp_elorate(surface):
         return
 
     for match in matches:
-        # Get elo from database
-        tour = AtpTour.objects.filter(id=match.tour_id)[0]
         try:
             winner_id = Players.objects.filter(id=match.winner_id)[0]
             loser_id = Players.objects.filter(id=match.loser_id)[0]
@@ -103,8 +101,8 @@ def atp_elorate(surface):
         m.save()
         print(
             match.date,
-            tour.surface,
-            tour.name,
+            match.surface,
+            match.tourney_name,
             winner_id.last_name,
             round(winner_elo, 0),
             round(winner_elo - winner_change, 0),

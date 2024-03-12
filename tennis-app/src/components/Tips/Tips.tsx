@@ -23,19 +23,23 @@ export const Tips: React.FC = () => {
             <thead>
                 <tr className="header">
                     <th>Match</th>
+                    <th>Rank</th>
+                    <th>Dr</th>
                     <th>Odds</th>
                     <th>Yield</th>
-                    <th>Prob</th>
-                    <th>Elo</th>
-                    <th>YElo</th>
-                    <th>Win%</th>
-                    <th>H2H%</th>
-                    <th>COpp%</th>
+                    <th>StatsWin%</th>
                     <th>S/RPW1</th>
                     <th>Matches</th>
                     <th>S/RPW2</th>
                     <th>Matches</th>
+                    <th>Elo</th>
+                    <th>YElo</th>
+                    <th>MLProb</th>
+                    <th>H2H%</th>
+                    <th>COpp%</th>
                     <th>Start</th>
+                    <th>homePlays</th>
+                    <th>awayPlays</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,6 +57,14 @@ export const Tips: React.FC = () => {
                                   <div>{player.awayName}</div>
                                 </td>
                                 <td>
+                                  <div>{player.homeCurrentRank}/{player.homePeakRank}</div>
+                                  <div>{player.awayCurrentRank}/{player.awayPeakRank}</div>
+                                </td>
+                                <td>
+                                  <div>{player.homeDr}</div>
+                                  <div>{player.awayDr}</div>
+                                </td>
+                                <td>
                                   <div>{player.homeOdds}</div>
                                   <div>{player.awayOdds}</div>
                                 </td>
@@ -60,10 +72,22 @@ export const Tips: React.FC = () => {
                                   <div>{player.homeYield}</div>
                                   <div>{player.awayYield}</div>
                                 </td>
-                                <td>{player.homeProb}</td>
+                                <td>{player.statsWin}</td>
+                                <td>
+                                    {player.homeSpw}/{player.homeRpw}
+                                </td>
+                                <td>
+                                    {player.homeMatches}
+                                </td>
+                                <td>
+                                    {player.awaySpw}/{player.awayRpw}
+                                </td>
+                                <td>
+                                    {player.awayMatches}
+                                </td>
                                 <td>{player.eloProb}</td>
                                 <td>{player.yearEloProb}</td>
-                                <td>{player.statsWin}</td>
+                                <td>{player.homeProb}</td>
                                 <td>
                                     {player.h2hWin}/{player.h2hMatches}
                                 </td>
@@ -71,19 +95,13 @@ export const Tips: React.FC = () => {
                                     {player.commonOpponents}/{player.commonOpponentsCount}
                                 </td>
                                 <td>
-                                    {player.homeSpw}/{player.homeRpw}
-                                </td>
-                                <td>
-                                    {player.homeStatMatches}
-                                </td>
-                                <td>
-                                    {player.awaySpw}/{player.awayRpw}
-                                </td>
-                                <td>
-                                    {player.awayStatMatches}
-                                </td>
-                                <td>
                                     {player.startAt ? new Date(player.startAt).toLocaleDateString() : 'N/A'}
+                                </td>
+                                <td>
+                                    {player.homePlays}
+                                </td>
+                                <td>
+                                    {player.awayPlays}
                                 </td>
                             </tr>
                             {openIndex === index && (

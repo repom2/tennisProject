@@ -54,16 +54,14 @@ def get_data_atp_data(params):
             h2h_matches,
             common_opponents_count
         from tennisapi_bet b
-        inner join tennisapi_match m on b.match_id=m.id inner join tennisapi_atptour t on m.tour_id=t.id
+        inner join tennisapi_match m on b.match_id=m.id
         where (winner_code=1 or winner_code=2) 
         --and (walkover_home is null or walkover_home is false)
         --and (walkover_away is null or walkover_home is false)
         --and home_inj_score > 20.00
         --and away_inj_score < 20.00
-        and surface ilike '%%%(surface)s%%'
-        --and (round_name ilike '%%ifinal%%' or round_name ilike '%%quarterfi%%' or round_name ilike '%%r16%%')
+        and m.surface ilike '%%%(surface)s%%'
         """
-    # --( m.tour_id like '%-580' or m.tour_id like '%-7117' );
     df = pd.read_sql(query, connection, params=params)
 
     return df
@@ -95,14 +93,11 @@ def get_data_wta_data():
             h2h_matches,
             common_opponents_count
         from tennisapi_betwta b
-        inner join tennisapi_wtamatch m on b.match_id=m.id  inner join tennisapi_wtatour t on m.tour_id=t.id
+        inner join tennisapi_wtamatch m on b.match_id=m.id
         where 
-        --( m.tour_id like '%-580' or m.tour_id like '%-6878' ) and 
         (winner_code=1 or winner_code=2)
-        and surface ilike 'Hard'
-        --and (walkover_home is null or walkover_home is false)
-        --and (walkover_away is null or walkover_home is false)
-        order by b.start_at desc;
+        and m.surface ilike '%hard%'
+        order by m.start_at desc;
         """
     df = pd.read_sql(query, connection)#, params=params)
 

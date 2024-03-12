@@ -18,12 +18,12 @@ def injury_score(params):
             from (
                 select
                 a.date,
-                t.name,
+                a.tourney_name,
                 w_svgms,
                 l_svgms,
                 winner_code,
                 loser_id
-                from %(matches_table)s a inner join %(tour_table)s t on a.tour_id=t.id 
+                from %(matches_table)s a
                 where 
                 (winner_id = %(player_id)s
                 or loser_id = %(player_id)s)

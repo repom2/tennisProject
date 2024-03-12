@@ -21,6 +21,8 @@ select
       ]
     ) }} as id,
     tour_id,
+    tourney_name,
+    surface,
     home_id,
     away_id,
     start_at::timestamp with time zone,
@@ -45,7 +47,13 @@ select
 from (
     select
         a.id as match_num,
-        t.id as tour_id,
+        league_id as tour_id,
+        league ->> 'slug' as tourney_name,
+        (
+          SELECT value
+          FROM jsonb_array_elements(facts) AS elements
+          WHERE (elements ->> 'name') ilike '%ground%type%'
+        )::json ->> 'value' AS surface,
         b.id as home_id,
 	    c.id as away_id,
         start_at,
@@ -58,24 +66,10 @@ from (
         (replace(periods_time, '''', '"')::json ->> 'period_1_time')::integer as time1,
 	    (replace(periods_time, '''', '"')::json ->> 'period_2_time')::integer as time2,
 	    (replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer as time3
-    from (
-        select *
-            , case
-            when league_id = '8846' then '2042' --hamburg
-            when league_id = '10739' then '2037' --warsaw
-            --when league_id = '6979' then '1045' --washington
-            --when league_id = '6920' then '1082' --prague
-            when league_id = '7090' then '1094' --lausanne
-            when league_id = '6925' then '2036' --budapest
-            when league_id = '6965' then '466' --palermo
-            --when league_id = '6878' then '580' --australia
-            else league_id
-            end as league_idd
-        from sportscore_tennisevents ) a inner join tennisapi_wtatour t
-    on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_idd)
+    from sportscore_tennisevents a
+    left join sportscore_tennistournaments t on a.league_id = t.id
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id
-    where start_at::timestamp > '2014-01-1'
-    and sport_id='2'
-    --and status = 'notstarted'
+    where
+    a.sport_id='2'
 ) s

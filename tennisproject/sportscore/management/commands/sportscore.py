@@ -194,15 +194,15 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpMatch.objects.filter(start_at__gte='2024-02-01').values_list('tour__id').distinct('tour__id'))
-        wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2024-02-01').values_list('tour__id').distinct('tour__id'))
+        leagues = list(AtpMatch.objects.filter(start_at__gte='2023-12-24').values_list('tour__id').distinct('tour__id'))
+        wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2023-12-24').values_list('tour__id').distinct('tour__id'))
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues #+ ch_leagues
         logging.info(f"Leagues: {len(leagues)}")
         sport_score_key = settings.SPORT_SCORE_KEY
+        #leagues = [('6945',)]
         for id in leagues:
             logging.info(f"League: {id}")
-            print(id[0])
             id = str(id[0])
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
 
@@ -655,15 +655,17 @@ class Command(BaseCommand):
 
     def match_statistics(self, options):
         sportscore_ids = list(
-            AtpMatch.objects.filter(Q(start_at__gt='2024-03-02') & Q(status='finished') & Q(w_ace__isnull=True)).values_list('event_id')
+            AtpMatch.objects.filter(Q(start_at__gt='2024-3-1') & Q(status='finished') & Q(w_ace__isnull=True)).values_list('event_id')
         )
         sportscore_wta_ids = list(
             WtaMatch.objects.filter(
-                Q(start_at__gt='2024-02-17') & Q(status='finished') & Q(w_ace__isnull=True)).values_list(
+                Q(start_at__gt='2024-3-1') & Q(status='finished') & Q(w_ace__isnull=True)).values_list(
                 'event_id')
         )
 
         sportscore_ids += sportscore_wta_ids
+
+        logging.info("Total ids to fetch: " + str(len(sportscore_ids)))
 
         def fetch_date(id):
             sport_score_key = settings.SPORT_SCORE_KEY

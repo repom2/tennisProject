@@ -21,6 +21,8 @@ select
       ]
     ) }} as id,
     tour_id,
+    tourney_name,
+    surface,
     home_id,
     away_id,
     start_at::timestamp with time zone,
@@ -49,10 +51,16 @@ select
 from (
     select
         a.id as match_num,
-        t.id as tour_id,
+        league_id as tour_id,
+        league ->> 'slug' as tourney_name,
         b.id as home_id,
 	    c.id as away_id,
         start_at,
+        (
+          SELECT value
+          FROM jsonb_array_elements(facts) AS elements
+          WHERE (elements ->> 'name') ilike '%ground%type%'
+        )::json ->> 'value' AS surface,
         winner_code::integer,
         round_info ->> 'name' as round_name,
         (main_odds ->> 'outcome_1')::json ->> 'value' as home_odds,
@@ -64,25 +72,10 @@ from (
 	    (replace(periods_time, '''', '"')::json ->> 'period_3_time')::integer as time3,
 	    (replace(periods_time, '''', '"')::json ->> 'period_4_time')::integer as time4,
 	    (replace(periods_time, '''', '"')::json ->> 'period_5_time')::integer as time5
-    from (
-        select *
-            , case when league_id = '8846' then '2042'
-            when league_id = '7181' then '0439' --umag
-            when league_id = '7171' then '0314' --gstaad
-            when league_id = '7168' then '0316' --bastad
-            when league_id = '7201' then '6116' --atlanta
-            --when league_id = '7250' then '0319' --kitz
-            --when league_id = '7124' then '7480' --los cabos
-            when league_id = '7160' then '0414' --hamburg
-            when league_id = '7123' then '0418' --washington
-            --when league_id = '7117' then '580' --austral
-            else league_id
-            end as league_idd
-        from sportscore_tennisevents ) a inner join tennisapi_atptour t
-    on t.id=CONCAT(EXTRACT('Year' FROM date(start_at)), '-', a.league_idd)
+    from sportscore_tennisevents  a
+    left join sportscore_tennistournaments t on a.league_id = t.id
     left join tennisapi_players b on home_team_id::integer = b.sportscore_id
     left join tennisapi_players c on away_team_id::integer = c.sportscore_id
-    where start_at::timestamp > '2014-05-1'
-    and sport_id='2'
-    --and status = 'notstarted'
+    where
+    a.sport_id='2'
 ) s

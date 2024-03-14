@@ -59,7 +59,7 @@ class AtpEloList(generics.ListAPIView):
 
 class BetList(generics.ListAPIView):
     queryset = BetWta.objects.all()
-    #queryset = BetAtp.objects.all()
+    #queryset = Bet.objects.all()
 
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     #permission_classes = [IsAdminUser]

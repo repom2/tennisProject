@@ -9,6 +9,7 @@ from tennisapi.stats.common_opponent import common_opponent
 from psycopg2.extensions import AsIs
 from tennisapi.scrape.wta_site import wta_scrape
 from tennisapi.scrape.tennisabstract_site import tennisabstract_scrape
+from tennisapi.scrape.tennisabstract_site_atp import tennisabstract_scrape_atp
 
 
 class Command(BaseCommand):
@@ -42,6 +43,9 @@ class Command(BaseCommand):
         scrape_cmd = subparsers.add_parser("ta")
         scrape_cmd.set_defaults(subcommand=self.tennisabstract_stats)
 
+        scrape_atp_cmd = subparsers.add_parser("ta-atp")
+        scrape_atp_cmd.set_defaults(subcommand=self.tennisabstract_stats_atp)
+
     def handle(self, *args, **options):
         options["subcommand"](options)
 
@@ -53,6 +57,9 @@ class Command(BaseCommand):
 
     def tennisabstract_stats(self, options):
         tennisabstract_scrape()
+
+    def tennisabstract_stats_atp(self, options):
+        tennisabstract_scrape_atp()
 
     def surface_correlation(self, options):
         surface_weighting()

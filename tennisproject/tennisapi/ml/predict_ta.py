@@ -10,6 +10,7 @@ import logging
 import sys
 from tennisapi.stats.player_stats import player_stats
 from tennisapi.stats.tennisabstract_site import tennisabstract_scrape
+from tennisapi.stats.tennisabstract_site_atp import tennisabstract_scrape_atp
 from tennisapi.stats.prob_by_serve.winning_match import matchProb
 from tennisapi.stats.fatigue_modelling import fatigue_modelling
 from tennisapi.stats.injury_modelling import injury_modelling
@@ -17,7 +18,7 @@ from tennisapi.stats.head2head import head2head
 from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
-from tennisapi.stats.analysis import match_analysis
+from tennisapi.stats.match_analysis import match_analysis
 from tennisapi.models import AtpMatches, Bet, Match, Players, WtaMatch, WTAPlayers, BetWta, AtpTour, WtaTour
 from tennisapi.ml.train_model import train_ml_model
 import logging
@@ -256,12 +257,24 @@ def predict_ta(level, tour):
     print(event_spw)
     print(tour_spw)
     print(type(tour_spw))
-    data[['home_spw', 'home_rpw', 'home_dr', 'home_matches', 'home_peak_rank', 'home_current_rank', 'home_plays']] = pd.DataFrame(
-        np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_home_fullname'])),
-        index=data.index)
-    data[['away_spw', 'away_rpw', 'away_dr', 'away_matches', 'away_peak_rank', 'away_current_rank', 'away_plays']] = pd.DataFrame(
-        np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_away_fullname'])),
-        index=data.index)
+    if level == 'atp':
+        data[['home_spw', 'home_rpw', 'home_dr', 'home_matches', 'home_peak_rank',
+              'home_current_rank', 'home_plays']] = pd.DataFrame(
+            np.row_stack(np.vectorize(tennisabstract_scrape_atp, otypes=['O'])(
+                data['atp_home_fullname'])),
+            index=data.index)
+        data[['away_spw', 'away_rpw', 'away_dr', 'away_matches', 'away_peak_rank',
+              'away_current_rank', 'away_plays']] = pd.DataFrame(
+            np.row_stack(np.vectorize(tennisabstract_scrape_atp, otypes=['O'])(
+                data['atp_away_fullname'])),
+            index=data.index)
+    else:
+        data[['home_spw', 'home_rpw', 'home_dr', 'home_matches', 'home_peak_rank', 'home_current_rank', 'home_plays', 'home_player_info', 'home_md_table']] = pd.DataFrame(
+            np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_home_fullname'])),
+            index=data.index)
+        data[['away_spw', 'away_rpw', 'away_dr', 'away_matches', 'away_peak_rank', 'away_current_rank', 'away_plays', 'away_player_info', 'away_md_table']] = pd.DataFrame(
+            np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_away_fullname'])),
+            index=data.index)
     data['home_spw'] = data['home_spw'].astype(float)
     data['home_rpw'] = data['home_rpw'].astype(float)
     data['home_dr'] = data['home_dr'].astype(float)
@@ -361,13 +374,13 @@ def predict_ta(level, tour):
     #data = data.where(pd.notnull(data), None)
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
-        preview, reasoning = None, None#match_analysis(row)
         try:
             home_prob, away_prob, home_yield, away_yield = train_ml_model(row, level, params)
         except Exception as e:
             log.error(e)
             continue
-        #break
+        home_preview, home_reasoning = match_analysis(row.winner_name, row.loser_name, row.home_player_info, row.home_md_table)
+        away_preview, away_reasoning = match_analysis(row.loser_name, row.winner_name, row.away_player_info, row.away_md_table)
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],
             home=player_qs.filter(id=row.home_id)[0],
@@ -395,8 +408,8 @@ def predict_ta(level, tour):
                 "away_inj_score": row['away_inj_score'],
                 "common_opponents": row['common_opponents'],
                 "common_opponents_count": row['common_opponents_count'],
-                "preview": preview,
-                "reasoning": reasoning,
+                #"preview": preview,
+                #"reasoning": reasoning,
                 "home_prob": home_prob,
                 "away_prob": away_prob,
                 "home_yield": home_yield,
@@ -411,5 +424,13 @@ def predict_ta(level, tour):
                 "away_plays": row['away_plays'],
                 "home_matches": row['home_matches'],
                 "away_matches": row['away_matches'],
+                "home_player_info": row['home_player_info'],
+                "away_player_info": row['away_player_info'],
+                "home_md_table": row['home_md_table'],
+                "away_md_table": row['away_md_table'],
+                "home_preview": home_preview,
+                "home_reasoning": home_reasoning,
+                "away_preview": away_preview,
+                "away_reasoning": away_reasoning,
             }
         )

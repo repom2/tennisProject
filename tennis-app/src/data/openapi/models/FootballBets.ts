@@ -79,5 +79,13 @@ export type FootballBets = {
      * Start time
      */
     startAt?: string;
+    /**
+     * Home team preview
+     */
+    homePreview?: string;
+    /**
+     * Away team preview
+     */
+    awayPreview?: string;
 };
 

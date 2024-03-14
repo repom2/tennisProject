@@ -342,6 +342,12 @@ components:
           type: string
           format: date-time
           description: "Start time"
+        homePreview:
+          type: string
+          description: "Home team preview"
+        awayPreview:
+            type: string
+            description: "Away team preview"
 
 x-json-schema-faker:
   min-items: 2

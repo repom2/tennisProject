@@ -168,7 +168,7 @@ def train_ml_model(row, level, params):
         #'walkover_away',
         #'home_inj_score',
         #'away_inj_score',
-        'common_opponents',
+        #'common_opponents',
         #'round_code',
     ]
 

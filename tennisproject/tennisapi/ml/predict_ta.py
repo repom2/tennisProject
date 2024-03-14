@@ -254,17 +254,17 @@ def predict_ta(level, tour):
             event_spw, tour_spw, tour_rpw = 0.645, 0.645, 0.355
         else:
             event_spw, tour_spw, tour_rpw = 0.565, 0.565, 0.435
-    print(event_spw)
-    print(tour_spw)
-    print(type(tour_spw))
+    logging.info(f"Event SPW: {event_spw}, Event RPW: {event_rpw}")
+    logging.info(f"Tour SPW: {tour_spw}, Tour RPW: {tour_rpw}")
+
     if level == 'atp':
         data[['home_spw', 'home_rpw', 'home_dr', 'home_matches', 'home_peak_rank',
-              'home_current_rank', 'home_plays']] = pd.DataFrame(
+              'home_current_rank', 'home_plays', 'home_player_info', 'home_md_table']] = pd.DataFrame(
             np.row_stack(np.vectorize(tennisabstract_scrape_atp, otypes=['O'])(
                 data['atp_home_fullname'])),
             index=data.index)
         data[['away_spw', 'away_rpw', 'away_dr', 'away_matches', 'away_peak_rank',
-              'away_current_rank', 'away_plays']] = pd.DataFrame(
+              'away_current_rank', 'away_plays', 'away_player_info', 'away_md_table']] = pd.DataFrame(
             np.row_stack(np.vectorize(tennisabstract_scrape_atp, otypes=['O'])(
                 data['atp_away_fullname'])),
             index=data.index)
@@ -379,8 +379,8 @@ def predict_ta(level, tour):
         except Exception as e:
             log.error(e)
             continue
-        home_preview, home_reasoning = match_analysis(row.winner_name, row.loser_name, row.home_player_info, row.home_md_table)
-        away_preview, away_reasoning = match_analysis(row.loser_name, row.winner_name, row.away_player_info, row.away_md_table)
+        home_preview, home_short_preview = match_analysis(row.winner_name, row.loser_name, row.home_player_info, row.home_md_table)
+        away_preview, away_short_preview = match_analysis(row.loser_name, row.winner_name, row.away_player_info, row.away_md_table)
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],
             home=player_qs.filter(id=row.home_id)[0],
@@ -429,8 +429,8 @@ def predict_ta(level, tour):
                 "home_md_table": row['home_md_table'],
                 "away_md_table": row['away_md_table'],
                 "home_preview": home_preview,
-                "home_reasoning": home_reasoning,
+                "home_short_preview": home_short_preview,
                 "away_preview": away_preview,
-                "away_reasoning": away_reasoning,
+                "away_short_preview": away_short_preview,
             }
         )

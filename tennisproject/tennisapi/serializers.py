@@ -54,14 +54,16 @@ class BetSerializer(serializers.Serializer):
     awayDr = serializers.FloatField(source='away_dr')
     homeCurrentRank = serializers.IntegerField(source='home_current_rank')
     awayCurrentRank = serializers.IntegerField(source='away_current_rank')
-    homePeakRank = serializers.IntegerField(source='home_peak_rank')
-    awayPeakRank = serializers.IntegerField(source='away_peak_rank')
+    homePeakRank = serializers.CharField(source='home_peak_rank')
+    awayPeakRank = serializers.CharField(source='away_peak_rank')
     homePlays = serializers.CharField(source='home_plays')
     awayPlays = serializers.CharField(source='away_plays')
     homeMatches = serializers.CharField(source='home_matches')
     awayMatches = serializers.CharField(source='away_matches')
     #homeStatMatches = serializers.IntegerField(source='home_stat_matches')
     #awayStatMatches = serializers.IntegerField(source='away_stat_matches')
+    homePreview = serializers.CharField(source='home_preview')
+    awayPreview = serializers.CharField(source='away_preview')
 
     class Meta:
         model = BetWta

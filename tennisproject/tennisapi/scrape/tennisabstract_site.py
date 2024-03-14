@@ -33,6 +33,7 @@ def tennisabstract_scrape():
         # Target URL
         url = "https://www.tennisabstract.com/cgi-bin/wplayer-classic.cgi?p=EmmaNavarro"
         url = "https://www.tennisabstract.com/cgi-bin/wplayer-classic.cgi?p=YueYuan"
+        url = "https://www.tennisabstract.com/cgi-bin/player-classic.cgi?p=JiriLehecka"
         driver.get(url)
 
         # Get the HTML content

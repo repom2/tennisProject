@@ -3,6 +3,8 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import logging
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+import pandas as pd
+from datetime import datetime
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +39,6 @@ def tennisabstract_scrape_atp(player_name):
     tables = soup.find_all('table')#, class_='tennis-match__match-link')
 
     # clean all html tags
-    player_info = tables[5].get_text()
     soup = tables[4]
 
     # Find the player's bio section and extract player information
@@ -58,10 +59,27 @@ def tennisabstract_scrape_atp(player_name):
                 date_of_birth = text_content.split(': ')[1].strip()
             elif 'Plays' in text_content:
                 play_hand = text_content.split(': ')[1].strip()
-    print(f"Date of Birth: {date_of_birth}")
-    print(f"Play Hand: {play_hand}")
-    print(f"Current Rank: {current_rank}")
-    print(f"Peak Rank: {peak_rank}")
+            elif "Peak rank" in text_content:
+                peak_rank = text_content
+
+    # change the date of birth to age
+    date_format = "%d-%b-%Y"
+    birthdate = datetime.strptime(date_of_birth, date_format)
+    current_date = datetime.now()
+    age = (
+            current_date.year
+            - birthdate.year
+            - ((current_date.month, current_date.day) < (
+    birthdate.month, birthdate.day))
+    )
+    player_info = {
+        "name_country": name_country,
+        "current_rank": current_rank,
+        "age": age,
+        #"play_hand": play_hand,
+        "peak_rank": peak_rank,
+    }
+    logging.info(player_info)
 
     # Now let's get the statistics from the 'wonloss' section
     stats_table = soup.find(id="wonloss")
@@ -92,15 +110,18 @@ def tennisabstract_scrape_atp(player_name):
                 spw = None
                 rpw = None
                 dr = None
-            driver.quit()
             print([spw, rpw, dr, matches])
-            return [spw, rpw, dr, matches, peak_rank, current_rank, play_hand]
 
-    # MATCHES TABLE
-    matches_table = tables[8].find('table', {'id': 'matches'})
+    try:
+        # MATCHES TABLE
+        matches_table = tables[7].find('table', {'id': 'matches'})
 
-    # Extract the headers
-    headers = [header.text.strip() for header in matches_table.find_all('th')]
+        # Extract the headers
+        headers = [header.text.strip() for header in matches_table.find_all('th')]
+    except Exception as e:
+        matches_table = tables[8].find("table", {"id": "matches"})
+        # Extract the headers
+        headers = [header.text.strip() for header in matches_table.find_all("th")]
 
     # Initialize a list to store all match data
     all_matches_data = []
@@ -120,9 +141,13 @@ def tennisabstract_scrape_atp(player_name):
         # Append the match data dictionary to the list of all match data
         all_matches_data.append(match_data)
 
-    # Display the extracted matches data
-    for match in all_matches_data:
-        print(match)
-    # Close the browser session when done
-    driver.quit()
+        # create a dataframe from the dictionary list
+        df = pd.DataFrame(all_matches_data[:15])
+        # Convert the DataFrame to a Markdown table
+        md_table = df.to_markdown(index=False)
+
+        driver.quit()
+
+        return [spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info,
+                md_table]
 

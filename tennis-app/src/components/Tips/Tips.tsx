@@ -108,8 +108,8 @@ export const Tips: React.FC = () => {
                                 <tr>
                                     <td colSpan={11} >
                                         {/* Whatever you want to display when clicked */}
-                                        <div>{player.preview}</div>
-                                        <div>{player.reasoning}</div>
+                                        <div>{player.homePreview}</div>
+                                        <div>{player.awayPreview}</div>
                                     </td>
                                 </tr>
                             )}

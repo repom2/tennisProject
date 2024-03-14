@@ -171,5 +171,29 @@ export type Bets = {
      * Away player dominance ratio
      */
     awayDr?: number;
+    /**
+     * Home team preview
+     */
+    homePreview?: string;
+    /**
+     * Away team preview
+     */
+    awayPreview?: string;
+    /**
+     * Home team short preview
+     */
+    homeShortPreview?: string;
+    /**
+     * Away team short preview
+     */
+    awayShortPreview?: string;
+    /**
+     * Home team table
+     */
+    homeTable?: string;
+    /**
+     * Away team table
+     */
+    awayTable?: string;
 };
 

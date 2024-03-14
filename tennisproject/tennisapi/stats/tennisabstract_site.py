@@ -8,9 +8,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 import pandas as pd
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s: %(message)s"
-)
+logging = logging.getLogger(__name__)
 
 
 def tennisabstract_scrape(player_name):

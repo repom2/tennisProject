@@ -6,11 +6,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 import pandas as pd
 from datetime import datetime
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
-)
-
+logging = logging.getLogger(__name__)
 
 def tennisabstract_scrape_atp(player_name):
     # strip the player name
@@ -115,7 +111,6 @@ def tennisabstract_scrape_atp(player_name):
     try:
         # MATCHES TABLE
         matches_table = tables[7].find('table', {'id': 'matches'})
-
         # Extract the headers
         headers = [header.text.strip() for header in matches_table.find_all('th')]
     except Exception as e:
@@ -141,13 +136,13 @@ def tennisabstract_scrape_atp(player_name):
         # Append the match data dictionary to the list of all match data
         all_matches_data.append(match_data)
 
-        # create a dataframe from the dictionary list
-        df = pd.DataFrame(all_matches_data[:15])
-        # Convert the DataFrame to a Markdown table
-        md_table = df.to_markdown(index=False)
+    # create a dataframe from the dictionary list
+    df = pd.DataFrame(all_matches_data[:15])
+    # Convert the DataFrame to a Markdown table
+    md_table = df.to_markdown(index=False)
+    #print(md_table)
+    driver.quit()
 
-        driver.quit()
-
-        return [spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info,
-                md_table]
+    return [spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info,
+            md_table]
 

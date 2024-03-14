@@ -280,6 +280,24 @@ components:
         awayDr:
           type: number
           description: "Away player dominance ratio"
+        homePreview:
+          type: string
+          description: "Home team preview"
+        awayPreview:
+          type: string
+          description: "Away team preview"
+        homeShortPreview:
+          type: string
+          description: "Home team short preview"
+        awayShortPreview:
+          type: string
+          description: "Away team short preview"
+        homeTable:
+          type: string
+          description: "Home team table"
+        awayTable:
+          type: string
+          description: "Away team table"
     FootballBets:
       type: object
       properties:
@@ -342,12 +360,6 @@ components:
           type: string
           format: date-time
           description: "Start time"
-        homePreview:
-          type: string
-          description: "Home team preview"
-        awayPreview:
-            type: string
-            description: "Away team preview"
 
 x-json-schema-faker:
   min-items: 2

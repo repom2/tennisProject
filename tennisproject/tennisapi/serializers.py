@@ -64,6 +64,10 @@ class BetSerializer(serializers.Serializer):
     #awayStatMatches = serializers.IntegerField(source='away_stat_matches')
     homePreview = serializers.CharField(source='home_preview')
     awayPreview = serializers.CharField(source='away_preview')
+    homeShortPreview = serializers.CharField(source='home_short_preview')
+    awayShortPreview = serializers.CharField(source='away_short_preview')
+    homeTable = serializers.CharField(source='home_md_table')
+    awayTable = serializers.CharField(source='away_md_table')
 
     class Meta:
         model = BetWta

@@ -19,7 +19,17 @@ from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.match_analysis import match_analysis
-from tennisapi.models import AtpMatches, Bet, Match, Players, WtaMatch, WTAPlayers, BetWta, AtpTour, WtaTour
+from tennisapi.models import (
+    AtpMatches,
+    Bet,
+    Match,
+    Players,
+    WtaMatch,
+    WTAPlayers,
+    BetWta,
+    AtpTour,
+    WtaTour,
+)
 from tennisapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
@@ -36,8 +46,7 @@ def probability_of_winning(x):
 
 
 def get_data(params):
-    query = \
-        """
+    query = """
         select 
                 match_id,
                 home_id,
@@ -155,232 +164,359 @@ def get_data(params):
 
 
 def label_round(data, mapping):
-    data['round_name'] = data['round_name'].map(mapping)
+    data["round_name"] = data["round_name"].map(mapping)
     return data
 
 
 def predict_ta(level, tour):
-    surface = 'hard'
+    surface = "hard"
     now = timezone.now().date()
     end_at = now + timedelta(days=3)
     from_at = now - timedelta(days=1)
-    #now = '2023-12-24'
+    # now = '2023-12-24'
 
-    if level == 'atp':
-        qs = AtpMatches.objects.filter(
-            tourney_name__icontains=tour,
-            date__gte=from_at
-        ).values_list('surface', flat=True).first()
-        logging.info('Surface: %s', qs)
-        if 'Clay' in qs:
-            surface = 'clay'
-        logging.info('Surface: %s', surface)
+    if level == "atp":
+        qs = (
+            AtpMatches.objects.filter(tourney_name__icontains=tour, date__gte=from_at)
+            .values_list("surface", flat=True)
+            .first()
+        )
+        logging.info("Surface: %s", qs)
+        if "Clay" in qs:
+            surface = "clay"
+        logging.info("Surface: %s", surface)
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
         player_qs = Players.objects.all()
-        tour_table = 'tennisapi_atptour'
-        matches_table = 'tennisapi_atpmatches'
-        match_table = 'tennisapi_match'
-        player_table = 'tennisapi_players'
-        hard_elo = 'tennisapi_atphardelo'
-        grass_elo = 'tennisapi_atpgrasselo'
-        clay_elo = 'tennisapi_atpelo'
-        if surface == 'clay':
+        tour_table = "tennisapi_atptour"
+        matches_table = "tennisapi_atpmatches"
+        match_table = "tennisapi_match"
+        player_table = "tennisapi_players"
+        hard_elo = "tennisapi_atphardelo"
+        grass_elo = "tennisapi_atpgrasselo"
+        clay_elo = "tennisapi_atpelo"
+        if surface == "clay":
             hard_elo = clay_elo
     else:
         bet_qs = BetWta.objects.all()
         match_qs = WtaMatch.objects.all()
         player_qs = WTAPlayers.objects.all()
-        tour_table = 'tennisapi_wtatour'
-        matches_table = 'tennisapi_wtamatches'
-        match_table = 'tennisapi_wtamatch'
-        player_table = 'tennisapi_wtaplayers'
-        hard_elo = 'tennisapi_wtahardelo'
-        grass_elo = 'tennisapi_wtagrasselo'
-        clay_elo = 'tennisapi_wtaclayelo'
+        tour_table = "tennisapi_wtatour"
+        matches_table = "tennisapi_wtamatches"
+        match_table = "tennisapi_wtamatch"
+        player_table = "tennisapi_wtaplayers"
+        hard_elo = "tennisapi_wtahardelo"
+        grass_elo = "tennisapi_wtagrasselo"
+        clay_elo = "tennisapi_wtaclayelo"
     params = {
-        'tour_table': AsIs(tour_table),
-        'matches_table': AsIs(matches_table),
-        'player_table': AsIs(player_table),
-        'match_table': AsIs(match_table),
-        'hard_elo': AsIs(hard_elo),
-        'grass_elo': AsIs(grass_elo),
-        'clay_elo': AsIs(clay_elo),
-        'tour': AsIs(tour),
-        'start_at': now,
-        'end_at': end_at,
-        'surface': AsIs(surface),
+        "tour_table": AsIs(tour_table),
+        "matches_table": AsIs(matches_table),
+        "player_table": AsIs(player_table),
+        "match_table": AsIs(match_table),
+        "hard_elo": AsIs(hard_elo),
+        "grass_elo": AsIs(grass_elo),
+        "clay_elo": AsIs(clay_elo),
+        "tour": AsIs(tour),
+        "start_at": now,
+        "end_at": end_at,
+        "surface": AsIs(surface),
     }
     data = get_data(params)
-    #data= data.head(1)
+    # take only second row
+    data = data.iloc[2:]
+    data = data.head(1)
     l = len(data.index)
     if l == 0:
         print("No data")
         return
 
     columns = [
-        'start_at',
-        'winner_fullname',
-        'loser_fullname',
+        "start_at",
+        "winner_fullname",
+        "loser_fullname",
         #'home_id',
         #'away_id',
-        'home_player_id',
-        'away_player_id',
-        'home_fullname',
-        'away_fullname',
-        'atp_home_fullname',
-        'atp_away_fullname',
+        "home_player_id",
+        "away_player_id",
+        "home_fullname",
+        "away_fullname",
+        "atp_home_fullname",
+        "atp_away_fullname",
     ]
     logging.info(
-        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
-    #exit()
-    if level == 'atp':
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+    )
+    # exit()
+    if level == "atp":
         tour_spw, tour_rpw = 0.645, 0.355
     else:
         tour_spw, tour_rpw = 0.565, 0.435
 
-    date = '2015-1-1'
+    date = "2015-1-1"
     params = {
-        'event': AsIs(tour),
-        'surface': AsIs(surface),
-        'tour_table': AsIs(tour_table),
-        'matches_table': AsIs(matches_table),
-        'date': date,
+        "event": AsIs(tour),
+        "surface": AsIs(surface),
+        "tour_table": AsIs(tour_table),
+        "matches_table": AsIs(matches_table),
+        "date": date,
     }
     event_spw, event_rpw = event_stats(params)
 
     if event_spw is None:
-        if level == 'atp':
+        if level == "atp":
             event_spw, tour_spw, tour_rpw = 0.645, 0.645, 0.355
         else:
             event_spw, tour_spw, tour_rpw = 0.565, 0.565, 0.435
     logging.info(f"Event SPW: {event_spw}, Event RPW: {event_rpw}")
     logging.info(f"Tour SPW: {tour_spw}, Tour RPW: {tour_rpw}")
 
-    if level == 'atp':
-        data[['home_spw', 'home_rpw', 'home_dr', 'home_matches', 'home_peak_rank',
-              'home_current_rank', 'home_plays', 'home_player_info', 'home_md_table']] = pd.DataFrame(
-            np.row_stack(np.vectorize(tennisabstract_scrape_atp, otypes=['O'])(
-                data['atp_home_fullname'])),
-            index=data.index)
-        data[['away_spw', 'away_rpw', 'away_dr', 'away_matches', 'away_peak_rank',
-              'away_current_rank', 'away_plays', 'away_player_info', 'away_md_table']] = pd.DataFrame(
-            np.row_stack(np.vectorize(tennisabstract_scrape_atp, otypes=['O'])(
-                data['atp_away_fullname'])),
-            index=data.index)
+    if level == "atp":
+        data[
+            [
+                "home_spw",
+                "home_rpw",
+                "home_dr",
+                "home_matches",
+                "home_peak_rank",
+                "home_current_rank",
+                "home_plays",
+                "home_player_info",
+                "home_md_table",
+            ]
+        ] = pd.DataFrame(
+            np.row_stack(
+                np.vectorize(tennisabstract_scrape_atp, otypes=["O"])(
+                    data["atp_home_fullname"]
+                )
+            ),
+            index=data.index,
+        )
+        data[
+            [
+                "away_spw",
+                "away_rpw",
+                "away_dr",
+                "away_matches",
+                "away_peak_rank",
+                "away_current_rank",
+                "away_plays",
+                "away_player_info",
+                "away_md_table",
+            ]
+        ] = pd.DataFrame(
+            np.row_stack(
+                np.vectorize(tennisabstract_scrape_atp, otypes=["O"])(
+                    data["atp_away_fullname"]
+                )
+            ),
+            index=data.index,
+        )
     else:
-        data[['home_spw', 'home_rpw', 'home_dr', 'home_matches', 'home_peak_rank', 'home_current_rank', 'home_plays', 'home_player_info', 'home_md_table']] = pd.DataFrame(
-            np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_home_fullname'])),
-            index=data.index)
-        data[['away_spw', 'away_rpw', 'away_dr', 'away_matches', 'away_peak_rank', 'away_current_rank', 'away_plays', 'away_player_info', 'away_md_table']] = pd.DataFrame(
-            np.row_stack(np.vectorize(tennisabstract_scrape, otypes=['O'])(data['atp_away_fullname'])),
-            index=data.index)
-    data['home_spw'] = data['home_spw'].astype(float)
-    data['home_rpw'] = data['home_rpw'].astype(float)
-    data['home_dr'] = data['home_dr'].astype(float)
-    data['away_spw'] = data['away_spw'].astype(float)
-    data['away_rpw'] = data['away_rpw'].astype(float)
-    data['away_dr'] = data['away_dr'].astype(float)
-    data['player1'] = data.apply(lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw) if (x.away_rpw and x.home_spw) else None, axis=1)
-    data['player2'] = data.apply(lambda x: tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw) if (x.home_rpw and x.away_spw) else None, axis=1)
+        data[
+            [
+                "home_spw",
+                "home_rpw",
+                "home_dr",
+                "home_matches",
+                "home_peak_rank",
+                "home_current_rank",
+                "home_plays",
+                "home_player_info",
+                "home_md_table",
+            ]
+        ] = pd.DataFrame(
+            np.row_stack(
+                np.vectorize(tennisabstract_scrape, otypes=["O"])(
+                    data["atp_home_fullname"]
+                )
+            ),
+            index=data.index,
+        )
+        data[
+            [
+                "away_spw",
+                "away_rpw",
+                "away_dr",
+                "away_matches",
+                "away_peak_rank",
+                "away_current_rank",
+                "away_plays",
+                "away_player_info",
+                "away_md_table",
+            ]
+        ] = pd.DataFrame(
+            np.row_stack(
+                np.vectorize(tennisabstract_scrape, otypes=["O"])(
+                    data["atp_away_fullname"]
+                )
+            ),
+            index=data.index,
+        )
+    data["home_spw"] = data["home_spw"].astype(float)
+    data["home_rpw"] = data["home_rpw"].astype(float)
+    data["home_dr"] = data["home_dr"].astype(float)
+    data["away_spw"] = data["away_spw"].astype(float)
+    data["away_rpw"] = data["away_rpw"].astype(float)
+    data["away_dr"] = data["away_dr"].astype(float)
+    data["player1"] = data.apply(
+        lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
+        if (x.away_rpw and x.home_spw)
+        else None,
+        axis=1,
+    )
+    data["player2"] = data.apply(
+        lambda x: tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw)
+        if (x.home_rpw and x.away_spw)
+        else None,
+        axis=1,
+    )
 
-    cols = ['atp_home_fullname', 'atp_away_fullname','home_spw', 'home_rpw', 'home_dr', 'away_spw', 'away_rpw', 'away_dr', 'player1', 'player2']
+    cols = [
+        "atp_home_fullname",
+        "atp_away_fullname",
+        "home_spw",
+        "home_rpw",
+        "home_dr",
+        "away_spw",
+        "away_rpw",
+        "away_dr",
+        "player1",
+        "player2",
+    ]
     logging.info(
-        f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}")
-    data['stats_win'] = data.apply(
+        f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}"
+    )
+    data["stats_win"] = data.apply(
         lambda x: matchProb(
             x.player1 if x.player1 else None,
-            1-x.player2 if x.player2 else None,
-            gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
-        ), axis=1).round(2)
+            1 - x.player2 if x.player2 else None,
+            gv=0,
+            gw=0,
+            sv=0,
+            sw=0,
+            mv=0,
+            mw=0,
+            sets=3,
+        ),
+        axis=1,
+    ).round(2)
 
     # Common opponent
-    data[['spw1_c', 'spw2_c', 'common_opponents_count']] = pd.DataFrame(
-        np.row_stack(np.vectorize(common_opponent, otypes=['O'])(
-            params,
-            data['home_id'],
-            data['away_id'],
-            event_spw,
-            data['start_at']
-        )
-        ), index=data.index)
-
-    data['common_opponents'] = data.apply(
-        lambda x: matchProb(
-            x.spw1_c,
-            1 - x.spw2_c,
-            gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
-        ), axis=1).round(2)
-
-    data['home_fatigue'] = pd.DataFrame(
-        np.row_stack(np.vectorize(fatigue_modelling, otypes=['O'])(
-            data['home_id'],
-            params['tour_table'],
-            params['matches_table'],
-            params['start_at'],
+    data[["spw1_c", "spw2_c", "common_opponents_count"]] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(common_opponent, otypes=["O"])(
+                params, data["home_id"], data["away_id"], event_spw, data["start_at"]
             )
         ),
-        index=data.index)
-    data['away_fatigue'] = pd.DataFrame(
-        np.row_stack(np.vectorize(fatigue_modelling, otypes=['O'])(
-            data['away_id'],
-            params['tour_table'],
-            params['matches_table'],
-            params['start_at'],
-        )
-        ),
-        index=data.index)
-    data[['h2h_win', 'h2h_matches']] = pd.DataFrame(
-        np.row_stack(np.vectorize(head2head, otypes=['O'])(
-            data['home_id'],
-            data['away_id'],
-            params['tour_table'],
-            params['matches_table'],
-            params['start_at'],
-        )
-        ),
-        index=data.index)
-    data['date'] = data['start_at'].dt.strftime('%Y-%m-%d')
-    data[['walkover_home', 'home_inj_score']] = pd.DataFrame(
-        np.row_stack(np.vectorize(injury_modelling, otypes=['O'])(
-            data['date'],
-            data['home_id'],
-            params['tour_table'],
-            params['matches_table'],
-        )
-        ),
-        index=data.index)
-    data[['walkover_away', 'away_inj_score']] = pd.DataFrame(
-        np.row_stack(np.vectorize(injury_modelling, otypes=['O'])(
-            data['date'],
-            data['away_id'],
-            params['tour_table'],
-            params['matches_table'],
-        )
-        ),
-        index=data.index)
+        index=data.index,
+    )
 
-    data['home_odds'] = data['home_odds'].astype(float)
-    data['away_odds'] = data['away_odds'].astype(float)
+    data["common_opponents"] = data.apply(
+        lambda x: matchProb(
+            x.spw1_c, 1 - x.spw2_c, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
+        ),
+        axis=1,
+    ).round(2)
 
-    data['elo_prob'] = data['winner_hardelo'] - data['loser_hardelo']
-    data['elo_prob'] = data['elo_prob'].apply(probability_of_winning).round(2)
+    data["home_fatigue"] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(fatigue_modelling, otypes=["O"])(
+                data["home_id"],
+                params["tour_table"],
+                params["matches_table"],
+                params["start_at"],
+            )
+        ),
+        index=data.index,
+    )
+    data["away_fatigue"] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(fatigue_modelling, otypes=["O"])(
+                data["away_id"],
+                params["tour_table"],
+                params["matches_table"],
+                params["start_at"],
+            )
+        ),
+        index=data.index,
+    )
+    data[["h2h_win", "h2h_matches"]] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(head2head, otypes=["O"])(
+                data["home_id"],
+                data["away_id"],
+                params["tour_table"],
+                params["matches_table"],
+                params["start_at"],
+            )
+        ),
+        index=data.index,
+    )
+    data["date"] = data["start_at"].dt.strftime("%Y-%m-%d")
+    data[["walkover_home", "home_inj_score"]] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(injury_modelling, otypes=["O"])(
+                data["date"],
+                data["home_id"],
+                params["tour_table"],
+                params["matches_table"],
+            )
+        ),
+        index=data.index,
+    )
+    data[["walkover_away", "away_inj_score"]] = pd.DataFrame(
+        np.row_stack(
+            np.vectorize(injury_modelling, otypes=["O"])(
+                data["date"],
+                data["away_id"],
+                params["tour_table"],
+                params["matches_table"],
+            )
+        ),
+        index=data.index,
+    )
 
-    data['year_elo_prob'] = data['winner_year_elo'] - data['loser_year_elo']
-    data['year_elo_prob'] = data['year_elo_prob'].apply(probability_of_winning).round(2)
+    data["home_odds"] = data["home_odds"].astype(float)
+    data["away_odds"] = data["away_odds"].astype(float)
 
-    print('tour', tour_spw, tour_rpw)
-    print('event', event_spw, event_rpw)
-    #data = data.where(pd.notnull(data), None)
+    data["elo_prob"] = data["winner_hardelo"] - data["loser_hardelo"]
+    data["elo_prob"] = data["elo_prob"].apply(probability_of_winning).round(2)
+
+    data["year_elo_prob"] = data["winner_year_elo"] - data["loser_year_elo"]
+    data["year_elo_prob"] = data["year_elo_prob"].apply(probability_of_winning).round(2)
+
+    print("tour", tour_spw, tour_rpw)
+    print("event", event_spw, event_rpw)
+    # data = data.where(pd.notnull(data), None)
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
         try:
-            home_prob, away_prob, home_yield, away_yield = train_ml_model(row, level, params)
+            home_prob, away_prob, home_yield, away_yield = train_ml_model(
+                row, level, params
+            )
         except Exception as e:
             log.error(e)
             continue
-        home_preview, home_short_preview = match_analysis(row.winner_name, row.loser_name, row.home_player_info, row.home_md_table)
-        away_preview, away_short_preview = match_analysis(row.loser_name, row.winner_name, row.away_player_info, row.away_md_table)
+        home_preview, home_short_preview = match_analysis(
+            row.winner_name,
+            row.loser_name,
+            row.home_player_info,
+            row.home_md_table,
+            event_spw,
+            event_rpw,
+            tour_spw,
+            tour_rpw,
+        )
+        away_preview, away_short_preview = match_analysis(
+            row.loser_name,
+            row.winner_name,
+            row.away_player_info,
+            row.away_md_table,
+            event_spw,
+            event_rpw,
+            tour_spw,
+            tour_rpw,
+        )
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],
             home=player_qs.filter(id=row.home_id)[0],
@@ -389,48 +525,48 @@ def predict_ta(level, tour):
                 "start_at": row.start_at,
                 "home_name": row.winner_name,
                 "away_name": row.loser_name,
-                "home_odds": row['home_odds'],
-                "away_odds": row['away_odds'],
-                "elo_prob": row['elo_prob'],
-                "year_elo_prob": row['year_elo_prob'],
-                "home_spw": row['home_spw'],
-                "home_rpw": row['home_rpw'],
-                "away_spw": row['away_spw'],
-                "away_rpw": row['away_rpw'],
-                "stats_win": row['stats_win'],
-                "home_fatigue": row['home_fatigue'],
-                "away_fatigue": row['away_fatigue'],
-                "h2h_win": row['h2h_win'],
-                "h2h_matches": row['h2h_matches'],
-                "walkover_home": row['walkover_home'],
-                "walkover_away": row['walkover_away'],
-                "home_inj_score": row['home_inj_score'],
-                "away_inj_score": row['away_inj_score'],
-                "common_opponents": row['common_opponents'],
-                "common_opponents_count": row['common_opponents_count'],
-                #"preview": preview,
-                #"reasoning": reasoning,
+                "home_odds": row["home_odds"],
+                "away_odds": row["away_odds"],
+                "elo_prob": row["elo_prob"],
+                "year_elo_prob": row["year_elo_prob"],
+                "home_spw": row["home_spw"],
+                "home_rpw": row["home_rpw"],
+                "away_spw": row["away_spw"],
+                "away_rpw": row["away_rpw"],
+                "stats_win": row["stats_win"],
+                "home_fatigue": row["home_fatigue"],
+                "away_fatigue": row["away_fatigue"],
+                "h2h_win": row["h2h_win"],
+                "h2h_matches": row["h2h_matches"],
+                "walkover_home": row["walkover_home"],
+                "walkover_away": row["walkover_away"],
+                "home_inj_score": row["home_inj_score"],
+                "away_inj_score": row["away_inj_score"],
+                "common_opponents": row["common_opponents"],
+                "common_opponents_count": row["common_opponents_count"],
+                # "preview": preview,
+                # "reasoning": reasoning,
                 "home_prob": home_prob,
                 "away_prob": away_prob,
                 "home_yield": home_yield,
                 "away_yield": away_yield,
-                "home_dr": row['home_dr'],
-                "away_dr": row['away_dr'],
-                "home_peak_rank": row['home_peak_rank'],
-                "away_peak_rank": row['away_peak_rank'],
-                "home_current_rank": row['home_current_rank'],
-                "away_current_rank": row['away_current_rank'],
-                "home_plays": row['home_plays'],
-                "away_plays": row['away_plays'],
-                "home_matches": row['home_matches'],
-                "away_matches": row['away_matches'],
-                "home_player_info": row['home_player_info'],
-                "away_player_info": row['away_player_info'],
-                "home_md_table": row['home_md_table'],
-                "away_md_table": row['away_md_table'],
+                "home_dr": row["home_dr"],
+                "away_dr": row["away_dr"],
+                "home_peak_rank": row["home_peak_rank"],
+                "away_peak_rank": row["away_peak_rank"],
+                "home_current_rank": row["home_current_rank"],
+                "away_current_rank": row["away_current_rank"],
+                "home_plays": row["home_plays"],
+                "away_plays": row["away_plays"],
+                "home_matches": row["home_matches"],
+                "away_matches": row["away_matches"],
+                "home_player_info": row["home_player_info"],
+                "away_player_info": row["away_player_info"],
+                "home_md_table": row["home_md_table"],
+                "away_md_table": row["away_md_table"],
                 "home_preview": home_preview,
                 "home_short_preview": home_short_preview,
                 "away_preview": away_preview,
                 "away_short_preview": away_short_preview,
-            }
+            },
         )

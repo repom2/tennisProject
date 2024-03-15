@@ -195,5 +195,13 @@ export type Bets = {
      * Away team table
      */
     awayTable?: string;
+    /**
+     * Home player info
+     */
+    homePlayerInfo?: string;
+    /**
+     * Away player info
+     */
+    awayPlayerInfo?: string;
 };
 

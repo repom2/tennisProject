@@ -298,6 +298,12 @@ components:
         awayTable:
           type: string
           description: "Away team table"
+        homePlayerInfo:
+          type: string
+          description: "Home player info"
+        awayPlayerInfo:
+          type: string
+          description: "Away player info"
     FootballBets:
       type: object
       properties:

@@ -3,12 +3,12 @@ import "./PlayerList.css";
 import {getData} from "common/functions/playerData";
 import {useGetPlayers} from "common/functions/playerFetch";
 import {EloRatings} from "data/openapi";
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {useQuery} from "react-query";
 
 export const PlayerList: React.FC = () => {
     //const {data, isLoading, isError} = useGetPlayers();
-    const {isLoading, isError, data, error} = useQuery("eloratings", getData);
+    const {isLoading, isError, data} = useQuery("eloratings", getData);
 
     if (isLoading) return <div />;
 

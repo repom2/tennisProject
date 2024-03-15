@@ -58,16 +58,23 @@ class AtpEloList(generics.ListAPIView):
 
 
 class BetList(generics.ListAPIView):
-    queryset = BetWta.objects.all()
-    #queryset = Bet.objects.all()
 
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     #permission_classes = [IsAdminUser]
 
     def list(self, request):
+        # Get the level parameter from the URL query string
+        level = request.GET.get('level', None)
+
+        # Define your default queryset which will be used if 'level' is not 'wta'
+        queryset = Bet.objects.all()
+
+        # Change the queryset if 'level' is 'wta'
+        if level == 'wta':
+            queryset = BetWta.objects.all()
         now = timezone.now()
         from_date = now - relativedelta(hours=5)
-        queryset = self.get_queryset().filter(start_at__gte=from_date).order_by('start_at')
+        queryset = queryset.filter(start_at__gte=from_date).order_by('start_at')
         queryset = queryset.annotate(
             max_value=Greatest(F('home_yield'), F('away_yield'))
         ).order_by('-max_value')

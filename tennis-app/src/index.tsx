@@ -4,12 +4,6 @@ import App from "pages/App/App";
 import React from "react";
 import {createRoot} from "react-dom/client";
 import TagManager from "react-gtm-module";
-import {QueryClientProvider} from "react-query";
-import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-
-import {Tips} from "/app/src/components/Tips/Tips";
-
-import queryClient from "./data/queryClient";
 
 declare global {
     interface Window {

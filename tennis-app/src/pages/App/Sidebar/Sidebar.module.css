@@ -1,14 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
 .sidebar {
-  background-color: #90ee90;
-  width: 200px;
-  height: 100vh;
-  padding: 20px;
-  box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.5);
-  padding-top: 0px;
-  width: 20%;
-  height: 20%;
+    background-color: #90ee90;
+    width: 200px;
+    height: 100vh;
+    padding: 20px;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.5);
+    padding-top: 0px;
+    width: 20%;
+    height: 20%;
 }
 
 .menuTitle {
@@ -21,29 +21,29 @@
 }
 
 .list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
 .button {
-  display: block;
-  text-align: center;
-  padding: 16px 0;
-  transition-duration: 0.2s;
-  cursor: pointer;
-  background-color: #008000;
-  margin: 10px 0;
-  border-radius: 4px;
-  color: white;
-  text-decoration: none; /* remove underline*/
-  display: block; /* make it a block element */
+    display: block;
+    text-align: center;
+    padding: 16px 0;
+    transition-duration: 0.2s;
+    cursor: pointer;
+    background-color: #008000;
+    margin: 10px 0;
+    border-radius: 4px;
+    color: white;
+    text-decoration: none; /* remove underline*/
+    display: block; /* make it a block element */
 }
 
 .link {
-  text-decoration: none;  /* removes the underline */
-  color: white;  /* change as per your preference */
-  font-family: "Press Start 2P", cursive;
+    text-decoration: none; /* removes the underline */
+    color: white; /* change as per your preference */
+    font-family: "Press Start 2P", cursive;
     font-size: 1rem;
     text-shadow: 3px 3px #000;
 }

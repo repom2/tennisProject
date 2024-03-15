@@ -15,7 +15,8 @@
     }
 
     /* You may want to add a class to your Sidebar to manage its width */
-    .sidebar { /* Adapt this to match your actual Sidebar's className if it's different */
+    .sidebar {
+        /* Adapt this to match your actual Sidebar's className if it's different */
         width: 100%; /* Sidebar will take full width */
         /* Or set a max-width if you do not want it to be full width */
     }

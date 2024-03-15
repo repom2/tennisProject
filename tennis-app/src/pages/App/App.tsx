@@ -4,9 +4,9 @@ import React from "react";
 import {QueryClientProvider} from "react-query";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 
+import {FootballTips} from "/app/src/components/FootballTips/FootballTips";
 import {PlayerList} from "/app/src/components/Player/PlayerList";
 import {Tips} from "/app/src/components/Tips/Tips";
-import {FootballTips} from "/app/src/components/FootballTips/FootballTips";
 import queryClient from "/app/src/data/queryClient";
 
 import {Header} from "./Header/Header";
@@ -24,7 +24,8 @@ function App() {
                             <Sidebar />
                             <Routes>
                                 <Route path="/elo" element={<PlayerList />} />
-                                <Route path="/tips" element={<Tips />} />
+                                <Route path="/tips-wta" element={<Tips level="wta" />} />
+                                <Route path="/tips-atp" element={<Tips level="atp" />} />
                                 <Route path="/footballtips" element={<FootballTips />} />
                                 {/* ... Add as many routes as needed */}
                             </Routes>

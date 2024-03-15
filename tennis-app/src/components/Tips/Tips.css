@@ -33,3 +33,19 @@
     padding: 10px;
     text-align: left;
 }
+
+.Preview {
+    padding: 10px;
+}
+
+.PreviewTable {
+    padding: 10px;
+    font-size: 13px;
+    width: 100%;
+    min-width: 1000px;
+    background-color: #f9f9f9;
+}
+
+.no-wrap {
+    white-space: nowrap;
+}

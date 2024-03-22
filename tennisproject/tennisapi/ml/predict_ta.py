@@ -19,6 +19,7 @@ from psycopg2.extensions import AsIs
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.match_analysis import match_analysis
+from tennisapi.stats.stats_analysis import stats_analysis
 from tennisapi.models import (
     AtpMatches,
     Bet,
@@ -47,7 +48,24 @@ def probability_of_winning(x):
 
 def get_data(params):
     query = """
-        select 
+        select  home_spw,
+                home_rpw,
+                home_dr,
+                home_matches,
+                home_peak_rank,
+                home_current_rank,
+                home_plays,
+                home_player_info,
+                home_md_table,
+                away_spw,
+                away_rpw,
+                away_dr,
+                away_matches,
+                away_peak_rank,
+                away_current_rank,
+                away_plays,
+                away_player_info,
+                away_md_table,
                 match_id,
                 home_id,
                 away_id,
@@ -96,8 +114,26 @@ def get_data(params):
 		        case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time
             from (
             select 
-                home_id,
-                away_id,
+                home_spw,
+                home_rpw,
+                home_dr,
+                home_matches,
+                home_peak_rank,
+                home_current_rank,
+                home_plays,
+                home_player_info,
+                home_md_table,
+                away_spw,
+                away_rpw,
+                away_dr,
+                away_matches,
+                away_peak_rank,
+                away_current_rank,
+                away_plays,
+                away_player_info,
+                away_md_table,
+                b.home_id,
+                b.away_id,
                 b.start_at,
                 b.id as match_id,
                 h.name_full as home_fullname,
@@ -106,23 +142,23 @@ def get_data(params):
                 aw.atp_name_full as atp_away_fullname,
                 h.player_id as home_player_id,
                 aw.player_id as away_player_id,
-                home_odds,
-                away_odds,
+                b.home_odds,
+                b.away_odds,
                 h.first_name as winner_first_name,
                 aw.first_name as loser_first_name,
                 h.last_name as winner_name,
                 aw.last_name as loser_name,
                 round_name,
                 winner_code,
-                (select elo from %(grass_elo)s el where el.player_id=home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_grasselo,
-                (select elo from %(hard_elo)s el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo,
-                (select count(*) from %(hard_elo)s c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games,
+                (select elo from %(grass_elo)s el where el.player_id=b.home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_grasselo,
+                (select elo from %(hard_elo)s el where el.player_id=b.home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo,
+                (select count(*) from %(hard_elo)s c where c.player_id=b.home_id and c.date < date(b.start_at)) as winner_games,
                 (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_games,
                 (select sum(elo_change) from %(hard_elo)s c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_elo,
                 (select count(*) from %(grass_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_grass_games,
-                (select elo from %(grass_elo)s el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo,
-                (select elo from %(hard_elo)s el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,
-                (select count(*) from %(hard_elo)s c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games,
+                (select elo from %(grass_elo)s el where el.player_id=b.away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo,
+                (select elo from %(hard_elo)s el where el.player_id=b.away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,
+                (select count(*) from %(hard_elo)s c where c.player_id=b.away_id and c.date < date(b.start_at)) as loser_games,
                 (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_games,
                 (select sum(elo_change) from %(hard_elo)s c where c.player_id=b.away_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_elo,
                 (select count(*) from %(grass_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_grass_games,
@@ -151,6 +187,7 @@ def get_data(params):
             from %(match_table)s b
             left join %(player_table)s h on h.id = b.home_id
             left join %(player_table)s aw on aw.id = b.away_id
+            left join %(bet_table)s bet on bet.match_id = b.id
             where b.surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
             and (
             (tourney_name ilike '%%%(tour)s%%' ))
@@ -171,8 +208,8 @@ def label_round(data, mapping):
 def predict_ta(level, tour):
     surface = "hard"
     now = timezone.now().date()
-    end_at = now + timedelta(days=3)
-    from_at = now - timedelta(days=1)
+    end_at = now + timedelta(days=2)
+    from_at = now - timedelta(days=2)
     # now = '2023-12-24'
 
     if level == "atp":
@@ -182,9 +219,7 @@ def predict_ta(level, tour):
             .first()
         )
         logging.info("Surface: %s", qs)
-        if "Clay" in qs:
-            surface = "clay"
-        logging.info("Surface: %s", surface)
+
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
         player_qs = Players.objects.all()
@@ -195,6 +230,7 @@ def predict_ta(level, tour):
         hard_elo = "tennisapi_atphardelo"
         grass_elo = "tennisapi_atpgrasselo"
         clay_elo = "tennisapi_atpelo"
+        bet_table = "tennisapi_bet"
         if surface == "clay":
             hard_elo = clay_elo
     else:
@@ -208,6 +244,7 @@ def predict_ta(level, tour):
         hard_elo = "tennisapi_wtahardelo"
         grass_elo = "tennisapi_wtagrasselo"
         clay_elo = "tennisapi_wtaclayelo"
+        bet_table = "tennisapi_betwta"
     params = {
         "tour_table": AsIs(tour_table),
         "matches_table": AsIs(matches_table),
@@ -220,11 +257,16 @@ def predict_ta(level, tour):
         "start_at": now,
         "end_at": end_at,
         "surface": AsIs(surface),
+        "bet_table": AsIs(bet_table),
     }
     data = get_data(params)
+    # where home_player_id = 104745 and away_player_id = 104745
+    #data = data[(data["home_player_id"] == 211095) ]
     # take only second row
-    data = data.iloc[2:]
-    data = data.head(1)
+    #data = data.iloc[1:]
+    #data = data.head(1)
+    # select only last row
+    #data = data.tail(4)
     l = len(data.index)
     if l == 0:
         print("No data")
@@ -246,7 +288,7 @@ def predict_ta(level, tour):
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
     )
-    # exit()
+    #exit()
     if level == "atp":
         tour_spw, tour_rpw = 0.645, 0.355
     else:
@@ -283,14 +325,9 @@ def predict_ta(level, tour):
                 "home_player_info",
                 "home_md_table",
             ]
-        ] = pd.DataFrame(
-            np.row_stack(
-                np.vectorize(tennisabstract_scrape_atp, otypes=["O"])(
-                    data["atp_home_fullname"]
-                )
-            ),
-            index=data.index,
-        )
+        ] = data.apply(
+            lambda row: tennisabstract_scrape_atp(row, 'home'),
+            axis=1)
         data[
             [
                 "away_spw",
@@ -303,14 +340,9 @@ def predict_ta(level, tour):
                 "away_player_info",
                 "away_md_table",
             ]
-        ] = pd.DataFrame(
-            np.row_stack(
-                np.vectorize(tennisabstract_scrape_atp, otypes=["O"])(
-                    data["atp_away_fullname"]
-                )
-            ),
-            index=data.index,
-        )
+        ] = data.apply(
+            lambda row: tennisabstract_scrape_atp(row, 'away'),
+            axis=1)
     else:
         data[
             [
@@ -324,14 +356,9 @@ def predict_ta(level, tour):
                 "home_player_info",
                 "home_md_table",
             ]
-        ] = pd.DataFrame(
-            np.row_stack(
-                np.vectorize(tennisabstract_scrape, otypes=["O"])(
-                    data["atp_home_fullname"]
-                )
-            ),
-            index=data.index,
-        )
+        ] = data.apply(
+            lambda row: tennisabstract_scrape(row, 'home'),
+            axis=1)
         data[
             [
                 "away_spw",
@@ -344,14 +371,10 @@ def predict_ta(level, tour):
                 "away_player_info",
                 "away_md_table",
             ]
-        ] = pd.DataFrame(
-            np.row_stack(
-                np.vectorize(tennisabstract_scrape, otypes=["O"])(
-                    data["atp_away_fullname"]
-                )
-            ),
-            index=data.index,
-        )
+        ] = data.apply(
+            lambda row: tennisabstract_scrape(row, 'away'),
+            axis=1)
+
     data["home_spw"] = data["home_spw"].astype(float)
     data["home_rpw"] = data["home_rpw"].astype(float)
     data["home_dr"] = data["home_dr"].astype(float)
@@ -497,7 +520,7 @@ def predict_ta(level, tour):
         except Exception as e:
             log.error(e)
             continue
-        home_preview, home_short_preview = match_analysis(
+        """home_preview, home_short_preview = match_analysis(
             row.winner_name,
             row.loser_name,
             row.home_player_info,
@@ -516,7 +539,28 @@ def predict_ta(level, tour):
             event_rpw,
             tour_spw,
             tour_rpw,
+        )"""
+        home_short_preview = stats_analysis(
+            row.winner_name,
+            row.loser_name,
+            row.home_player_info,
+            row.away_player_info,
+            row.home_md_table,
+            row.away_md_table,
+            row.stats_win,
+            row.elo_prob,
+            row.home_matches,
+            row.away_matches,
         )
+        home_preview, away_preview, away_short_preview = None, None, None
+        try:
+            row["home_current_rank"] = int(row["home_current_rank"])
+        except ValueError:
+            row["home_current_rank"] = None
+        try:
+            row["away_current_rank"] = int(row["away_current_rank"])
+        except ValueError:
+            row["away_current_rank"] = None
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],
             home=player_qs.filter(id=row.home_id)[0],

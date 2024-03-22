@@ -10,7 +10,7 @@ from vakio.task import probs
 
 list_index = probs.list_index
 vakio_id = probs.vakio_id
-max_bet_eur = 2
+max_bet_eur = 16
 line_cost = 0.1
 stake = line_cost * 100
 
@@ -28,17 +28,7 @@ headers = {
         'X-ESA-API-Key': 'ROBOT'
 }
 
-params = {
-    "username": "repom",
-    "password": "_W14350300n1",
-    "game": "SPORT",
-    "draw": "",
-    "listIndex": list_index,
-    "id": vakio_id,
-    "miniVakio": False,
-    "input": "",
-    "stake": 0
-}
+
 
 
 def get_sport_winshare(draw, matches):
@@ -122,7 +112,29 @@ def get_balance(session):
 
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
-def find_lines():
+def find_lines(list_index, vakio_id, max_bet_eur, bet):
+    number_of_matches = Combination.objects.filter(vakio_id=vakio_id, list_index=list_index).values('combination').first()
+    number_of_matches = len(number_of_matches['combination'])
+    line_cost = 0.1
+    if number_of_matches == 13:
+        line_cost = 0.25
+    stake = line_cost * 100
+    print("Number of matches:", number_of_matches)
+    print("Line cost:", line_cost)
+    print("Stake:", stake)
+    print("List index:", list_index)
+    print("Vakio id:", vakio_id)
+    params = {
+        "username": "repom",
+        "password": "_W14350300n1",
+        "game": "SPORT",
+        "draw": "",
+        "listIndex": list_index,
+        "id": vakio_id,
+        "miniVakio": False,
+        "input": "",
+        "stake": 0
+    }
     query = f"""
     select id, bets, prob, win, yield, combination, value, share from 
         (select a.id, b.bets, prob, bet, a.combination,
@@ -138,6 +150,8 @@ def find_lines():
     """
     data = WinShare.objects.raw(query)
     logging.info("Number of lines: %d", len(data))
+    if len(data) == 0:
+        return
     logging.info(params)
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'share']
@@ -174,7 +188,8 @@ def find_lines():
     for i in range(len(matches)):
         matches[i] = [round(x / len(df), 2) for x in matches[i]]
         logging.info(f"{matches[i]}" + '  [' + str(i) + ']')
-    #exit()
+    if bet != 'bet':
+        exit()
     session = login(params["username"], params["password"])
     for index, row in df.iterrows():
         line = list(row['combination'])

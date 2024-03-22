@@ -19,12 +19,12 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-list_index = probs.list_index
-vakio_id = probs.vakio_id
-number_of_matches = probs.number_of_matches
+#list_index = probs.list_index
+#vakio_id = probs.vakio_id
+#number_of_matches = probs.number_of_matches
 
 
-def get_sport_winshare(draw, matches):
+def get_sport_winshare(draw, matches, list_index):
     host = "https://www.veikkaus.fi"
     r = requests.post(
         host + "/api/sport-winshare/v1/games/SPORT/draws/" + str(draw) + "/winshare",
@@ -75,34 +75,39 @@ def combine_strings(str1, str2):
     return combined
 
 
-def get_values(data, page):
+def get_values(data, page, vakio_id, list_index):
     data['page'] = page
     matches = json.dumps(data)
     time.sleep(1)
     try:
-        values = get_sport_winshare(vakio_id, matches)
+        values = get_sport_winshare(vakio_id, matches, list_index)
     except (requests.exceptions.ConnectionError,
             requests.exceptions.JSONDecodeError,
             requests.exceptions.SSLError) as e:
         logging.info('ConnectionError, waiting 5 seconds')
         time.sleep(5)
         try:
-            values = get_sport_winshare(vakio_id, matches)
+            values = get_sport_winshare(vakio_id, matches, list_index)
         except (requests.exceptions.ConnectionError,
                 requests.exceptions.JSONDecodeError,
                 requests.exceptions.SSLError) as e:
             logging.info('ConnectionError, waiting 5 seconds, 2')
             time.sleep(5)
-            values = get_sport_winshare(vakio_id, matches)
+            values = get_sport_winshare(vakio_id, matches, list_index)
     return values
 
 
-def get_win_share():
+def get_win_share(list_index, vakio_id):
+    number_of_matches = Combination.objects.filter(vakio_id=vakio_id, list_index=list_index).values('combination').first()
+    number_of_matches = len(number_of_matches['combination'])
     start = datetime.now()
     matches = [["1", "X", "2"]] * number_of_matches
-
-    #matches[0] = "2"
-    #matches[0] = ["1", "X"]
+    if vakio_id == 100441:
+        matches[2] = "1"
+        print("Removed", matches[2])
+        matches[3] = ["1", "2"]
+        matches[4] = ["1", "2"]
+        matches[9] = ["1", "2"]
 
     logging.info(f"List index: {list_index} - Vakio id: {vakio_id} - Number of matches: {number_of_matches}")
 
@@ -125,8 +130,8 @@ def get_win_share():
     while page < total_pages:
         print(f"Page: {page} / {page + batch}")
         objects = []
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            futures = [executor.submit(get_values, data, i) for i in range(page, page + batch)]
+        with ThreadPoolExecutor(max_workers=15) as executor:
+            futures = [executor.submit(get_values, data, i, vakio_id, list_index) for i in range(page, page + batch)]
             for future in concurrent.futures.as_completed(futures):
                 odds_data = future.result()
                 objects += odds_data

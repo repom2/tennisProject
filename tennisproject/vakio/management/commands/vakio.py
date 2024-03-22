@@ -70,6 +70,11 @@ class Command(BaseCommand):
 
         list_sports_cmd = subparsers.add_parser("winshare")
         list_sports_cmd.set_defaults(subcommand=self.get_winshare)
+        list_sports_cmd.add_argument("bet", nargs='?', type=str,
+                                     help='If not provided no bets', default=None)
+        list_sports_cmd.add_argument("stake", nargs='?', type=int, default=30)
+        list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
+        list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
 
         list_sports_cmd = subparsers.add_parser("find-lines")
         list_sports_cmd.set_defaults(subcommand=self.find_profits)
@@ -101,7 +106,7 @@ class Command(BaseCommand):
         list_sports_cmd.set_defaults(subcommand=self.place_moniveto_bet)
         list_sports_cmd.add_argument("bet", nargs='?', type=str,
                                      help='If not provided no bets', default=None)
-        list_sports_cmd.add_argument("stake", nargs='?', type=int, default=35)
+        list_sports_cmd.add_argument("stake", nargs='?', type=int, default=30)
         list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
         list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
 
@@ -193,7 +198,12 @@ class Command(BaseCommand):
             logger.info('-' * 50)
 
     def get_winshare(self, options):
-        get_win_share()
+        bet = options["bet"]
+        max_bet_eur = options["stake"]
+        list_index = options["index"]
+        vakio_id = options["id"]
+        get_win_share(list_index, vakio_id)
+        find_lines(list_index, vakio_id, max_bet_eur, bet)
 
     def find_profits(self, options):
         find_lines()

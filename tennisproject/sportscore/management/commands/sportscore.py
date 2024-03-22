@@ -9,11 +9,12 @@ from django.db import transaction
 from django.db.models import Q
 from sportscore.models import TennisTournaments, Leagues, Events, Players, Teams, Stats, FootballEvents, IceHockeyEvents, TennisEvents
 from tennisapi.models import AtpMatches, ChTour, WtaMatches
-from tennis_api.models import AtpMatch, WtaMatch, AtpTour, WtaTour
+from tennisapi.models import Match, WtaMatch, AtpTour, WtaTour
 from tqdm import tqdm
 from django.conf import settings
 import logging
 from tabulate import tabulate
+from datetime import datetime, timedelta
 
 logging.basicConfig(
     level=logging.INFO,
@@ -194,8 +195,12 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(AtpMatch.objects.filter(start_at__gte='2024-3-1').values_list('tour__id').distinct('tour__id'))
-        wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2024-3-1').values_list('tour__id').distinct('tour__id'))
+        leagues = list(Match.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
+        wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
+        # Make queryset text field to date
+        # time now
+        #date_now = datetime.now() - timedelta(days=7)
+        #leagues = list(TennisTournaments.objects.filter(start_date__gte=date_now).values_list('id').distinct('id'))
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
         leagues = wta_leagues + leagues #+ ch_leagues
         logging.info(f"Leagues: {len(leagues)}")
@@ -655,11 +660,11 @@ class Command(BaseCommand):
 
     def match_statistics(self, options):
         sportscore_ids = list(
-            AtpMatch.objects.filter(Q(start_at__gt='2024-3-1') & Q(status='finished') & Q(w_ace__isnull=True)).values_list('event_id')
+            AtpMatches.objects.filter(Q(date__gt='2024-3-1') & Q(w_ace__isnull=True)).values_list('event_id')
         )
         sportscore_wta_ids = list(
-            WtaMatch.objects.filter(
-                Q(start_at__gt='2024-3-1') & Q(status='finished') & Q(w_ace__isnull=True)).values_list(
+            WtaMatches.objects.filter(
+                Q(date__gt='2024-3-1') & Q(w_ace__isnull=True)).values_list(
                 'event_id')
         )
 
@@ -752,13 +757,13 @@ class Command(BaseCommand):
     def list_tennis_tournaments(self, options):
         section_ids =  [
             '145', # ATP
-            '143', # Challenger
-            '137', # Grand Slam
-            '139', # Davis Cup
-            '142', # Challenger women
-            '141', # Itf Women
+            #'143', # Challenger
+            #'137', # Grand Slam
+            #'139', # Davis Cup
+            #'142', # Challenger women
+            #'141', # Itf Women
             '144', # WTA
-            '138', # Federation Cup women
+            #'138', # Federation Cup women
             ]
         for section_id in section_ids:
             url = f"https://sportscore1.p.rapidapi.com/sections/{section_id}/leagues"

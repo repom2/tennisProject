@@ -8,7 +8,37 @@ from datetime import datetime
 
 logging = logging.getLogger(__name__)
 
-def tennisabstract_scrape_atp(player_name):
+def tennisabstract_scrape_atp(row, home):
+    if home == "home":
+        index_columns = [
+            "home_spw",
+            "home_rpw",
+            "home_dr",
+            "home_matches",
+            "home_peak_rank",
+            "home_current_rank",
+            "home_plays",
+            "home_player_info",
+            "home_md_table",
+        ]
+        player_name = row["atp_home_fullname"]
+        if row['home_peak_rank']:
+            return row[index_columns]
+    else:
+        index_columns = [
+            "away_spw",
+            "away_rpw",
+            "away_dr",
+            "away_matches",
+            "away_peak_rank",
+            "away_current_rank",
+            "away_plays",
+            "away_player_info",
+            "away_md_table",
+        ]
+        player_name = row["atp_away_fullname"]
+        if row['away_peak_rank']:
+            return row[index_columns]
     # strip the player name
     player_name = player_name.strip().replace(" ", "")
     # Specify the URL where the Selenium Hub is running
@@ -35,7 +65,12 @@ def tennisabstract_scrape_atp(player_name):
     tables = soup.find_all('table')#, class_='tennis-match__match-link')
 
     # clean all html tags
-    soup = tables[4]
+    try:
+        soup = tables[4]
+    except IndexError:
+        driver.quit()
+        return pd.Series([None, None, None, None, None, None, None, None, None],
+                         index=index_columns)
 
     # Find the player's bio section and extract player information
     player_bio_section = soup.find(id="biog")
@@ -93,6 +128,7 @@ def tennisabstract_scrape_atp(player_name):
             stats.append(cell.get_text().strip())
         stats_data.append(stats)
 
+    spw, rpw, dr, matches = None, None, None, None
     # Displaying the results
     print("\nStatistics:")
     for stat in stats_data:
@@ -103,9 +139,7 @@ def tennisabstract_scrape_atp(player_name):
                 dr = float(stat[12])
                 spw = round(float(stat[8].replace('%', '')) * 0.01, 3)
             except ValueError:
-                spw = None
-                rpw = None
-                dr = None
+                continue
             print([spw, rpw, dr, matches])
 
     try:
@@ -143,6 +177,8 @@ def tennisabstract_scrape_atp(player_name):
     #print(md_table)
     driver.quit()
 
-    return [spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info,
-            md_table]
+    return pd.Series(
+        [spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info,
+         md_table],
+        index=index_columns)
 

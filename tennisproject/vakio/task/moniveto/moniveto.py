@@ -15,15 +15,15 @@ logging.basicConfig(
 )
 
 # docker compose exec tennisproject poetry run python manage.py vakio moniveto
-moniveto_id = 63403
-list_index = 10
+moniveto_id = 63432
+list_index = 6
 
 lst = [
-    [0, 0.2, 0.254, 0.546, 'seriea'],
-    [1, 0.531, 0.243, 0.227, 'laliga'],
-    [2,  0.419, 0.266, 0.314, 'ligue1'],
-    #[3, 0.745, 0.159, 0.096, 'premier'],
-]
+        [0, 0.43, 0.29, 0.28, 'seriea'],
+        [1, 0.8, 0.14, 0.06, 'laliga'],
+        [2, 0.44, 0.27, 0.29, 'ligue1'],
+        [3, 0.25, 0.3, 0.45, 'premier'],
+    ]
 
 matches_to_bet = len(lst)
 
@@ -103,84 +103,95 @@ def moniveto():
         'home1', 'away1', 'home2', 'away2', 'home3', 'away3', 'home4', 'away4',
     ).first()
 
-    lst = []
+
+
 
     sport = 'hockey'
     sport = 'football'
+    sport = None
     if sport == 'football':
         bet_table = BetFootball
     elif sport == 'hockey':
         bet_table = BetIceHockey
     else:
-        print("Moniveto not found!")
-        exit()
-
-    try:
-        home_name = unicodedata.normalize('NFKD', qs['home1']).encode('ASCII', 'ignore').decode('ASCII')
-        away_name = unicodedata.normalize('NFKD', qs['away1']).encode('ASCII', 'ignore').decode('ASCII')
-        probs1 = list(bet_table.objects.filter(
-            home_name__icontains=home_name, away_name__icontains=away_name, start_at__gt=timezone.now() - timedelta(days=1)
-        ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
-    except TypeError:
-        logging.info(f"No Match found: {qs['home1']} - {qs['away1']} ")
-        probs1 = [0.4, 0.3, 0.3, 'liig']
-    logging.info(f"{qs['home1']} - {qs['away1']} {probs1}")
-    lst.append([0] + probs1)
-    try:
-        home_name = unicodedata.normalize('NFKD', qs['home2']).encode('ASCII',
-                                                                      'ignore').decode(
-            'ASCII')
-        away_name = unicodedata.normalize('NFKD', qs['away2']).encode('ASCII',
-                                                                      'ignore').decode(
-            'ASCII')
-        probs2 = list(bet_table.objects.filter(
-            home_name__contains=home_name, away_name__contains=away_name
-        ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
-    except TypeError:
-        logging.info(f"No Match found: {qs['home2']} - {qs['away2']} ")
-        probs2 = [0.48, 0.26, 0.26, 'liig']
-    logging.info(f"{qs['home2']} - {qs['away2']} {probs2}")
-    lst.append([1] + probs2)
-    try:
-        home_name = unicodedata.normalize('NFKD', qs['home3']).encode('ASCII',
-                                                                      'ignore').decode(
-            'ASCII')
-        away_name = unicodedata.normalize('NFKD', qs['away3']).encode('ASCII',
-                                                                      'ignore').decode(
-            'ASCII')
-        probs3 = list(bet_table.objects.filter(
-            home_name__contains=home_name, away_name__contains=away_name
-        ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
-    except TypeError:
-        logging.info(f"No Match found: {qs['home3']} - {qs['away3']} ")
-        probs3 = [0.79, 0.14, 0.7, 'liia']
-    logging.info(f"{qs['home3']} - {qs['away3']} {probs3}")
-    lst.append([2] + probs3)
-    if qs['home4']:
+        print("sport not found!")
+        pass
+    if sport:
+        lst = []
         try:
-            home_name = unicodedata.normalize('NFKD', qs['home4']).encode('ASCII',
+            home_name = unicodedata.normalize('NFKD', qs['home1']).encode('ASCII', 'ignore').decode('ASCII')
+            away_name = unicodedata.normalize('NFKD', qs['away1']).encode('ASCII', 'ignore').decode('ASCII')
+            probs1 = list(bet_table.objects.filter(
+                home_name__icontains=home_name, away_name__icontains=away_name, start_at__gt=timezone.now() - timedelta(days=1)
+            ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
+        except TypeError:
+            logging.info(f"No Match found: {qs['home1']} - {qs['away1']} ")
+            probs1 = [0.4, 0.3, 0.3, 'liig']
+        logging.info(f"{qs['home1']} - {qs['away1']} {probs1}")
+        lst.append([0] + probs1)
+        try:
+            home_name = unicodedata.normalize('NFKD', qs['home2']).encode('ASCII',
                                                                           'ignore').decode(
                 'ASCII')
-            away_name = unicodedata.normalize('NFKD', qs['away4']).encode('ASCII',
+            away_name = unicodedata.normalize('NFKD', qs['away2']).encode('ASCII',
                                                                           'ignore').decode(
                 'ASCII')
-            probs4 = list(bet_table.objects.filter(
+            probs2 = list(bet_table.objects.filter(
                 home_name__contains=home_name, away_name__contains=away_name
             ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
         except TypeError:
-            logging.info(f"No Match found: {qs['home4']} - {qs['away4']} ")
-            probs4 = [0.37, 0.27, 0.36, 'liig']
-        logging.info(f"{qs['home4']} - {qs['away4']} {probs4}")
-        lst.append([3] + probs4)
+            logging.info(f"No Match found: {qs['home2']} - {qs['away2']} ")
+            probs2 = [0.48, 0.26, 0.26, 'liig']
+        logging.info(f"{qs['home2']} - {qs['away2']} {probs2}")
+        lst.append([1] + probs2)
+        try:
+            home_name = unicodedata.normalize('NFKD', qs['home3']).encode('ASCII',
+                                                                          'ignore').decode(
+                'ASCII')
+            away_name = unicodedata.normalize('NFKD', qs['away3']).encode('ASCII',
+                                                                          'ignore').decode(
+                'ASCII')
+            probs3 = list(bet_table.objects.filter(
+                home_name__contains=home_name, away_name__contains=away_name
+            ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
+        except TypeError:
+            logging.info(f"No Match found: {qs['home3']} - {qs['away3']} ")
+            probs3 = [0.79, 0.14, 0.7, 'liia']
+        logging.info(f"{qs['home3']} - {qs['away3']} {probs3}")
+        lst.append([2] + probs3)
+        if qs['home4']:
+            try:
+                home_name = unicodedata.normalize('NFKD', qs['home4']).encode('ASCII',
+                                                                              'ignore').decode(
+                    'ASCII')
+                away_name = unicodedata.normalize('NFKD', qs['away4']).encode('ASCII',
+                                                                              'ignore').decode(
+                    'ASCII')
+                probs4 = list(bet_table.objects.filter(
+                    home_name__contains=home_name, away_name__contains=away_name
+                ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
+            except TypeError:
+                logging.info(f"No Match found: {qs['home4']} - {qs['away4']} ")
+                probs4 = [0.37, 0.27, 0.36, 'liig']
+            logging.info(f"{qs['home4']} - {qs['away4']} {probs4}")
+            lst.append([3] + probs4)
 
     estimated_avg_goals = [
-        [0, 1.4, 1.3],
-        [1, 1.7, 1.3],
-        [2, 1.8, 1.24],
-        #[3, 1.7, 1.2],
+        [0, 3, 1.2],
+        [1, 1.34, 1.67],
+        [2, 1.17, 1.33],
+        [3, 1.64, 1.94],
+    ]
+
+    lst = [
+        [0, 0.43, 0.29, 0.28, 'seriea'],
+        [1, 0.8, 0.14, 0.06, 'laliga'],
+        [2, 0.44, 0.27, 0.29, 'ligue1'],
+        [3, 0.25, 0.3, 0.45, 'premier'],
     ]
     is_using_own_data = True
     ice_hockey = False
+    est_goals_from_prob = True
     if not is_using_own_data and not ice_hockey:
         for i, item in enumerate(lst):
             arbitrage_check(item)
@@ -209,8 +220,20 @@ def moniveto():
                 sport,
             )
             print("---------------------------")
-    else:
+    if est_goals_from_prob:
         for i, item in enumerate(lst):
+            estimated_avg_goals = match_probability(item[1], item[2], item[3])
+            calculate_poisson(
+                estimated_avg_goals[0],
+                estimated_avg_goals[1],
+                item[0],
+                moniveto_id,
+                list_index,
+            )
+            logging.info("Estimated avg goals: %s", estimated_avg_goals)
+            print("---------------------------")
+    else:
+        for i, item in enumerate(estimated_avg_goals):
             #if i == 0 or i == 1:
              #   continue
             #estimated_avg_goals = match_probability(item[1], item[2], item[3])

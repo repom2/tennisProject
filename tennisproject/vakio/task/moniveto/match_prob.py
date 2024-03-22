@@ -40,7 +40,7 @@ def match_probability(
     desired_prob_away_win =  odds_away_win
 
     # Initial guess
-    x0 = np.array([2.0, 2.0])
+    x0 = np.array([1.5, 1.3])
     print("Initial guess: {}".format(x0))
 
     desired_probabilities = np.array([

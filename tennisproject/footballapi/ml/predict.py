@@ -140,6 +140,7 @@ def predict(level):
     league_stats(match_qs)
 
     now = timezone.now().date()
+    now = now + timedelta(days=1)
     end_at = now + timedelta(days=1)
     logging.info(f"Predicting matches for {level} between {now} and {end_at}")
 

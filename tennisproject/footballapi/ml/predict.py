@@ -141,7 +141,7 @@ def predict(level):
 
     now = timezone.now().date()
     now = now + timedelta(days=1)
-    end_at = now + timedelta(days=1)
+    end_at = now + timedelta(days=3)
     logging.info(f"Predicting matches for {level} between {now} and {end_at}")
 
     params = {

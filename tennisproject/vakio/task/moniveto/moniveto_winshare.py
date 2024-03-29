@@ -22,10 +22,9 @@ moniveto_default = moniveto.moniveto_id
 index_default = moniveto.list_index
 bonus = 0
 scores_default = [
-        "0,1,2,3-0,1,2,3",
-        "0,1,2,3,4,5-0,1,2,3",
-        "0,1,2,3-0,1,2,3",
-        "0,1,2,3-0,1,2,3",
+        "1,2,3,4,5-1,2,3,4,5",
+        "1,2,3,4,5-1,2,3,4,5",
+        "1,2,3,4,5-1,2,3,4,5",
     ]
 
 

@@ -10,6 +10,7 @@ from psycopg2.extensions import AsIs
 from tennisapi.scrape.wta_site import wta_scrape
 from tennisapi.scrape.tennisabstract_site import tennisabstract_scrape
 from tennisapi.scrape.tennisabstract_site_atp import tennisabstract_scrape_atp
+from tennisapi.stats.prob_by_serve.winning_match import matchProb, match_prob
 
 
 class Command(BaseCommand):
@@ -46,8 +47,17 @@ class Command(BaseCommand):
         scrape_atp_cmd = subparsers.add_parser("ta-atp")
         scrape_atp_cmd.set_defaults(subcommand=self.tennisabstract_stats_atp)
 
+        match_prob_cmd = subparsers.add_parser("match-proba")
+        match_prob_cmd.set_defaults(subcommand=self.match_proba)
+
     def handle(self, *args, **options):
         options["subcommand"](options)
+
+    def match_proba(self, options):
+        server_wins_service = 0.564
+        serve_wins_return = 1- 0.608
+        win_prob = match_prob(serve_wins_return, server_wins_service, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3)
+        print(win_prob)
 
     def serve_stats(self, options):
         serve_points()

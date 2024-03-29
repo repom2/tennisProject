@@ -26,8 +26,8 @@ def tennisabstract_scrape(row, home):
                 "home_md_table",
             ]
             player_name = row["atp_home_fullname"]
-            if row['home_peak_rank']:
-                return row[index_columns]
+            #if row['home_peak_rank']:
+             #   return row[index_columns]
         else:
             index_columns = [
                 "away_spw",
@@ -209,7 +209,8 @@ def tennisabstract_scrape(row, home):
             md_table = "No matches found"
             print("No matches found")
         driver.quit()
-
+        #print(df)
+        #exit()
         #print([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table])
         # return list as pandas dataframe series
         return pd.Series([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table],

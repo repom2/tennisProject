@@ -91,7 +91,7 @@ def predict(level):
     logging.info(f'Average away goals: {league_avg_away_goals}')
 
     now = timezone.now().date()
-    end_at = now + timedelta(days=1)
+    end_at = now + timedelta(days=2)
     params = {
         'match_table': AsIs(match_table),
         'elo_table': AsIs(elo_table),

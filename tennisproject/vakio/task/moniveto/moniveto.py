@@ -15,14 +15,14 @@ logging.basicConfig(
 )
 
 # docker compose exec tennisproject poetry run python manage.py vakio moniveto
-moniveto_id = 63432
-list_index = 6
+moniveto_id = 63454
+list_index = 8
 
 lst = [
-        [0, 0.43, 0.29, 0.28, 'seriea'],
-        [1, 0.8, 0.14, 0.06, 'laliga'],
-        [2, 0.44, 0.27, 0.29, 'ligue1'],
-        [3, 0.25, 0.3, 0.45, 'premier'],
+        [0, 0.52, 0.27, 0.21, 'seriea'],
+        [1, 0.52, 0.27, 0.21, 'laliga'],
+        [2, 0.44, 0.28, 0.28, 'ligue1'],
+        #[3, 0.25, 0.3, 0.45, 'premier'],
     ]
 
 matches_to_bet = len(lst)
@@ -107,7 +107,7 @@ def moniveto():
 
 
     sport = 'hockey'
-    sport = 'football'
+    #sport = 'football'
     sport = None
     if sport == 'football':
         bet_table = BetFootball
@@ -177,21 +177,21 @@ def moniveto():
             lst.append([3] + probs4)
 
     estimated_avg_goals = [
-        [0, 3, 1.2],
-        [1, 1.34, 1.67],
-        [2, 1.17, 1.33],
-        [3, 1.64, 1.94],
+        [0, 3.0, 2.1],
+        [1, 2.6, 2.3],
+        [2, 2.79, 2.44],
+        #[3, 2.25, 1.9],
     ]
 
     lst = [
-        [0, 0.43, 0.29, 0.28, 'seriea'],
-        [1, 0.8, 0.14, 0.06, 'laliga'],
-        [2, 0.44, 0.27, 0.29, 'ligue1'],
-        [3, 0.25, 0.3, 0.45, 'premier'],
+        [0, 0.72, 0.20, 0.08, 'seriea'],
+        [1, 0.36, 0.32, 0.32, 'laliga'],
+        [2, 0.37, 0.31, 0.32, 'ligue1'],
+        #[3, 0.25, 0.3, 0.45, 'premier'],
     ]
     is_using_own_data = True
     ice_hockey = False
-    est_goals_from_prob = True
+    est_goals_from_prob = False
     if not is_using_own_data and not ice_hockey:
         for i, item in enumerate(lst):
             arbitrage_check(item)

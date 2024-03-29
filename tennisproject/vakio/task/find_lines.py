@@ -155,7 +155,7 @@ def find_lines(list_index, vakio_id, max_bet_eur, bet):
     logging.info(params)
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'share']
-    df = df[df['yield'] >= 1]
+    df = df[df['yield'] >= 0.7]
     #df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]
     print("Profitable lines:", len(df))

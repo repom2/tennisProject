@@ -11,7 +11,7 @@ import sys
 from tennisapi.stats.player_stats import player_stats
 from tennisapi.stats.tennisabstract_site import tennisabstract_scrape
 from tennisapi.stats.tennisabstract_site_atp import tennisabstract_scrape_atp
-from tennisapi.stats.prob_by_serve.winning_match import matchProb
+from tennisapi.stats.prob_by_serve.winning_match import matchProb, match_prob
 from tennisapi.stats.fatigue_modelling import fatigue_modelling
 from tennisapi.stats.injury_modelling import injury_modelling
 from tennisapi.stats.head2head import head2head
@@ -48,7 +48,9 @@ def probability_of_winning(x):
 
 def get_data(params):
     query = """
-        select  home_spw,
+        select
+                home_short_preview,
+                home_spw,
                 home_rpw,
                 home_dr,
                 home_matches,
@@ -113,7 +115,8 @@ def get_data(params):
                 case when home_court_time is null then 0 else home_court_time / 60 end as home_court_time,
 		        case when away_court_time is null then 0 else away_court_time / 60 end as away_court_time
             from (
-            select 
+            select
+                home_short_preview,
                 home_spw,
                 home_rpw,
                 home_dr,
@@ -260,13 +263,11 @@ def predict_ta(level, tour):
         "bet_table": AsIs(bet_table),
     }
     data = get_data(params)
-    # where home_player_id = 104745 and away_player_id = 104745
+
     #data = data[(data["home_player_id"] == 211095) ]
-    # take only second row
     #data = data.iloc[1:]
     #data = data.head(1)
-    # select only last row
-    #data = data.tail(4)
+
     l = len(data.index)
     if l == 0:
         print("No data")
@@ -288,7 +289,6 @@ def predict_ta(level, tour):
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
     )
-    #exit()
     if level == "atp":
         tour_spw, tour_rpw = 0.645, 0.355
     else:
@@ -393,7 +393,12 @@ def predict_ta(level, tour):
         else None,
         axis=1,
     )
-
+    columns = [
+        "player1", "player2",
+    ]
+    logging.info(
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+    )
     cols = [
         "atp_home_fullname",
         "atp_away_fullname",
@@ -409,8 +414,62 @@ def predict_ta(level, tour):
     logging.info(
         f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}"
     )
-    data["stats_win"] = data.apply(
-        lambda x: matchProb(
+    # Away player stats win
+    data[
+        [
+            "stats_win",
+            "away_wins_single_game",
+            "away_wins_single_set",
+            "away_wins_1_set",
+            "away_wins_2_set",
+            "away_ah_7_5",
+            "away_ah_6_5",
+            "away_ah_5_5",
+            "away_ah_4_5",
+            "away_ah_3_5",
+            "away_ah_2_5",
+            "games_over_21_5",
+            "games_over_22_5",
+            "games_over_23_5",
+            "games_over_24_5",
+            "games_over_25_5",
+        ]
+        ] = data.apply(
+        lambda x: match_prob(
+            x.player2 if x.player2 else None,
+            1 - x.player1 if x.player1 else None,
+            gv=0,
+            gw=0,
+            sv=0,
+            sw=0,
+            mv=0,
+            mw=0,
+            sets=3,
+        ),
+        axis=1,
+    ).round(2)
+    # Home player stats win
+    data[
+        [
+            "stats_win",
+            "home_wins_single_game",
+            "home_wins_single_set",
+            "home_wins_1_set",
+            "home_wins_2_set",
+            "home_ah_7_5",
+            "home_ah_6_5",
+            "home_ah_5_5",
+            "home_ah_4_5",
+            "home_ah_3_5",
+            "home_ah_2_5",
+            "games_over_21_5",
+            "games_over_22_5",
+            "games_over_23_5",
+            "games_over_24_5",
+            "games_over_25_5",
+        ]
+        ] = data.apply(
+        lambda x: match_prob(
             x.player1 if x.player1 else None,
             1 - x.player2 if x.player2 else None,
             gv=0,
@@ -423,6 +482,12 @@ def predict_ta(level, tour):
         ),
         axis=1,
     ).round(2)
+    columns = [
+        "stats_win",
+    ]
+    logging.info(
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+    )
 
     # Common opponent
     data[["spw1_c", "spw2_c", "common_opponents_count"]] = pd.DataFrame(
@@ -540,18 +605,23 @@ def predict_ta(level, tour):
             tour_spw,
             tour_rpw,
         )"""
-        home_short_preview = stats_analysis(
-            row.winner_name,
-            row.loser_name,
-            row.home_player_info,
-            row.away_player_info,
-            row.home_md_table,
-            row.away_md_table,
-            row.stats_win,
-            row.elo_prob,
-            row.home_matches,
-            row.away_matches,
-        )
+        if row.home_short_preview is None:
+            log.info("No short preview")
+            log.info(row.home_short_preview)
+            home_short_preview = stats_analysis(
+                row.winner_name,
+                row.loser_name,
+                row.home_player_info,
+                row.away_player_info,
+                row.home_md_table,
+                row.away_md_table,
+                row.stats_win,
+                row.elo_prob,
+                row.home_matches,
+                row.away_matches,
+            )
+        else:
+            home_short_preview = row.home_short_preview
         home_preview, away_preview, away_short_preview = None, None, None
         try:
             row["home_current_rank"] = int(row["home_current_rank"])
@@ -612,5 +682,26 @@ def predict_ta(level, tour):
                 "home_short_preview": home_short_preview,
                 "away_preview": away_preview,
                 "away_short_preview": away_short_preview,
+                "home_wins_single_game": row["home_wins_single_game"],
+                "home_wins_single_set": row["home_wins_single_set"],
+                "home_wins_1_set": row["home_wins_1_set"],
+                "home_wins_2_set": row["home_wins_2_set"],
+                "home_ah_7_5": row["home_ah_7_5"],
+                "home_ah_6_5": row["home_ah_6_5"],
+                "home_ah_5_5": row["home_ah_5_5"],
+                "home_ah_4_5": row["home_ah_4_5"],
+                "home_ah_3_5": row["home_ah_3_5"],
+                "home_ah_2_5": row["home_ah_2_5"],
+                "away_ah_7_5": row["away_ah_7_5"],
+                "away_ah_6_5": row["away_ah_6_5"],
+                "away_ah_5_5": row["away_ah_5_5"],
+                "away_ah_4_5": row["away_ah_4_5"],
+                "away_ah_3_5": row["away_ah_3_5"],
+                "away_ah_2_5": row["away_ah_2_5"],
+                "games_over_21_5": row["games_over_21_5"],
+                "games_over_22_5": row["games_over_22_5"],
+                "games_over_23_5": row["games_over_23_5"],
+                "games_over_24_5": row["games_over_24_5"],
+                "games_over_25_5": row["games_over_25_5"],
             },
         )

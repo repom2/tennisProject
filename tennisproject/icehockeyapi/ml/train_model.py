@@ -206,8 +206,12 @@ def train_ml_model(row, level, params, league_avg_home_goals, league_avg_away_go
     odds_limit_home = round(1 / prob_home_multi, 3)
     odds_limit_away = round(1 / prob_away_multi, 3)
     odds_limit_draw = round(1 / prob_draw_multi, 3)
-    yield_home = round(odds_home * prob_home, 3)
-    yield_away = round(odds_away * prob_away, 3)
+    try:
+        yield_home = round(odds_home * prob_home, 3)
+        yield_away = round(odds_away * prob_away, 3)
+    except TypeError:
+        yield_home = None
+        yield_away = None
 
     logging.info(
         f"Probabilities: {prob_home_multi}, {prob_draw_multi}, {prob_away_multi} Odds: {odds_limit_home}/{odds_limit_draw}/{odds_limit_away}")

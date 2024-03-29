@@ -102,12 +102,11 @@ def get_win_share(list_index, vakio_id):
     number_of_matches = len(number_of_matches['combination'])
     start = datetime.now()
     matches = [["1", "X", "2"]] * number_of_matches
-    if vakio_id == 100441:
-        matches[2] = "1"
+    if vakio_id == 55570:
         print("Removed", matches[2])
-        matches[3] = ["1", "2"]
-        matches[4] = ["1", "2"]
-        matches[9] = ["1", "2"]
+        matches[0] = ["1", "X"]
+        matches[6] = ["1", "X"]
+
 
     logging.info(f"List index: {list_index} - Vakio id: {vakio_id} - Number of matches: {number_of_matches}")
 

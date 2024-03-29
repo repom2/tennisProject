@@ -78,6 +78,11 @@ class Command(BaseCommand):
 
         list_sports_cmd = subparsers.add_parser("find-lines")
         list_sports_cmd.set_defaults(subcommand=self.find_profits)
+        list_sports_cmd.add_argument("bet", nargs='?', type=str,
+                                     help='If not provided no bets', default=None)
+        list_sports_cmd.add_argument("stake", nargs='?', type=int, default=30)
+        list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
+        list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
 
         list_sports_cmd = subparsers.add_parser("prob")
         list_sports_cmd.set_defaults(subcommand=self.calc_prob)
@@ -206,7 +211,11 @@ class Command(BaseCommand):
         find_lines(list_index, vakio_id, max_bet_eur, bet)
 
     def find_profits(self, options):
-        find_lines()
+        bet = options["bet"]
+        max_bet_eur = options["stake"]
+        list_index = options["index"]
+        vakio_id = options["id"]
+        find_lines(list_index, vakio_id, max_bet_eur, bet)
 
     def calc_prob(self, options):
         calculate_probabilities()

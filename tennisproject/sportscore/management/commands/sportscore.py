@@ -265,6 +265,7 @@ class Command(BaseCommand):
     def football_events_by_leagues(self, options):
         football_leagues = [
             ['317', 'Premier League'],
+            ['326', 'Championship'],
             ['326', 'FA Cup'],
             ['251', 'La Liga'],
             ['512', 'Bundesliga'],

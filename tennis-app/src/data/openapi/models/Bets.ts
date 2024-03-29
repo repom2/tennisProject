@@ -203,5 +203,105 @@ export type Bets = {
      * Away player info
      */
     awayPlayerInfo?: string;
+    /**
+     * Home player AH7.5
+     */
+    homeAH7_5?: number;
+    /**
+     * Home player AH6.5
+     */
+    homeAH6_5?: number;
+    /**
+     * Home player AH5.5
+     */
+    homeAH5_5?: number;
+    /**
+     * Home player AH4.5
+     */
+    homeAH4_5?: number;
+    /**
+     * Home player AH3.5
+     */
+    homeAH3_5?: number;
+    /**
+     * Home player AH2.5
+     */
+    homeAH2_5?: number;
+    /**
+     * away player AH7.5
+     */
+    awayAH7_5?: number;
+    /**
+     * away player AH6.5
+     */
+    awayAH6_5?: number;
+    /**
+     * away player AH5.5
+     */
+    awayAH5_5?: number;
+    /**
+     * away player AH4.5
+     */
+    awayAH4_5?: number;
+    /**
+     * away player AH3.5
+     */
+    awayAH3_5?: number;
+    /**
+     * away player AH2.5
+     */
+    awayAH2_5?: number;
+    /**
+     * Games over 21.5
+     */
+    gamesOver21_5?: number;
+    /**
+     * Games over 22.5
+     */
+    gamesOver22_5?: number;
+    /**
+     * Games over 23.5
+     */
+    gamesOver23_5?: number;
+    /**
+     * Games over 24.5
+     */
+    gamesOver24_5?: number;
+    /**
+     * Games over 25.5
+     */
+    gamesOver25_5?: number;
+    /**
+     * Home player win single games
+     */
+    homeWinSingleGame?: number;
+    /**
+     * Away player win single games
+     */
+    awayWinSingleGame?: number;
+    /**
+     * Home player win single sets
+     */
+    homeWinSingleSet?: number;
+    /**
+     * Away player win single sets
+     */
+    awayWinSingleSet?: number;
+    /**
+     * Home player win 1 set
+     */
+    homeWin1Set?: number;
+    /**
+     * Away player win 1 set
+     */
+    awayWin1Set?: number;
+    /**
+     * Home player win 2 sets
+     */
+    homeWin2Set?: number;
+    /**
+     * Away player win 2 sets
+     */
+    awayWin2Set?: number;
 };
 

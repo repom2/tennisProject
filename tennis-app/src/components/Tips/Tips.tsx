@@ -1,9 +1,8 @@
-import "./Tips.css";
-
 import {getData} from "common/functions/betData";
 import {Bets} from "data/openapi";
 import React, {useState} from "react";
 import {useQuery} from "react-query";
+import styles from "./Tips.module.css";
 
 interface RenderTextProps {
     text?: string;
@@ -22,6 +21,42 @@ interface TipsProps {
     level: string;
 }
 
+interface TooltipProps {
+    children: React.ReactNode;
+    content: Bets;
+}
+
+// Custom Tooltip component
+const Tooltip = ({ children, content }: TooltipProps) => {
+  console.log("children", children)
+  console.log("content", content)
+  const [isVisible, setIsVisible] = useState(false);
+
+  const showTooltip = () => setIsVisible(true);
+  const hideTooltip = () => setIsVisible(false);
+
+  // Conditionally apply the 'visible' class to show the tooltip
+  const tooltipClass = isVisible ? `${styles.tooltipText} ${styles.visible}` : styles.tooltipText;
+
+  const probabilities = (
+    <div>
+      <div className={styles.NoWrap}>Over 21.5 Games: {content.gamesOver21_5} {content.gamesOver21_5 ? (1 / content.gamesOver21_5).toFixed(2) : 'N/A'}</div>
+      <p className={styles.NoWrap}>Over 22.5 Games: {content.gamesOver22_5} {content.gamesOver22_5 ? (1 / content.gamesOver22_5).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>Over 23.5 Games: {content.gamesOver23_5} {content.gamesOver23_5 ? (1 / content.gamesOver23_5).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>AH 4.5: {content.homeAH4_5} {content.homeAH4_5 ? (1 / content.homeAH4_5).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>AH 3.5: {content.homeAH3_5} {content.homeAH3_5 ? (1 / content.homeAH3_5).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>AH 2.5: {content.homeAH2_5} {content.homeAH2_5 ? (1 / content.homeAH2_5).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>AH 1.5 Set: {content.homeWin1Set} {content.homeWin1Set ? (1 / content.homeWin1Set).toFixed(2) : 'N/A'}</p>
+    </div>
+    )
+  return (
+    <div className={styles.tooltipContainer} onMouseEnter={showTooltip} onMouseLeave={hideTooltip}>
+      {children}
+      <div className={tooltipClass}>{probabilities}</div>
+    </div>
+  );
+};
+
 export const Tips: React.FC<TipsProps> = ({level}) => {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -34,19 +69,27 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
 
     if (isError) return <div />;
 
+    const tooltipContent = (
+    <div>
+      <p>Over 21.5 Games: </p>
+      <p>Over 22.5 Games: </p>
+      <p>Over 23.5 Games: </p>
+      {/* Add more stats as needed */}
+    </div>
+  );
+
     return (
-        <div className="main">
-            <table className="table">
+        <div className={styles.main}>
+            <table className={styles.table}>
                 <thead>
-                    <tr className="header">
+                    <tr className={styles.header}>
                         <th>Match</th>
                         <th>Yield</th>
                         <th>Dr</th>
                         <th>Odds</th>
-                        <th>StatsWin%</th>
-                        <th>S/RPW1</th>
-                        <th>Matches</th>
-                        <th>S/RPW2</th>
+                        <th>Win%</th>
+                        <th>Show</th>
+                        <th>S/RPW</th>
                         <th>Matches</th>
                         <th>Elo</th>
                         <th>YElo</th>
@@ -59,71 +102,76 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                 <tbody>
                     {data &&
                         data.data &&
-                        data.data.map((player: Bets, index: number) => (
+                        data.data.map((matchData: Bets, index: number) => (
                             <React.Fragment key={index}>
                                 <tr
-                                    key={player.matchId}
-                                    className="row"
+                                    key={matchData.matchId}
+                                    className={styles.row}
                                     onClick={() => handleItemClick(index)}
                                 >
                                     <td>
-                                        <div className="no-wrap">{player.homeName} ({player.homeCurrentRank})</div>
-                                        <div className="no-wrap">{player.awayName} ({player.awayCurrentRank})</div>
+                                        <div className={styles.NoWrap}>{matchData.homeName} ({matchData.homeCurrentRank})</div>
+                                        <div className={styles.NoWrap}>{matchData.awayName} ({matchData.awayCurrentRank})</div>
                                     </td>
                                     <td>
-                                        <div>{player.homeYield}</div>
-                                        <div>{player.awayYield}</div>
+                                        <div>{matchData.homeYield}</div>
+                                        <div>{matchData.awayYield}</div>
                                     </td>
                                     <td>
-                                        <div>{player.homeDr}</div>
-                                        <div>{player.awayDr}</div>
+                                        <div>{matchData.homeDr}</div>
+                                        <div>{matchData.awayDr}</div>
                                     </td>
                                     <td>
-                                        <div>{player.homeOdds}</div>
-                                        <div>{player.awayOdds}</div>
+                                        <div>{matchData.homeOdds}</div>
+                                        <div>{matchData.awayOdds}</div>
                                     </td>
-                                    <td>{player.statsWin}</td>
+                                    <td>{matchData.statsWin}</td>
                                     <td>
-                                        {player.homeSpw}/{player.homeRpw}
-                                    </td>
-                                    <td className="no-wrap">{player.homeMatches}</td>
-                                    <td>
-                                        {player.awaySpw}/{player.awayRpw}
-                                    </td>
-                                    <td className="no-wrap">{player.awayMatches}</td>
-                                    <td>{player.eloProb}</td>
-                                    <td>{player.yearEloProb}</td>
-                                    <td>{player.homeProb}</td>
-                                    <td>
-                                        {player.h2hWin}/{player.h2hMatches}
+                                        <Tooltip content={matchData}>
+                                            <span>Show</span>
+                                        </Tooltip>
                                     </td>
                                     <td>
-                                        {player.commonOpponents}/{player.commonOpponentsCount}
+                                        <div>{matchData.homeSpw}/{matchData.homeRpw}</div>
+                                        <div>{matchData.awaySpw}/{matchData.awayRpw}</div>
                                     </td>
                                     <td>
-                                        {player.startAt
-                                            ? new Date(player.startAt).toLocaleDateString()
+                                        <div className={styles.NoWrap}>{matchData.homeMatches}</div>
+                                        <div className={styles.NoWrap}>{matchData.awayMatches}</div>
+                                    </td>
+                                    <td>{matchData.eloProb}</td>
+                                    <td>{matchData.yearEloProb}</td>
+                                    <td>{matchData.homeProb}</td>
+                                    <td>
+                                        {matchData.h2hWin}/{matchData.h2hMatches}
+                                    </td>
+                                    <td>
+                                        {matchData.commonOpponents}/{matchData.commonOpponentsCount}
+                                    </td>
+                                    <td>
+                                        {matchData.startAt
+                                            ? new Date(matchData.startAt).toLocaleDateString()
                                             : "N/A"}
                                     </td>
                                 </tr>
                                 {openIndex === index && (
                                     <tr>
-                                        <td colSpan={15}>
+                                        <td colSpan={13}>
                                             {/* Whatever you want to display when clicked */}
-                                            <div className="Preview">
-                                                <div><h2>{player.homeName}</h2></div>
-                                                <div className="Preview">{player.homePlayerInfo}{player.homePlays}</div>
-                                                <RenderText text={player.homeShortPreview} />
-                                                <div className="PreviewTable">
-                                                    <RenderText text={player.homeTable} />
+                                            <div className={styles.Preview}>
+                                                <div><h2>{matchData.homeName}</h2></div>
+                                                <div className={styles.Preview}>{matchData.homePlayerInfo}{matchData.homePlays}</div>
+                                                <RenderText text={matchData.homeShortPreview} />
+                                                <div className={styles.PreviewTable}>
+                                                    <RenderText text={matchData.homeTable} />
                                                 </div>
                                             </div>
-                                            <div className="Preview">
-                                                <h2>{player.awayName}</h2>
-                                                <div className="Preview">{player.awayPlayerInfo}{player.awayPlays}</div>
-                                                <RenderText text={player.awayShortPreview} />
-                                                <div className="PreviewTable">
-                                                    <RenderText text={player.awayTable} />
+                                            <div className={styles.Preview}>
+                                                <h2>{matchData.awayName}</h2>
+                                                <div className={styles.Preview}>{matchData.awayPlayerInfo}{matchData.awayPlays}</div>
+                                                <RenderText text={matchData.awayShortPreview} />
+                                                <div className={styles.PreviewTable}>
+                                                    <RenderText text={matchData.awayTable} />
                                                 </div>
                                             </div>
                                         </td>

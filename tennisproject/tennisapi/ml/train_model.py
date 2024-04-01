@@ -150,7 +150,7 @@ def classifier(
     return model, model_rf
 
 
-def train_ml_model(row, level, params):
+def train_ml_model(row, level, params, surface):
     logging.info("-" * 50)
     # logging.info(f"Training model for {row['winner_name']} vs {row['loser_name']}")
     home_name = row['winner_fullname']
@@ -171,7 +171,6 @@ def train_ml_model(row, level, params):
         #'common_opponents',
         #'round_code',
     ]
-
     # pandas series to dataframe
     df = row.to_frame().T
     odds_home = df['home_odds'].iloc[0]
@@ -201,8 +200,10 @@ def train_ml_model(row, level, params):
     if df['year_elo_prob'].isnull().values.any():
         features.remove("year_elo_prob")
 
-    df = df[features]
 
+    if surface == "clay":
+        df["stats_win"] = df["stats_win_clay"]
+    df = df[features]
     if level == 'atp':
         data = get_data_atp_data(params)
     else:

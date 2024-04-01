@@ -88,9 +88,12 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                         <th>Dr</th>
                         <th>Odds</th>
                         <th>Win%</th>
+                        <th>Clay%</th>
                         <th>Show</th>
                         <th>S/RPW</th>
                         <th>Matches</th>
+                        <th>S/RPW(Clay)</th>
+                        <th>MClay</th>
                         <th>Elo</th>
                         <th>YElo</th>
                         <th>MLProb</th>
@@ -126,6 +129,7 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                                         <div>{matchData.awayOdds}</div>
                                     </td>
                                     <td>{matchData.statsWin}</td>
+                                    <td>{matchData.statsWinClay}</td>
                                     <td>
                                         <Tooltip content={matchData}>
                                             <span>Show</span>
@@ -138,6 +142,14 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                                     <td>
                                         <div className={styles.NoWrap}>{matchData.homeMatches}</div>
                                         <div className={styles.NoWrap}>{matchData.awayMatches}</div>
+                                    </td>
+                                    <td>
+                                        <div>{matchData.homeSpwClay}/{matchData.homeRpwClay}</div>
+                                        <div>{matchData.awaySpwClay}/{matchData.awayRpwClay}</div>
+                                    </td>
+                                    <td>
+                                        <div className={styles.NoWrap}>{matchData.homeMatchesClay}</div>
+                                        <div className={styles.NoWrap}>{matchData.awayMatchesClay}</div>
                                     </td>
                                     <td>{matchData.eloProb}</td>
                                     <td>{matchData.yearEloProb}</td>

@@ -195,14 +195,14 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
-        leagues = list(Match.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
-        wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
-        # Make queryset text field to date
-        # time now
-        #date_now = datetime.now() - timedelta(days=7)
-        #leagues = list(TennisTournaments.objects.filter(start_date__gte=date_now).values_list('id').distinct('id'))
+        #leagues = list(Match.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
+        #wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
+        #leagues = wta_leagues + leagues #+ ch_leagues
+        # Make queryset text field to date time now
+        date_now = datetime.now() - timedelta(days=14)
+        leagues = TennisTournaments.objects.filter(start_date__gte=date_now).values_list('id', 'slug')
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
-        leagues = wta_leagues + leagues #+ ch_leagues
+
         logging.info(f"Leagues: {len(leagues)}")
         sport_score_key = settings.SPORT_SCORE_KEY
         #leagues = [('6945',)]

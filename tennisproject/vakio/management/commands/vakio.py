@@ -95,6 +95,8 @@ class Command(BaseCommand):
 
         list_sports_cmd = subparsers.add_parser("moniveto")
         list_sports_cmd.set_defaults(subcommand=self.calc_moniveto)
+        list_sports_cmd.add_argument("index", nargs='?', type=int, default=None)
+        list_sports_cmd.add_argument("id", nargs='?', type=int, default=None)
 
         list_sports_cmd = subparsers.add_parser("moniveto-winshares")
         list_sports_cmd.set_defaults(subcommand=self.get_moniveto_winshares)
@@ -227,7 +229,9 @@ class Command(BaseCommand):
         match_probability()
 
     def calc_moniveto(self, options):
-        moniveto()
+        moniveto_index = options["index"]
+        moniveto_id = options["id"]
+        moniveto(moniveto_index, moniveto_id)
 
     def get_moniveto_winshares(self, options):
         moniveto_winshares(None, None)

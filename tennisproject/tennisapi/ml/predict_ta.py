@@ -209,19 +209,24 @@ def label_round(data, mapping):
 
 
 def predict_ta(level, tour):
-    surface = "hard"
     now = timezone.now().date()
     end_at = now + timedelta(days=2)
     from_at = now - timedelta(days=2)
-    # now = '2023-12-24'
 
     if level == "atp":
-        qs = (
-            AtpMatches.objects.filter(tourney_name__icontains=tour, date__gte=from_at)
+        qs =(
+            Match.objects.filter(tourney_name__icontains=tour, start_at__gte=from_at)
             .values_list("surface", flat=True)
             .first()
         )
-        logging.info("Surface: %s", qs)
+        if 'clay' in qs or 'Clay' in qs:
+            surface = 'clay'
+        elif 'grass' in qs or 'Grass' in qs:
+            surface = 'grass'
+        elif 'hard' in qs or 'Hard' in qs:
+            surface = 'hard'
+        else:
+            logging.info("Surface not found: %s", qs)
 
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
@@ -237,6 +242,21 @@ def predict_ta(level, tour):
         if surface == "clay":
             hard_elo = clay_elo
     else:
+        qs =(
+            WtaMatch.objects.filter(tourney_name__icontains=tour, start_at__gte=from_at)
+            .values_list("surface", flat=True)
+            .first()
+        )
+        if 'clay' in qs or 'Clay' in qs:
+            surface = 'clay'
+        elif 'grass' in qs or 'Grass' in qs:
+            surface = 'grass'
+        elif 'hard' in qs or 'Hard' in qs:
+            surface = 'hard'
+        else:
+            logging.info("Surface not found: %s", qs)
+        logging.info("Surface: %s", surface)
+
         bet_qs = BetWta.objects.all()
         match_qs = WtaMatch.objects.all()
         player_qs = WTAPlayers.objects.all()
@@ -266,7 +286,6 @@ def predict_ta(level, tour):
 
     #data = data[(data["home_player_id"] == 211095) ]
     #data = data.iloc[1:]
-    #data = data.head(1)
 
     l = len(data.index)
     if l == 0:
@@ -286,9 +305,11 @@ def predict_ta(level, tour):
         "atp_home_fullname",
         "atp_away_fullname",
     ]
+
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
     )
+
     if level == "atp":
         tour_spw, tour_rpw = 0.645, 0.355
     else:
@@ -324,9 +345,13 @@ def predict_ta(level, tour):
                 "home_plays",
                 "home_player_info",
                 "home_md_table",
+                "home_spw_clay",
+                "home_rpw_clay",
+                "home_dr_clay",
+                "home_matches_clay",
             ]
         ] = data.apply(
-            lambda row: tennisabstract_scrape_atp(row, 'home'),
+            lambda row: tennisabstract_scrape_atp(row, 'home', surface),
             axis=1)
         data[
             [
@@ -339,9 +364,13 @@ def predict_ta(level, tour):
                 "away_plays",
                 "away_player_info",
                 "away_md_table",
+                "away_spw_clay",
+                "away_rpw_clay",
+                "away_dr_clay",
+                "away_matches_clay",
             ]
         ] = data.apply(
-            lambda row: tennisabstract_scrape_atp(row, 'away'),
+            lambda row: tennisabstract_scrape_atp(row, 'away', surface),
             axis=1)
     else:
         data[
@@ -355,9 +384,13 @@ def predict_ta(level, tour):
                 "home_plays",
                 "home_player_info",
                 "home_md_table",
+                "home_spw_clay",
+                "home_rpw_clay",
+                "home_dr_clay",
+                "home_matches_clay",
             ]
         ] = data.apply(
-            lambda row: tennisabstract_scrape(row, 'home'),
+            lambda row: tennisabstract_scrape(row, 'home', surface),
             axis=1)
         data[
             [
@@ -370,9 +403,13 @@ def predict_ta(level, tour):
                 "away_plays",
                 "away_player_info",
                 "away_md_table",
+                "away_spw_clay",
+                "away_rpw_clay",
+                "away_dr_clay",
+                "away_matches_clay",
             ]
         ] = data.apply(
-            lambda row: tennisabstract_scrape(row, 'away'),
+            lambda row: tennisabstract_scrape(row, 'away', surface),
             axis=1)
 
     data["home_spw"] = data["home_spw"].astype(float)
@@ -381,6 +418,12 @@ def predict_ta(level, tour):
     data["away_spw"] = data["away_spw"].astype(float)
     data["away_rpw"] = data["away_rpw"].astype(float)
     data["away_dr"] = data["away_dr"].astype(float)
+    data["home_spw_clay"] = data["home_spw_clay"].astype(float)
+    data["home_rpw_clay"] = data["home_rpw_clay"].astype(float)
+    data["home_dr_clay"] = data["home_dr_clay"].astype(float)
+    data["away_spw_clay"] = data["away_spw_clay"].astype(float)
+    data["away_rpw_clay"] = data["away_rpw_clay"].astype(float)
+    data["away_dr_clay"] = data["away_dr_clay"].astype(float)
     data["player1"] = data.apply(
         lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
         if (x.away_rpw and x.home_spw)
@@ -393,8 +436,20 @@ def predict_ta(level, tour):
         else None,
         axis=1,
     )
+    data["player1_clay"] = data.apply(
+        lambda x: tour_spw + (x.home_spw_clay - tour_spw) - (x.away_rpw_clay - tour_rpw)
+        if (x.away_rpw_clay and x.home_spw_clay)
+        else None,
+        axis=1,
+    )
+    data["player2_clay"] = data.apply(
+        lambda x: tour_spw + (x.away_spw_clay - tour_spw) - (x.home_rpw_clay - tour_rpw)
+        if (x.home_rpw_clay and x.away_spw_clay)
+        else None,
+        axis=1,
+    )
     columns = [
-        "player1", "player2",
+        "player1_clay", "player2_clay",
     ]
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
@@ -482,8 +537,41 @@ def predict_ta(level, tour):
         ),
         axis=1,
     ).round(2)
+    data[
+        [
+            "stats_win_clay",
+            "home_wins_single_game",
+            "home_wins_single_set",
+            "home_wins_1_set",
+            "home_wins_2_set",
+            "home_ah_7_5",
+            "home_ah_6_5",
+            "home_ah_5_5",
+            "home_ah_4_5",
+            "home_ah_3_5",
+            "home_ah_2_5",
+            "games_over_21_5",
+            "games_over_22_5",
+            "games_over_23_5",
+            "games_over_24_5",
+            "games_over_25_5",
+        ]
+        ] = data.apply(
+        lambda x: match_prob(
+            x.player1_clay if x.player1_clay else None,
+            1 - x.player2_clay if x.player2_clay else None,
+            gv=0,
+            gw=0,
+            sv=0,
+            sw=0,
+            mv=0,
+            mw=0,
+            sets=3,
+        ),
+        axis=1,
+    ).round(2)
     columns = [
-        "stats_win",
+        "stats_win_clay",
     ]
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
@@ -580,7 +668,7 @@ def predict_ta(level, tour):
     for index, row in data.iterrows():
         try:
             home_prob, away_prob, home_yield, away_yield = train_ml_model(
-                row, level, params
+                row, level, params, surface
             )
         except Exception as e:
             log.error(e)
@@ -703,5 +791,15 @@ def predict_ta(level, tour):
                 "games_over_23_5": row["games_over_23_5"],
                 "games_over_24_5": row["games_over_24_5"],
                 "games_over_25_5": row["games_over_25_5"],
+                "stats_win_clay": row["stats_win_clay"],
+                "home_spw_clay": row["home_spw_clay"],
+                "home_rpw_clay": row["home_rpw_clay"],
+                "home_dr_clay": row["home_dr_clay"],
+                "home_matches_clay": row["home_matches_clay"],
+                "away_spw_clay": row["away_spw_clay"],
+                "away_rpw_clay": row["away_rpw_clay"],
+                "away_dr_clay": row["away_dr_clay"],
+                "away_matches_clay": row["away_matches_clay"],
+                "surface": surface,
             },
         )

@@ -49,10 +49,10 @@ def get_data(params):
                 h.name as home_name,
                 aw.name as away_name,
                 winner_code,
-                (select avg(home_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_goals,
-				(select avg(away_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at < date(b.start_at)) as home_conceded,
-				(select avg(away_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_goals,
-				(select avg(home_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at < date(b.start_at)) as away_conceded,
+                (select avg(home_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at between '2023-8-1' and  date(b.start_at)) as home_goals,
+				(select avg(away_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at between '2023-8-1' and date(b.start_at)) as home_conceded,
+				(select avg(away_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at between '2023-8-1' and date(b.start_at)) as away_goals,
+				(select avg(home_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at between '2023-8-1' and date(b.start_at)) as away_conceded,
                 (select elo from %(elo_table)s elo where elo.team_id=b.home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
                 (select elo from %(elo_table)s elo where elo.team_id=b.away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
                 (select elo from %(elo_home)s elo where elo.team_id=b.away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
@@ -245,6 +245,10 @@ def predict(level):
                 "draw_poisson": row['draw_poisson'],
                 "away_poisson": row['away_poisson'],
                 "level": level,
+                "home_goals": round(row['home_goals'], 2),
+                "home_conceded": round(row['home_conceded'], 2),
+                "away_goals": round(row['away_goals'], 2),
+                "away_conceded": round(row['away_conceded'], 2),
             }
         )
 

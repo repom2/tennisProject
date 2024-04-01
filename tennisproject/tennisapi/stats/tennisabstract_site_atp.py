@@ -8,7 +8,8 @@ from datetime import datetime
 
 logging = logging.getLogger(__name__)
 
-def tennisabstract_scrape_atp(row, home):
+def tennisabstract_scrape_atp(row, home, surface):
+    surface = surface.capitalize()
     if home == "home":
         index_columns = [
             "home_spw",
@@ -132,7 +133,7 @@ def tennisabstract_scrape_atp(row, home):
     # Displaying the results
     print("\nStatistics:")
     for stat in stats_data:
-        if stat[0] == 'Hard':
+        if stat[0] == surface:
             matches = stat[1]
             try:
                 rpw = round(float(stat[10].replace('%', '')) * 0.01, 3)

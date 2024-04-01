@@ -476,6 +476,15 @@ class Bet(models.Model):
     away_win_single_set = models.FloatField(null=True)
     away_win_1_set = models.FloatField(null=True)
     away_win_2_set = models.FloatField(null=True)
+    home_spw_clay = models.FloatField(null=True)
+    home_rpw_clay = models.FloatField(null=True)
+    home_dr_clay = models.FloatField(null=True)
+    home_matches_clay = models.TextField(null=True)
+    away_spw_clay = models.FloatField(null=True)
+    away_rpw_clay = models.FloatField(null=True)
+    away_dr_clay = models.FloatField(null=True)
+    away_matches_clay = models.TextField(null=True)
+    stats_win_clay = models.FloatField(null=True)
 
 
 class BetWta(models.Model):
@@ -568,4 +577,13 @@ class BetWta(models.Model):
     away_win_single_set = models.FloatField(null=True)
     away_win_1_set = models.FloatField(null=True)
     away_win_2_set = models.FloatField(null=True)
+    home_spw_clay = models.FloatField(null=True)
+    home_rpw_clay = models.FloatField(null=True)
+    home_dr_clay = models.FloatField(null=True)
+    home_matches_clay = models.TextField(null=True)
+    away_spw_clay = models.FloatField(null=True)
+    away_rpw_clay = models.FloatField(null=True)
+    away_dr_clay = models.FloatField(null=True)
+    away_matches_clay = models.TextField(null=True)
+    stats_win_clay = models.FloatField(null=True)
 

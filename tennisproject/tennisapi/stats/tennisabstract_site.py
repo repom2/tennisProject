@@ -11,7 +11,8 @@ import pandas as pd
 logging = logging.getLogger(__name__)
 
 
-def tennisabstract_scrape(row, home):
+def tennisabstract_scrape(row, home, surface):
+    surface = surface.capitalize()
     try:
         if home == "home":
             index_columns = [
@@ -24,6 +25,10 @@ def tennisabstract_scrape(row, home):
                 "home_plays",
                 "home_player_info",
                 "home_md_table",
+                "home_spw_clay",
+                "home_rpw_clay",
+                "home_dr_clay",
+                "home_matches_clay",
             ]
             player_name = row["atp_home_fullname"]
             #if row['home_peak_rank']:
@@ -39,10 +44,14 @@ def tennisabstract_scrape(row, home):
                 "away_plays",
                 "away_player_info",
                 "away_md_table",
+                "away_spw_clay",
+                "away_rpw_clay",
+                "away_dr_clay",
+                "away_matches_clay",
             ]
             player_name = row["atp_away_fullname"]
-            if row['away_peak_rank']:
-                return row[index_columns]
+            #if row['away_peak_rank']:
+             #   return row[index_columns]
         # strip the player name
         player_name = player_name.strip().replace(" ", "")
         # Specify the URL where the Selenium Hub is running
@@ -164,8 +173,21 @@ def tennisabstract_scrape(row, home):
                     rpw = None
                     dr = None
                     matches = None
-                    break
-                print([spw, rpw, dr, matches])
+
+                print([spw, rpw, dr, matches], 'Hard')
+            if stat[0] == "Clay":
+                matches_clay = stat[1]
+                try:
+                    rpw_clay = float(stat[7].replace("%", ""))
+                    dr_clay = float(stat[8])
+                    spw_clay = round((100 - rpw_clay / dr_clay) * 0.01, 3)
+                    rpw_clay = round(rpw_clay * 0.01, 3)
+                except ValueError:
+                    spw_clay = None
+                    rpw_clay = None
+                    dr_clay = None
+                    matches_clay = None
+                print([spw_clay, rpw_clay, dr_clay, matches_clay], 'Clay')
 
         # MATCHES TABLE
         try:
@@ -213,11 +235,11 @@ def tennisabstract_scrape(row, home):
         #exit()
         #print([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table])
         # return list as pandas dataframe series
-        return pd.Series([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table],
+        return pd.Series([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table, spw_clay, rpw_clay, dr_clay, matches_clay],
             index=index_columns)
     except Exception as e:
         print(e)
         driver.quit()
-        return pd.Series([None, None, None, None, None, None, None, None, None],
+        return pd.Series([None, None, None, None, None, None, None, None, None, None, None, None, None],
             index=index_columns)
 

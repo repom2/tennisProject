@@ -1,22 +1,18 @@
 from vakio.task.moniveto.match_prob import match_probability
 from vakio.task.moniveto.poisson import calculate_poisson
 from vakio.task.moniveto.odds_from_stats import odds_from_stats
+from vakio.task.moniveto.calc_probs import calc_probs
 import logging
 from vakio.models import Moniveto
-from footballapi.models import BetFootball
-from icehockeyapi.models import BetIceHockey
-from django.utils import timezone
-from datetime import datetime, timedelta
-import unicodedata
+
+
+
+
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
-
-# docker compose exec tennisproject poetry run python manage.py vakio moniveto
-moniveto_id = 63473
-list_index = 5
 
 lst = [
         [0, 0.52, 0.27, 0.21, 'seriea'],
@@ -98,86 +94,20 @@ def estimated_avg_goals_calc(i):
     return ['estimated_goals', home, away]
 
 
-def moniveto():
+def moniveto(list_index, moniveto_id):
     qs = Moniveto.objects.filter(moniveto_id=moniveto_id, list_index=list_index).values(
         'home1', 'away1', 'home2', 'away2', 'home3', 'away3', 'home4', 'away4',
     ).first()
 
-    sport = 'hockey'
-    #sport = 'football'
-    sport = None
-    if sport == 'football':
-        bet_table = BetFootball
-    elif sport == 'hockey':
-        bet_table = BetIceHockey
-    else:
-        print("sport not found!")
-        pass
-    if sport:
-        lst = []
-        try:
-            home_name = unicodedata.normalize('NFKD', qs['home1']).encode('ASCII', 'ignore').decode('ASCII')
-            away_name = unicodedata.normalize('NFKD', qs['away1']).encode('ASCII', 'ignore').decode('ASCII')
-            probs1 = list(bet_table.objects.filter(
-                home_name__icontains=home_name, away_name__icontains=away_name, start_at__gt=timezone.now() - timedelta(days=1)
-            ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
-        except TypeError:
-            logging.info(f"No Match found: {qs['home1']} - {qs['away1']} ")
-            probs1 = [0.4, 0.3, 0.3, 'liig']
-        logging.info(f"{qs['home1']} - {qs['away1']} {probs1}")
-        lst.append([0] + probs1)
-        try:
-            home_name = unicodedata.normalize('NFKD', qs['home2']).encode('ASCII',
-                                                                          'ignore').decode(
-                'ASCII')
-            away_name = unicodedata.normalize('NFKD', qs['away2']).encode('ASCII',
-                                                                          'ignore').decode(
-                'ASCII')
-            probs2 = list(bet_table.objects.filter(
-                home_name__contains=home_name, away_name__contains=away_name
-            ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
-        except TypeError:
-            logging.info(f"No Match found: {qs['home2']} - {qs['away2']} ")
-            probs2 = [0.48, 0.26, 0.26, 'liig']
-        logging.info(f"{qs['home2']} - {qs['away2']} {probs2}")
-        lst.append([1] + probs2)
-        try:
-            home_name = unicodedata.normalize('NFKD', qs['home3']).encode('ASCII',
-                                                                          'ignore').decode(
-                'ASCII')
-            away_name = unicodedata.normalize('NFKD', qs['away3']).encode('ASCII',
-                                                                          'ignore').decode(
-                'ASCII')
-            probs3 = list(bet_table.objects.filter(
-                home_name__contains=home_name, away_name__contains=away_name
-            ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
-        except TypeError:
-            logging.info(f"No Match found: {qs['home3']} - {qs['away3']} ")
-            probs3 = [0.79, 0.14, 0.7, 'liia']
-        logging.info(f"{qs['home3']} - {qs['away3']} {probs3}")
-        lst.append([2] + probs3)
-        if qs['home4']:
-            try:
-                home_name = unicodedata.normalize('NFKD', qs['home4']).encode('ASCII',
-                                                                              'ignore').decode(
-                    'ASCII')
-                away_name = unicodedata.normalize('NFKD', qs['away4']).encode('ASCII',
-                                                                              'ignore').decode(
-                    'ASCII')
-                probs4 = list(bet_table.objects.filter(
-                    home_name__contains=home_name, away_name__contains=away_name
-                ).values_list('home_prob', 'draw_prob', 'away_prob', 'level').first())
-            except TypeError:
-                logging.info(f"No Match found: {qs['home4']} - {qs['away4']} ")
-                probs4 = [0.37, 0.27, 0.36, 'liig']
-            logging.info(f"{qs['home4']} - {qs['away4']} {probs4}")
-            lst.append([3] + probs4)
+    sport = 'football'
+
+    calc_probs(qs, sport)
 
     estimated_avg_goals = [
-        [0, 2.45, 2.65],
-        [1, 2.6, 2.435],
-        [2, 2.6, 2.435],
-        #[3, 2.25, 1.9],
+        [0, 1.69, 1.33],
+        [1, 1.1, 1.46],
+        [2, 1.46, 0.45],
+        [3, 1.1, 1.25],
     ]
 
     lst = [
@@ -230,18 +160,14 @@ def moniveto():
             logging.info("Estimated avg goals: %s", estimated_avg_goals)
             print("---------------------------")
     else:
+        logging.info("Using own data")
         for i, item in enumerate(estimated_avg_goals):
-            #if i == 0 or i == 1:
-             #   continue
-            #estimated_avg_goals = match_probability(item[1], item[2], item[3])
             calculate_poisson(
-                #estimated_avg_goals[0],
                 estimated_avg_goals[i][1],
-                #estimated_avg_goals[1],
                 estimated_avg_goals[i][2],
                 item[0],
                 moniveto_id,
                 list_index,
             )
-            logging.info("Estimated avg goals: %s", estimated_avg_goals)
+            logging.info("Estimated avg goals: %s", estimated_avg_goals[i])
             print("---------------------------")

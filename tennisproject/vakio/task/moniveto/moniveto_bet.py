@@ -15,8 +15,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
 )
 
-m = moniveto.matches_to_bet
-
 pd.set_option('display.max_rows', None)
 
 # the veikkaus site address
@@ -88,10 +86,10 @@ def place_wagers(wager_req, session):
 
     if r.status_code == 200:
         j = r.json()
-        print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.now(), rt, j["serialNumber"][:17]))
+        # print("%s - placed wager in %.3f seconds, serial %s\n" % (datetime.now(), rt, j["serialNumber"][:17]))
         return True
     else:
-        print("Request failed:\n" + r.text)
+        # print("Request failed:\n" + r.text)
         return False
 
 
@@ -106,15 +104,9 @@ def get_balance(session):
 
 
 # https://github.com/VeikkausOy/sport-games-robot/blob/master/Python/robot.py
-def moniveto_bet(bet, max_bet_eur, index, id):
-    moniveto_id = moniveto.moniveto_id
-    list_index = moniveto.list_index
+def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
     qs = Moniveto.objects.filter(moniveto_id=moniveto_id, list_index=list_index).first()
     start = datetime.now()
-    if index:
-        list_index = index
-    if id:
-        moniveto_id = id
     logging.info(f"Moniveto bet started [{list_index}] [{moniveto_id}]")
     params = {
         "username": "repom",
@@ -127,11 +119,17 @@ def moniveto_bet(bet, max_bet_eur, index, id):
         "input": "",
         "stake": 0
     }
-    if m == 3 or m == 2:
-        line_cost = 0.2
+    stake = qs.stake
+    line_cost = stake * 0.01
+    if qs.home3 == '':
+        m = 2
+    elif qs.home4 == '' and qs.home3 is not None:
+        m = 3
     else:
-        line_cost = 0.05
-    stake = line_cost * 100
+        m = 4
+    logging.info(qs.home3)
+    logging.info(qs.home4)
+    logging.info(f"Matches in Moniveto: [{m}]")
     if m == 4:
         query = f"""
         select a.id, a.combination,
@@ -235,7 +233,6 @@ def moniveto_bet(bet, max_bet_eur, index, id):
     session = login(params["username"], params["password"])
     bankroll = get_balance(session)
     for index, row in df.iterrows():
-        print(row['combination'])
         line = row['combination'].split(',')
         # Data for wager
         data = create_multiscore_wager(params["listIndex"], stake, line)
@@ -248,10 +245,10 @@ def moniveto_bet(bet, max_bet_eur, index, id):
             continue
         is_bet_placed = place_wagers(data, session)
         balance = get_balance(session)
-        print("\n\taccount balance: %.2f\n" % (balance / 100.0))
         if balance < 0.0:
             break
         if balance < bankroll and is_bet_placed:
+            logging.info("Line: %s, winshare: %.2f, balance: %.2f" % (row['combination'], winshare*0.01, balance / 100.0))
             try:
                 bet = MonivetoOdds.objects.update_or_create(
                     combination=row["combination"],

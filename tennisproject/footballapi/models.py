@@ -590,3 +590,7 @@ class BetFootball(models.Model):
     home_poisson = models.FloatField(null=True)
     draw_poisson = models.FloatField(null=True)
     away_poisson = models.FloatField(null=True)
+    home_goals = models.FloatField(null=True)
+    away_goals = models.FloatField(null=True)
+    home_conceded = models.FloatField(null=True)
+    away_conceded = models.FloatField(null=True)

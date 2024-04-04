@@ -28,6 +28,14 @@ def stats_analysis(
                     and consider is given calculated match probability correct.
                 """
     )
+    try:
+        away_elo_rating = 1 - elo_rating
+    except TypeError:
+        away_elo_rating = None
+    try:
+        away_stats_win = 1 - stats_win
+    except TypeError:
+        away_stats_win = None
     user_msg = HumanMessage(
         content=f"""
                 Tennis matchs is played between {home_name} and {away_name}.
@@ -39,7 +47,7 @@ def stats_analysis(
                 Latest match data: {away_table}.
                 Calculated stats: {away_matches}.
                 
-                Elo rating based match probabilities: {elo_rating} / {1 - elo_rating}.
+                Elo rating based match probabilities: {elo_rating} / {away_elo_rating}.
             
             About the latest matches data:
             What you can tell about player's path to this match. How difficult matches
@@ -59,7 +67,7 @@ def stats_analysis(
             
             From match data I have calculated stats for the players.
             And from these stats I have calculated probabilities for the match: 
-            {home_name} {stats_win}% vs. {away_name} {1 - stats_win}%
+            {home_name} {stats_win}% vs. {away_name} {away_stats_win}%
             
             What I want to know when looking the match data, player info and elo rating,
             that are the calculated stats comparable between the players. If not my calculation

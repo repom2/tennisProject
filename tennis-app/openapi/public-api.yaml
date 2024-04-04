@@ -379,6 +379,27 @@ components:
         awayWin2Set:
           type: number
           description: "Away player win 2 sets"
+        homeSpwClay:
+          type: number
+          description: "Home player spw on clay"
+        awaySpwClay:
+          type: number
+          description: "Away player spw on clay"
+        homeRpwClay:
+          type: number
+          description: "Home player rpw on clay"
+        awayRpwClay:
+          type: number
+          description: "Away player rpw on clay"
+        statsWinClay:
+          type: number
+          description: "Stats win on clay"
+        homeMatchesClay:
+          type: string
+          description: "Home player matches on clay"
+        awayMatchesClay:
+          type: string
+          description: "Away player matches on clay"
     FootballBets:
       type: object
       properties:

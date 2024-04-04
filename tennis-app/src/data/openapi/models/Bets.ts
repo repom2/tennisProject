@@ -303,5 +303,33 @@ export type Bets = {
      * Away player win 2 sets
      */
     awayWin2Set?: number;
+    /**
+     * Home player spw on clay
+     */
+    homeSpwClay?: number;
+    /**
+     * Away player spw on clay
+     */
+    awaySpwClay?: number;
+    /**
+     * Home player rpw on clay
+     */
+    homeRpwClay?: number;
+    /**
+     * Away player rpw on clay
+     */
+    awayRpwClay?: number;
+    /**
+     * Stats win on clay
+     */
+    statsWinClay?: number;
+    /**
+     * Home player matches on clay
+     */
+    homeMatchesClay?: string;
+    /**
+     * Away player matches on clay
+     */
+    awayMatchesClay?: string;
 };
 

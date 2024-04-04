@@ -82,7 +82,7 @@ def place_wagers(wager_req, session):
         data=json.dumps(wager_req),
         headers=headers
     )
-    rt = time.time() - rt;
+    rt = time.time() - rt
 
     if r.status_code == 200:
         j = r.json()
@@ -144,7 +144,7 @@ def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
         inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
         inner join vakio_monivetoprob e on e.combination=a.match4 and e.moniveto_id = a.moniveto_id and e.list_index = a.list_index
         where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-        order by yield desc
+        order by share desc
         """
     elif m == 3:
         logging.info("Moniveto 3 match")
@@ -160,7 +160,7 @@ def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
                 inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                 inner join vakio_monivetoprob d on d.combination=a.match3 and d.moniveto_id = a.moniveto_id and d.list_index = a.list_index
                 where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                order by yield desc
+                order by share desc
                 """
     else:
         query = f"""
@@ -183,7 +183,7 @@ def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
     if len(data) == 0:
         logging.info("No data to bet")
         exit(0)
-    yield_limit = 1.0
+    yield_limit = 1.25
     df = data[data['yield'] > yield_limit]
     df = df[columns]
 

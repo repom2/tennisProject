@@ -195,19 +195,45 @@ class Command(BaseCommand):
 
     # Update database
     def events_by_leagues(self, options):
+        date_now = datetime.now()# - timedelta(days=7)
+        # date to string
+        date_now_str = date_now.strftime("%Y-%m-%d")
+        logging.info(f"Date now: {date_now}")
+        events_by_league_id = f"https://sportscore1.p.rapidapi.com/sports/2/events/date/{date_now_str}"
+        sport_score_key = settings.SPORT_SCORE_KEY
+        headers = {
+            "X-RapidAPI-Key": sport_score_key,
+            "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
+        }
+
+        querystring = {"page": "1"}
+
+        response = requests.request(
+            "GET", events_by_league_id, headers=headers, params=querystring
+        )
+
+        data = response.text
+        data = json.loads(data)
+        data_df = data['data']
+        leagues = []
+        for item in data_df:
+            league_id = item['league_id']
+            name = item['league']['name']
+            if (league_id, name) not in leagues:
+                leagues.append((league_id, name))
+
         #leagues = list(Match.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
         #wta_leagues = list(WtaMatch.objects.filter(start_at__gte='2024-3-10').values_list('tour_id').distinct('tour_id'))
         #leagues = wta_leagues + leagues #+ ch_leagues
         # Make queryset text field to date time now
-        date_now = datetime.now() - timedelta(days=14)
-        leagues = TennisTournaments.objects.filter(start_date__gte=date_now).values_list('id', 'slug')
+
+        #leagues = TennisTournaments.objects.filter(end_date__gte=date_now).values_list('id', 'slug').order_by('id')
         #ch_leagues = list(ChTour.objects.filter(date__gte='2023-06-15').values_list('id'))
 
         logging.info(f"Leagues: {len(leagues)}")
         sport_score_key = settings.SPORT_SCORE_KEY
-        #leagues = [('6945',)]
         for id in leagues:
-            logging.info(f"League: {id}")
+            logging.info(f"League: {id[0]} {id[1]}")
             id = str(id[0])
             url = "https://sportscore1.p.rapidapi.com/leagues/"+id+"/events"
 

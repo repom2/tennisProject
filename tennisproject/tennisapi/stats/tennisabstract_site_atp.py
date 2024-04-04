@@ -12,36 +12,52 @@ def tennisabstract_scrape_atp(row, home, surface):
     surface = surface.capitalize()
     if home == "home":
         index_columns = [
-            "home_spw",
-            "home_rpw",
-            "home_dr",
-            "home_matches",
-            "home_peak_rank",
-            "home_current_rank",
-            "home_plays",
-            "home_player_info",
-            "home_md_table",
-        ]
+                "home_spw",
+                "home_rpw",
+                "home_dr",
+                "home_matches",
+                "home_peak_rank",
+                "home_current_rank",
+                "home_plays",
+                "home_player_info",
+                "home_md_table",
+                "home_spw_clay",
+                "home_rpw_clay",
+                "home_dr_clay",
+                "home_matches_clay",
+            ]
         player_name = row["atp_home_fullname"]
-        if row['home_peak_rank']:
-            return row[index_columns]
+        #if row['home_peak_rank']:
+         #   return row[index_columns]
     else:
         index_columns = [
-            "away_spw",
-            "away_rpw",
-            "away_dr",
-            "away_matches",
-            "away_peak_rank",
-            "away_current_rank",
-            "away_plays",
-            "away_player_info",
-            "away_md_table",
-        ]
+                "away_spw",
+                "away_rpw",
+                "away_dr",
+                "away_matches",
+                "away_peak_rank",
+                "away_current_rank",
+                "away_plays",
+                "away_player_info",
+                "away_md_table",
+                "away_spw_clay",
+                "away_rpw_clay",
+                "away_dr_clay",
+                "away_matches_clay",
+            ]
         player_name = row["atp_away_fullname"]
-        if row['away_peak_rank']:
-            return row[index_columns]
+        #if row['away_peak_rank']:
+         #   return row[index_columns]
     # strip the player name
-    player_name = player_name.strip().replace(" ", "")
+
+    if player_name is None:
+        player_name = row["loser_fullname"]
+        player_name = player_name.split(" ")[1] + player_name.split(" ")[0]
+        # remove the comma
+        player_name = player_name.replace(",", "")
+        player_name = player_name.replace(" ", "")
+    else:
+        player_name = player_name.strip().replace(" ", "")
     # Specify the URL where the Selenium Hub is running
     hub_url = "http://selenium-hub:4444/wd/hub"  # Use hostname/IP of your selenium_hub service if running remotely
 
@@ -70,8 +86,8 @@ def tennisabstract_scrape_atp(row, home, surface):
         soup = tables[4]
     except IndexError:
         driver.quit()
-        return pd.Series([None, None, None, None, None, None, None, None, None],
-                         index=index_columns)
+        return pd.Series([None, None, None, None, None, None, None, None, None, None, None, None, None],
+            index=index_columns)
 
     # Find the player's bio section and extract player information
     player_bio_section = soup.find(id="biog")
@@ -133,7 +149,7 @@ def tennisabstract_scrape_atp(row, home, surface):
     # Displaying the results
     print("\nStatistics:")
     for stat in stats_data:
-        if stat[0] == surface:
+        if stat[0] == 'Hard':
             matches = stat[1]
             try:
                 rpw = round(float(stat[10].replace('%', '')) * 0.01, 3)
@@ -142,6 +158,18 @@ def tennisabstract_scrape_atp(row, home, surface):
             except ValueError:
                 continue
             print([spw, rpw, dr, matches])
+        if stat[0] == "Clay":
+            matches_clay = stat[1]
+            try:
+                rpw_clay = round(float(stat[10].replace('%', '')) * 0.01, 3)
+                dr_clay = float(stat[12])
+                spw_clay = round(float(stat[8].replace('%', '')) * 0.01, 3)
+            except ValueError:
+                spw_clay = None
+                rpw_clay = None
+                dr_clay = None
+                matches_clay = None
+            print([spw_clay, rpw_clay, dr_clay, matches_clay], 'Clay')
 
     try:
         # MATCHES TABLE
@@ -178,8 +206,6 @@ def tennisabstract_scrape_atp(row, home, surface):
     #print(md_table)
     driver.quit()
 
-    return pd.Series(
-        [spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info,
-         md_table],
-        index=index_columns)
+    return pd.Series([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table, spw_clay, rpw_clay, dr_clay, matches_clay],
+            index=index_columns)
 

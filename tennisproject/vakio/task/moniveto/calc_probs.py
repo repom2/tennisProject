@@ -24,7 +24,7 @@ def get_calc_probs(bet_table, home_name, away_name, columns):
             ).values_list(*columns).first())
     except TypeError:
         logging.info(f"No Match found: {home_name} - {away_name} ")
-        probs1 = [None]
+        match_data = [None]
 
     return match_data
 

@@ -78,8 +78,8 @@ def get_data(params):
                 away_fullname,
                 case when atp_home_fullname is not null then atp_home_fullname 
                 else TRIM(split_part(home_fullname, ',', 2)) || ' ' || TRIM(split_part(home_fullname, ',', 1)) end as atp_home_fullname,
-                case when atp_away_fullname is not null then atp_away_fullname 
-                else TRIM(split_part(away_fullname, ',', 2)) || ' ' || TRIM(split_part(away_fullname, ',', 1)) end as atp_away_fullname,
+                case when atp_away_fullname is not null then atp_away_fullname
+                when away_fullname is not null then TRIM(split_part(away_fullname, ',', 2)) || ' ' || TRIM(split_part(away_fullname, ',', 1)) end as atp_away_fullname,
                 case when winner_first_name is not null then 
                 winner_first_name || ' ' || winner_name 
                 else winner_name end as winner_fullname,
@@ -154,12 +154,14 @@ def get_data(params):
                 round_name,
                 winner_code,
                 (select elo from %(grass_elo)s el where el.player_id=b.home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_grasselo,
-                (select elo from %(hard_elo)s el where el.player_id=b.home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo,
+                (select elo from %(clay_elo)s el where el.player_id=b.home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_clayelo,
+                (select elo from %(hard_elo)s el where el.player_id=b.home_id and el.date < date(b.start_at) order by games desc limit 1) as winner_hardelo,
                 (select count(*) from %(hard_elo)s c where c.player_id=b.home_id and c.date < date(b.start_at)) as winner_games,
                 (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_games,
                 (select sum(elo_change) from %(hard_elo)s c where c.player_id=b.home_id and c.date < date(b.start_at) and EXTRACT(YEAR FROM c.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_elo,
                 (select count(*) from %(grass_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_grass_games,
                 (select elo from %(grass_elo)s el where el.player_id=b.away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_grasselo,
+                (select elo from %(clay_elo)s el where el.player_id=b.away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_clayelo,
                 (select elo from %(hard_elo)s el where el.player_id=b.away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,
                 (select count(*) from %(hard_elo)s c where c.player_id=b.away_id and c.date < date(b.start_at)) as loser_games,
                 (select count(*) from %(hard_elo)s c inner join %(matches_table)s aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_games,
@@ -210,8 +212,8 @@ def label_round(data, mapping):
 
 def predict_ta(level, tour):
     now = timezone.now().date()
+    from_at = now - timedelta(days=1)
     end_at = now + timedelta(days=2)
-    from_at = now - timedelta(days=2)
 
     if level == "atp":
         qs =(
@@ -266,8 +268,10 @@ def predict_ta(level, tour):
         player_table = "tennisapi_wtaplayers"
         hard_elo = "tennisapi_wtahardelo"
         grass_elo = "tennisapi_wtagrasselo"
-        clay_elo = "tennisapi_wtaclayelo"
+        clay_elo = "tennisapi_wtaelo"
         bet_table = "tennisapi_betwta"
+        if surface == "clay":
+            hard_elo = clay_elo
     params = {
         "tour_table": AsIs(tour_table),
         "matches_table": AsIs(matches_table),
@@ -666,13 +670,13 @@ def predict_ta(level, tour):
     # data = data.where(pd.notnull(data), None)
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():
-        try:
-            home_prob, away_prob, home_yield, away_yield = train_ml_model(
-                row, level, params, surface
-            )
-        except Exception as e:
-            log.error(e)
-            continue
+        #try:
+        home_prob, away_prob, home_yield, away_yield = train_ml_model(
+            row, level, params, surface
+        )
+        #except Exception as e:
+         #   log.error(e)
+          #  continue
         """home_preview, home_short_preview = match_analysis(
             row.winner_name,
             row.loser_name,
@@ -692,7 +696,7 @@ def predict_ta(level, tour):
             event_rpw,
             tour_spw,
             tour_rpw,
-        )"""
+        )
         if row.home_short_preview is None:
             log.info("No short preview")
             log.info(row.home_short_preview)
@@ -709,15 +713,16 @@ def predict_ta(level, tour):
                 row.away_matches,
             )
         else:
-            home_short_preview = row.home_short_preview
+            home_short_preview = row.home_short_preview"""
+        home_short_preview = None
         home_preview, away_preview, away_short_preview = None, None, None
         try:
             row["home_current_rank"] = int(row["home_current_rank"])
-        except ValueError:
+        except (ValueError, TypeError):
             row["home_current_rank"] = None
         try:
             row["away_current_rank"] = int(row["away_current_rank"])
-        except ValueError:
+        except (ValueError, TypeError):
             row["away_current_rank"] = None
         bet_qs.update_or_create(
             match=match_qs.filter(id=row.match_id)[0],

@@ -60,7 +60,7 @@ def get_data_atp_data(params):
         --and (walkover_away is null or walkover_home is false)
         --and home_inj_score > 20.00
         --and away_inj_score < 20.00
-        and m.surface ilike '%%%(surface)s%%'
+        and m.surface ilike '%%hard%%'
         --and (round_name ilike '%%ifinal%%' or round_name ilike '%%quarterfi%%' or round_name ilike '%%r16%%')
         """
     # --( m.tour_id like '%-580' or m.tour_id like '%-7117' );
@@ -243,8 +243,12 @@ def train_ml_model(row, level, params, surface):
 
     # Log the table with the title
     logging.info("\n" + log_output)
-    y_pred = model_logistic.predict_proba(df)
-    y_pred_rf = model_rf.predict_proba(df)
+    try:
+        y_pred = model_logistic.predict_proba(df)
+        y_pred_rf = model_rf.predict_proba(df)
+    except ValueError as e:
+        logging.error(f"Error: {e}")
+        return None, None, None, None
 
     # log probabilities
     prob_home = round(y_pred[0][0], 3)

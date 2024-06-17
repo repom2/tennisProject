@@ -4,15 +4,14 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-import pandas as pd
 
 logging = logging.getLogger(__name__)
 
 
-def tennisabstract_scrape(row, home, surface):
-    surface = surface.capitalize()
+def tennisabstract_scrape(row, home):
     try:
         if home == "home":
             index_columns = [
@@ -29,10 +28,14 @@ def tennisabstract_scrape(row, home, surface):
                 "home_rpw_clay",
                 "home_dr_clay",
                 "home_matches_clay",
+                "home_spw_grass",
+                "home_rpw_grass",
+                "home_dr_grass",
+                "home_matches_grass",
             ]
             player_name = row["atp_home_fullname"]
-            #if row['home_peak_rank']:
-             #   return row[index_columns]
+            # if row['home_peak_rank']:
+            #   return row[index_columns]
         else:
             index_columns = [
                 "away_spw",
@@ -48,10 +51,14 @@ def tennisabstract_scrape(row, home, surface):
                 "away_rpw_clay",
                 "away_dr_clay",
                 "away_matches_clay",
+                "away_spw_grass",
+                "away_rpw_grass",
+                "away_dr_grass",
+                "away_matches_grass",
             ]
             player_name = row["atp_away_fullname"]
-            #if row['away_peak_rank']:
-             #   return row[index_columns]
+            # if row['away_peak_rank']:
+            #   return row[index_columns]
         # strip the player name
         player_name = player_name.strip().replace(" ", "")
         # Specify the URL where the Selenium Hub is running
@@ -61,13 +68,18 @@ def tennisabstract_scrape(row, home, surface):
 
         # Define options for the Chrome browser
         chrome_options = ChromeOptions()
-        chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
+        chrome_options.add_argument(
+            "--headless"
+        )  # Run in headless mode (no browser UI)
 
         # Instantiate a remote WebDriver object connecting to the Selenium Hub
         driver = webdriver.Remote(command_executor=hub_url, options=chrome_options)
 
         # Target URL
-        url = "https://www.tennisabstract.com/cgi-bin/wplayer-classic.cgi?p=" + player_name
+        url = (
+            "https://www.tennisabstract.com/cgi-bin/wplayer-classic.cgi?p="
+            + player_name
+        )
         driver.get(url)
 
         # Get the HTML content
@@ -129,7 +141,10 @@ def tennisabstract_scrape(row, home, surface):
         age = (
             current_date.year
             - birthdate.year
-            - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
+            - (
+                (current_date.month, current_date.day)
+                < (birthdate.month, birthdate.day)
+            )
         )
 
         player_info = {
@@ -174,7 +189,7 @@ def tennisabstract_scrape(row, home, surface):
                     dr = None
                     matches = None
 
-                print([spw, rpw, dr, matches], 'Hard')
+                print([spw, rpw, dr, matches], "Hard")
             if stat[0] == "Clay":
                 matches_clay = stat[1]
                 try:
@@ -187,7 +202,20 @@ def tennisabstract_scrape(row, home, surface):
                     rpw_clay = None
                     dr_clay = None
                     matches_clay = None
-                print([spw_clay, rpw_clay, dr_clay, matches_clay], 'Clay')
+                print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
+            if stat[0] == "Grass":
+                matches_grass = stat[1]
+                try:
+                    rpw_grass = float(stat[7].replace("%", ""))
+                    dr_grass = float(stat[8])
+                    spw_grass = round((100 - rpw_grass / dr_grass) * 0.01, 3)
+                    rpw_grass = round(rpw_grass * 0.01, 3)
+                except ValueError:
+                    spw_grass = None
+                    rpw_grass = None
+                    dr_grass = None
+                    matches_grass = None
+                print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
 
         # MATCHES TABLE
         try:
@@ -198,7 +226,9 @@ def tennisabstract_scrape(row, home, surface):
             matches_table = tables[7].find("table", {"id": "matches"})
             # Extract the headers
             try:
-                headers = [header.text.strip() for header in matches_table.find_all("th")]
+                headers = [
+                    header.text.strip() for header in matches_table.find_all("th")
+                ]
             except AttributeError:
                 matches_table = []
 
@@ -231,15 +261,54 @@ def tennisabstract_scrape(row, home, surface):
             md_table = "No matches found"
             print("No matches found")
         driver.quit()
-        #print(df)
-        #exit()
-        #print([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table])
+        # print(df)
+        # exit()
+        # print([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table])
         # return list as pandas dataframe series
-        return pd.Series([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table, spw_clay, rpw_clay, dr_clay, matches_clay],
-            index=index_columns)
+        return pd.Series(
+            [
+                spw,
+                rpw,
+                dr,
+                matches,
+                peak_rank,
+                current_rank,
+                play_hand,
+                player_info,
+                md_table,
+                spw_clay,
+                rpw_clay,
+                dr_clay,
+                matches_clay,
+                spw_grass,
+                rpw_grass,
+                dr_grass,
+                matches_grass,
+            ],
+            index=index_columns,
+        )
     except Exception as e:
         print(e)
         driver.quit()
-        return pd.Series([None, None, None, None, None, None, None, None, None, None, None, None, None],
-            index=index_columns)
-
+        return pd.Series(
+            [
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ],
+            index=index_columns,
+        )

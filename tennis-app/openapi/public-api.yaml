@@ -189,6 +189,12 @@ components:
         eloProb:
           type: number
           description: "Elo Probability"
+        eloProbClay:
+          type: number
+          description: "Elo Probability on Clay"
+        eloProbGrass:
+          type: number
+          description: "Elo Probability on Grass"
         yearEloProb:
           type: number
           description: "Current Year Elo Probability"
@@ -391,15 +397,36 @@ components:
         awayRpwClay:
           type: number
           description: "Away player rpw on clay"
+        homeSpwGrass:
+          type: number
+          description: "Home player spw on grass"
+        awaySpwGrass:
+          type: number
+          description: "Away player spw on grass"
+        homeRpwGrass:
+          type: number
+          description: "Home player rpw on grass"
+        awayRpwGrass:
+          type: number
+          description: "Away player rpw on grass"
         statsWinClay:
           type: number
           description: "Stats win on clay"
+        statsWinGrass:
+          type: number
+          description: "Stats win on grass"
         homeMatchesClay:
           type: string
           description: "Home player matches on clay"
         awayMatchesClay:
           type: string
           description: "Away player matches on clay"
+        homeMatchesGrass:
+          type: string
+          description: "Home player matches on grass"
+        awayMatchesGrass:
+            type: string
+            description: "Away player matches on grass"
     FootballBets:
       type: object
       properties:

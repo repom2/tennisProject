@@ -89,14 +89,15 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                         <th>Yield</th>
                         <th>Dr</th>
                         <th>Odds</th>
-                        <th>Win%</th>
-                        <th>Clay%</th>
+                        <th>Hard%</th>
+                        <th>Grass%</th>
                         <th>Show</th>
                         <th>S/RPW</th>
                         <th>Matches</th>
-                        <th>S/RPW(Clay)</th>
-                        <th>MClay</th>
-                        <th>Elo</th>
+                        <th>S/RPW(Grass)</th>
+                        <th>MGrass</th>
+                        <th>EloHard</th>
+                        <th>EloGrass</th>
                         <th>YElo</th>
                         <th>MLProb</th>
                         <th>H2H%</th>
@@ -131,7 +132,7 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                                         <div>{matchData.awayOdds}</div>
                                     </td>
                                     <td>{matchData.statsWin}</td>
-                                    <td>{matchData.statsWinClay}</td>
+                                    <td>{matchData.statsWinGrass}</td>
                                     <td>
                                         <Tooltip content={matchData}>
                                             <span>Show</span>
@@ -146,14 +147,15 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                                         <div className={styles.NoWrap}>{matchData.awayMatches}</div>
                                     </td>
                                     <td>
-                                        <div>{matchData.homeSpwClay}/{matchData.homeRpwClay}</div>
-                                        <div>{matchData.awaySpwClay}/{matchData.awayRpwClay}</div>
+                                        <div>{matchData.homeSpwGrass}/{matchData.homeRpwGrass}</div>
+                                        <div>{matchData.awaySpwGrass}/{matchData.awayRpwGrass}</div>
                                     </td>
                                     <td>
-                                        <div className={styles.NoWrap}>{matchData.homeMatchesClay}</div>
-                                        <div className={styles.NoWrap}>{matchData.awayMatchesClay}</div>
+                                        <div className={styles.NoWrap}>{matchData.homeMatchesGrass}</div>
+                                        <div className={styles.NoWrap}>{matchData.awayMatchesGrass}</div>
                                     </td>
                                     <td>{matchData.eloProb}</td>
+                                    <td>{matchData.eloProbGrass}</td>
                                     <td>{matchData.yearEloProb}</td>
                                     <td>{matchData.homeProb}</td>
                                     <td>

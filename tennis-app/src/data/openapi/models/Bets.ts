@@ -52,6 +52,14 @@ export type Bets = {
      */
     eloProb?: number;
     /**
+     * Elo Probability on Clay
+     */
+    eloProbClay?: number;
+    /**
+     * Elo Probability on Grass
+     */
+    eloProbGrass?: number;
+    /**
      * Current Year Elo Probability
      */
     yearEloProb?: number;
@@ -320,9 +328,29 @@ export type Bets = {
      */
     awayRpwClay?: number;
     /**
+     * Home player spw on grass
+     */
+    homeSpwGrass?: number;
+    /**
+     * Away player spw on grass
+     */
+    awaySpwGrass?: number;
+    /**
+     * Home player rpw on grass
+     */
+    homeRpwGrass?: number;
+    /**
+     * Away player rpw on grass
+     */
+    awayRpwGrass?: number;
+    /**
      * Stats win on clay
      */
     statsWinClay?: number;
+    /**
+     * Stats win on grass
+     */
+    statsWinGrass?: number;
     /**
      * Home player matches on clay
      */
@@ -331,5 +359,13 @@ export type Bets = {
      * Away player matches on clay
      */
     awayMatchesClay?: string;
+    /**
+     * Home player matches on grass
+     */
+    homeMatchesGrass?: string;
+    /**
+     * Away player matches on grass
+     */
+    awayMatchesGrass?: string;
 };
 

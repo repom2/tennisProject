@@ -1,53 +1,63 @@
 # import beautifulsoup4
-from selenium import webdriver
-from bs4 import BeautifulSoup
 import logging
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-import pandas as pd
 from datetime import datetime
+
+from bs4 import BeautifulSoup
+
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 logging = logging.getLogger(__name__)
 
-def tennisabstract_scrape_atp(row, home, surface):
-    surface = surface.capitalize()
+
+def tennisabstract_scrape_atp(row, home):
     if home == "home":
         index_columns = [
-                "home_spw",
-                "home_rpw",
-                "home_dr",
-                "home_matches",
-                "home_peak_rank",
-                "home_current_rank",
-                "home_plays",
-                "home_player_info",
-                "home_md_table",
-                "home_spw_clay",
-                "home_rpw_clay",
-                "home_dr_clay",
-                "home_matches_clay",
-            ]
+            "home_spw",
+            "home_rpw",
+            "home_dr",
+            "home_matches",
+            "home_peak_rank",
+            "home_current_rank",
+            "home_plays",
+            "home_player_info",
+            "home_md_table",
+            "home_spw_clay",
+            "home_rpw_clay",
+            "home_dr_clay",
+            "home_matches_clay",
+            "home_spw_grass",
+            "home_rpw_grass",
+            "home_dr_grass",
+            "home_matches_grass"
+        ]
         player_name = row["atp_home_fullname"]
-        #if row['home_peak_rank']:
-         #   return row[index_columns]
+        # if row['home_peak_rank']:
+        #   return row[index_columns]
     else:
         index_columns = [
-                "away_spw",
-                "away_rpw",
-                "away_dr",
-                "away_matches",
-                "away_peak_rank",
-                "away_current_rank",
-                "away_plays",
-                "away_player_info",
-                "away_md_table",
-                "away_spw_clay",
-                "away_rpw_clay",
-                "away_dr_clay",
-                "away_matches_clay",
-            ]
+            "away_spw",
+            "away_rpw",
+            "away_dr",
+            "away_matches",
+            "away_peak_rank",
+            "away_current_rank",
+            "away_plays",
+            "away_player_info",
+            "away_md_table",
+            "away_spw_clay",
+            "away_rpw_clay",
+            "away_dr_clay",
+            "away_matches_clay",
+            "away_spw_grass",
+            "away_rpw_grass",
+            "away_dr_grass",
+            "away_matches_grass"
+        ]
         player_name = row["atp_away_fullname"]
-        #if row['away_peak_rank']:
-         #   return row[index_columns]
+        # if row['away_peak_rank']:
+        #   return row[index_columns]
     # strip the player name
 
     if player_name is None:
@@ -59,16 +69,16 @@ def tennisabstract_scrape_atp(row, home, surface):
     else:
         player_name = player_name.strip().replace(" ", "")
     # Specify the URL where the Selenium Hub is running
-    hub_url = "http://selenium-hub:4444/wd/hub"  # Use hostname/IP of your selenium_hub service if running remotely
+    hub_url = (
+        "http://selenium-hub:4444/wd/hub"
+    )  # Use hostname/IP of your selenium_hub service if running remotely
 
     # Define options for the Chrome browser
     chrome_options = ChromeOptions()
     chrome_options.add_argument("--headless")  # Run in headless mode (no browser UI)
 
     # Instantiate a remote WebDriver object connecting to the Selenium Hub
-    driver = webdriver.Remote(
-        command_executor=hub_url, options=chrome_options
-    )
+    driver = webdriver.Remote(command_executor=hub_url, options=chrome_options)
 
     # Target URL
     url = "https://www.tennisabstract.com/cgi-bin/player-classic.cgi?p=" + player_name
@@ -78,35 +88,75 @@ def tennisabstract_scrape_atp(row, home, surface):
     html = driver.page_source
 
     # Use BeautifulSoup to parse the HTML content
-    soup = BeautifulSoup(html, 'html.parser')
-    tables = soup.find_all('table')#, class_='tennis-match__match-link')
+    soup = BeautifulSoup(html, "html.parser")
+    tables = soup.find_all("table")  # , class_='tennis-match__match-link')
 
     # clean all html tags
     try:
         soup = tables[4]
     except IndexError:
         driver.quit()
-        return pd.Series([None, None, None, None, None, None, None, None, None, None, None, None, None],
-            index=index_columns)
+        return pd.Series(
+            [
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ],
+            index=index_columns,
+        )
 
     # Find the player's bio section and extract player information
     player_bio_section = soup.find(id="biog")
-    name_country = player_bio_section.find('b').get_text() if player_bio_section.find('b') else None
-    date_of_birth = player_bio_section.find(text="Date of birth: ").next_sibling if player_bio_section.find(text="Date of birth: ") else None
-    play_hand = player_bio_section.find(text="Plays: ").next_sibling if player_bio_section.find(text="Plays: ") else None
-    current_rank = player_bio_section.find(text="Current rank: ").find_next('b').get_text() if player_bio_section.find(text="Current rank: ") else None
-    peak_rank = player_bio_section.find(text="Peak rank: ").find_next('b').get_text() if player_bio_section.find(text="Peak rank: ") else None
+    name_country = (
+        player_bio_section.find("b").get_text()
+        if player_bio_section.find("b")
+        else None
+    )
+    date_of_birth = (
+        player_bio_section.find(text="Date of birth: ").next_sibling
+        if player_bio_section.find(text="Date of birth: ")
+        else None
+    )
+    play_hand = (
+        player_bio_section.find(text="Plays: ").next_sibling
+        if player_bio_section.find(text="Plays: ")
+        else None
+    )
+    current_rank = (
+        player_bio_section.find(text="Current rank: ").find_next("b").get_text()
+        if player_bio_section.find(text="Current rank: ")
+        else None
+    )
+    peak_rank = (
+        player_bio_section.find(text="Peak rank: ").find_next("b").get_text()
+        if player_bio_section.find(text="Peak rank: ")
+        else None
+    )
 
     print(f"Name and Country: {name_country}")
-    for tr in soup.find_all('tr'):
-        td = tr.find('td')
+    for tr in soup.find_all("tr"):
+        td = tr.find("td")
         if td:
             text_content = td.text
             # Checking and splitting based on known labels
-            if 'Date of birth' in text_content:
-                date_of_birth = text_content.split(': ')[1].strip()
-            elif 'Plays' in text_content:
-                play_hand = text_content.split(': ')[1].strip()
+            if "Date of birth" in text_content:
+                date_of_birth = text_content.split(": ")[1].strip()
+            elif "Plays" in text_content:
+                play_hand = text_content.split(": ")[1].strip()
             elif "Peak rank" in text_content:
                 peak_rank = text_content
 
@@ -115,16 +165,15 @@ def tennisabstract_scrape_atp(row, home, surface):
     birthdate = datetime.strptime(date_of_birth, date_format)
     current_date = datetime.now()
     age = (
-            current_date.year
-            - birthdate.year
-            - ((current_date.month, current_date.day) < (
-    birthdate.month, birthdate.day))
+        current_date.year
+        - birthdate.year
+        - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
     )
     player_info = {
         "name_country": name_country,
         "current_rank": current_rank,
         "age": age,
-        #"play_hand": play_hand,
+        # "play_hand": play_hand,
         "peak_rank": peak_rank,
     }
     logging.info(player_info)
@@ -134,14 +183,14 @@ def tennisabstract_scrape_atp(row, home, surface):
 
     # Extracting the header
     headers = []
-    for header in stats_table.find_all('th'):
+    for header in stats_table.find_all("th"):
         headers.append(header.get_text().strip())
 
     # Extracting the stats for each row
     stats_data = []
-    for row in stats_table.find_all('tr')[1:]:  # Skipping the headers
+    for row in stats_table.find_all("tr")[1:]:  # Skipping the headers
         stats = []
-        for cell in row.find_all(['td', 'th']):
+        for cell in row.find_all(["td", "th"]):
             stats.append(cell.get_text().strip())
         stats_data.append(stats)
 
@@ -149,33 +198,45 @@ def tennisabstract_scrape_atp(row, home, surface):
     # Displaying the results
     print("\nStatistics:")
     for stat in stats_data:
-        if stat[0] == 'Hard':
+        if stat[0] == "Hard":
             matches = stat[1]
             try:
-                rpw = round(float(stat[10].replace('%', '')) * 0.01, 3)
+                rpw = round(float(stat[10].replace("%", "")) * 0.01, 3)
                 dr = float(stat[12])
-                spw = round(float(stat[8].replace('%', '')) * 0.01, 3)
+                spw = round(float(stat[8].replace("%", "")) * 0.01, 3)
             except ValueError:
                 continue
             print([spw, rpw, dr, matches])
         if stat[0] == "Clay":
             matches_clay = stat[1]
             try:
-                rpw_clay = round(float(stat[10].replace('%', '')) * 0.01, 3)
+                rpw_clay = round(float(stat[10].replace("%", "")) * 0.01, 3)
                 dr_clay = float(stat[12])
-                spw_clay = round(float(stat[8].replace('%', '')) * 0.01, 3)
+                spw_clay = round(float(stat[8].replace("%", "")) * 0.01, 3)
             except ValueError:
                 spw_clay = None
                 rpw_clay = None
                 dr_clay = None
                 matches_clay = None
-            print([spw_clay, rpw_clay, dr_clay, matches_clay], 'Clay')
+            print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
+        if stat[0] == "Grass":
+            matches_grass = stat[1]
+            try:
+                rpw_grass = round(float(stat[10].replace("%", "")) * 0.01, 3)
+                dr_grass = float(stat[12])
+                spw_grass = round(float(stat[8].replace("%", "")) * 0.01, 3)
+            except ValueError:
+                spw_grass = None
+                rpw_grass = None
+                dr_grass = None
+                matches_grass = None
+            print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
 
     try:
         # MATCHES TABLE
-        matches_table = tables[7].find('table', {'id': 'matches'})
+        matches_table = tables[7].find("table", {"id": "matches"})
         # Extract the headers
-        headers = [header.text.strip() for header in matches_table.find_all('th')]
+        headers = [header.text.strip() for header in matches_table.find_all("th")]
     except Exception as e:
         matches_table = tables[8].find("table", {"id": "matches"})
         # Extract the headers
@@ -185,12 +246,12 @@ def tennisabstract_scrape_atp(row, home, surface):
     all_matches_data = []
 
     # Extract the match details from each row in the matches table body
-    for row in matches_table.tbody.find_all('tr'):
+    for row in matches_table.tbody.find_all("tr"):
         # Initialize a dictionary to store data for the current match
         match_data = {}
 
         # Extract all cells in the row
-        cells = row.find_all('td')
+        cells = row.find_all("td")
 
         # Assign each cell's text to the dictionary using the header as the key
         for header, cell in zip(headers, cells):
@@ -203,9 +264,30 @@ def tennisabstract_scrape_atp(row, home, surface):
     df = pd.DataFrame(all_matches_data[:15])
     # Convert the DataFrame to a Markdown table
     md_table = df.to_markdown(index=False)
-    #print(md_table)
+    # print(md_table)
     driver.quit()
 
-    return pd.Series([spw, rpw, dr, matches, peak_rank, current_rank, play_hand, player_info, md_table, spw_clay, rpw_clay, dr_clay, matches_clay],
-            index=index_columns)
+    player_data =  pd.Series(
+        [
+            spw,
+            rpw,
+            dr,
+            matches,
+            peak_rank,
+            current_rank,
+            play_hand,
+            player_info,
+            md_table,
+            spw_clay,
+            rpw_clay,
+            dr_clay,
+            matches_clay,
+            spw_grass,
+            rpw_grass,
+            dr_grass,
+            matches_grass
+        ],
+        index=index_columns,
+    )
 
+    return player_data

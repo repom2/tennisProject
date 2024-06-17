@@ -21,9 +21,9 @@ logging.basicConfig(
 
 bonus = 0
 scores_default = [
-        "0,1,2,3,4,5,6-0,1,2,3",
-        "1,2,3,4,5,6,7-0,1,2,3",
         "0,1,2,3,4-0,1,2,3,4",
+        "0,1,2,3,4,5-0,1,2,3",
+        "0,1,2,3-0,1,2,3,4,5",
     ]
 
 
@@ -47,7 +47,13 @@ def get_sport_winshare(draw_id, matches, moniveto_id, list_index):
         logging.error(data)
 
     odds_list = []
-    for row in data['odds']:
+    try:
+        data_odds = data['odds']
+    except KeyError:
+        logging.error(data)
+        exit(1)
+
+    for row in data_odds:
         #logging.info(row)
         #exit(1)
         selections = row['selections']

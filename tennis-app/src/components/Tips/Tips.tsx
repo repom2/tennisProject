@@ -43,7 +43,9 @@ const Tooltip = ({ children, content }: TooltipProps) => {
       <div className={styles.NoWrap}>Over 21.5 Games: {content.gamesOver21_5} {content.gamesOver21_5 ? (1 / content.gamesOver21_5).toFixed(2) : 'N/A'}</div>
       <p className={styles.NoWrap}>Over 22.5 Games: {content.gamesOver22_5} {content.gamesOver22_5 ? (1 / content.gamesOver22_5).toFixed(2) : 'N/A'}</p>
       <p className={styles.NoWrap}>Over 23.5 Games: {content.gamesOver23_5} {content.gamesOver23_5 ? (1 / content.gamesOver23_5).toFixed(2) : 'N/A'}</p>
-      <p className={styles.NoWrap}>AH 4.5: {content.homeAH4_5} {content.homeAH4_5 ? (1 / content.homeAH4_5).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>AH 6.5: {content.homeAH6_5} {content.homeAH6_5 ? (1 / content.homeAH6_5).toFixed(2) : 'N/A'} {content.homeAH6_5 ? (1 / (1-content.homeAH6_5)).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>AH 5.5: {content.homeAH5_5} {content.homeAH5_5 ? (1 / content.homeAH5_5).toFixed(2) : 'N/A'} {content.homeAH5_5 ? (1 / (1-content.homeAH5_5)).toFixed(2) : 'N/A'}</p>
+      <p className={styles.NoWrap}>AH 4.5: {content.homeAH4_5} {content.homeAH4_5 ? (1 / content.homeAH4_5).toFixed(2) : 'N/A'} {content.homeAH4_5 ? (1 / (1-content.homeAH4_5)).toFixed(2) : 'N/A'}</p>
       <p className={styles.NoWrap}>AH 3.5: {content.homeAH3_5} {content.homeAH3_5 ? (1 / content.homeAH3_5).toFixed(2) : 'N/A'}</p>
       <p className={styles.NoWrap}>AH 2.5: {content.homeAH2_5} {content.homeAH2_5 ? (1 / content.homeAH2_5).toFixed(2) : 'N/A'}</p>
       <p className={styles.NoWrap}>AH 1.5 Set: {content.homeWin1Set} {content.homeWin1Set ? (1 / content.homeWin1Set).toFixed(2) : 'N/A'}</p>

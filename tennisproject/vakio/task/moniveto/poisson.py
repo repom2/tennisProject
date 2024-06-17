@@ -13,7 +13,7 @@ def calculate_poisson(
 ):
     print(f"Team A: {average_goals_team_a} Team B: {average_goals_team_b}")
     # All possible number of goals scored
-    max_goals = 9
+    max_goals = 19
 
     # Calculate Poisson PMF for each team up to max goals
     poisson_team_a = sps.poisson.pmf(np.arange(max_goals + 1), average_goals_team_a)
@@ -52,9 +52,9 @@ def calculate_poisson(
             else:
                 prob_draw += match_prob
 
-    print(f"Probability of home win: {prob_home_win:.2f}")
-    print(f"Probability of draw: {prob_draw:.2f}")
-    print(f"Probability of away win: {prob_away_win:.2f}")
+    print(f"Probability of home win: {prob_home_win:.2f} / {1/prob_home_win:.2f}")
+    print(f"Probability of draw: {prob_draw:.2f} / {1/prob_draw:.2f}")
+    print(f"Probability of away win: {prob_away_win:.2f} / {1/prob_away_win:.2f}")
     print(f"Probability of 4.5 goals: {(1-under_4_5):.2f} / {1/(1-under_4_5):.2f} / {under_4_5:.2f} / {1/under_4_5:.2f}")
     print(f"Probability of 5.5 goals: {(1-under_5_5):.2f} / {1/(1-under_5_5):.2f} /{under_5_5:.2f} / {1/under_5_5:.2f}")
     print(f"Probability of 2.5 goals: {(1-under_2_5):.2f} / {1/(1-under_2_5):.2f} / {under_2_5:.2f} / {1/under_2_5:.2f}")

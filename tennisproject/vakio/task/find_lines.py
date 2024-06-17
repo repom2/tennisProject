@@ -155,7 +155,10 @@ def find_lines(list_index, vakio_id, max_bet_eur, bet):
     logging.info(params)
     df = pd.DataFrame([item.__dict__ for item in data])
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'share']
-    df = df[df['yield'] >= 0.7]
+    yield_limit = 0.0
+    df = df[df['yield'] >= yield_limit]
+    df = df[df['win'] >= 150000]
+    #df = df[df['win'] == 100000]
     #df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]
     print("Profitable lines:", len(df))
@@ -200,7 +203,7 @@ def find_lines(list_index, vakio_id, max_bet_eur, bet):
         matches = json.dumps(win_data)
         winshare = get_sport_winshare(params["id"], matches)
         bet_limit = row["prob"]*(winshare/stake)
-        if bet_limit < 1.0:
+        if bet_limit < yield_limit:
             print("BET LIMIT EXCEEDED, bet limit:", bet_limit)
             continue
         # print("BET:", "winshare:", winshare, "bet limit:", bet_limit)

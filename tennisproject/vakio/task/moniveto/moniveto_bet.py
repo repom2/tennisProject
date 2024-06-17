@@ -183,7 +183,7 @@ def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
     if len(data) == 0:
         logging.info("No data to bet")
         exit(0)
-    yield_limit = 1.25
+    yield_limit = 1.0
     df = data[data['yield'] > yield_limit]
     df = df[columns]
 
@@ -248,7 +248,7 @@ def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
         if balance < 0.0:
             break
         if balance < bankroll and is_bet_placed:
-            logging.info("Line: %s, winshare: %.2f, balance: %.2f" % (row['combination'], winshare*0.01, balance / 100.0))
+            logging.info("Line: %s, winshare: %.2f, balance: %.2f" % (row['combination'], winshare*0.01*line_cost, balance / 100.0))
             try:
                 bet = MonivetoOdds.objects.update_or_create(
                     combination=row["combination"],

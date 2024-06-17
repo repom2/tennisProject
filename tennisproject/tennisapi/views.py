@@ -73,7 +73,7 @@ class BetList(generics.ListAPIView):
         if level == 'wta':
             queryset = BetWta.objects.all()
         now = timezone.now()
-        from_date = now - relativedelta(hours=25)
+        from_date = now - relativedelta(hours=55)
         queryset = queryset.filter(start_at__gte=from_date).order_by('start_at')
         queryset = queryset.annotate(
             max_value=Greatest(F('home_yield'), F('away_yield'))

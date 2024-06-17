@@ -212,7 +212,7 @@ def label_round(data, mapping):
 
 def predict_ta(level, tour):
     now = timezone.now().date()
-    from_at = now - timedelta(days=1)
+    from_at = now# - timedelta(days=3)
     end_at = now + timedelta(days=2)
 
     if level == "atp":
@@ -221,7 +221,12 @@ def predict_ta(level, tour):
             .values_list("surface", flat=True)
             .first()
         )
-        if 'clay' in qs or 'Clay' in qs:
+        if qs is None:
+            log.info("No matches found")
+            log.info("Surface not found: %s", qs)
+            exit()
+
+        elif 'clay' in qs or 'Clay' in qs:
             surface = 'clay'
         elif 'grass' in qs or 'Grass' in qs:
             surface = 'grass'
@@ -249,14 +254,23 @@ def predict_ta(level, tour):
             .values_list("surface", flat=True)
             .first()
         )
-        if 'clay' in qs or 'Clay' in qs:
-            surface = 'clay'
-        elif 'grass' in qs or 'Grass' in qs:
-            surface = 'grass'
-        elif 'hard' in qs or 'Hard' in qs:
-            surface = 'hard'
-        else:
-            logging.info("Surface not found: %s", qs)
+        log.info("Surface: %s", qs)
+
+        try:
+            if 'clay' in qs or 'Clay' in qs:
+                surface = 'clay'
+            elif 'grass' in qs or 'Grass' in qs:
+                surface = 'grass'
+            elif 'hard' in qs or 'Hard' in qs:
+                surface = 'hard'
+            else:
+                logging.info("Surface not found: %s", qs)
+        except TypeError:
+            logging.info(qs)
+            surface = ''
+            #exit()
+
+        # surface = 'clay'
         logging.info("Surface: %s", surface)
 
         bet_qs = BetWta.objects.all()
@@ -590,10 +604,13 @@ def predict_ta(level, tour):
         ),
         index=data.index,
     )
-
+    if level == "atp":
+        sets = 3
+    else:
+        sets = 3
     data["common_opponents"] = data.apply(
         lambda x: matchProb(
-            x.spw1_c, 1 - x.spw2_c, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3
+            x.spw1_c, 1 - x.spw2_c, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=sets
         ),
         axis=1,
     ).round(2)

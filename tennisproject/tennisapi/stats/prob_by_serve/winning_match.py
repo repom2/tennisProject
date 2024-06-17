@@ -146,7 +146,10 @@ def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
 
     # probability to win one set in best of 3
     if sets == 3:
-        win_set = c[0]
+        if c[0] > 0.5:
+           win_set  = 1 - c[0]
+        else:
+            win_set = c[0]
         server_2_0 = win_set ** 2
         server_2_1 = 2 * win_set ** 2 * (1 - win_set)
         server_1_2 = 2 * win_set * (1 - win_set) ** 2
@@ -158,7 +161,10 @@ def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
         )
 
     elif sets == 5:
-        win_set = c[0]
+        if win_set > 0.5:
+           win_set  = 1 - c[0]
+        else:
+            win_set = c[0]
         p_3_0 = win_set ** 3
         p_3_1 = win_set ** 3 * (1 - win_set) * 3
         p_3_2 = win_set ** 3 * (1 - win_set) ** 2 * 6

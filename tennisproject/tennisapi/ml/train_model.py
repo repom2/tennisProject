@@ -258,8 +258,8 @@ def train_ml_model(row, level, params, surface):
     odds_limit_home = round(1/prob_home, 3)
     odds_limit_away = round(1/prob_away, 3)
     try:
-        yield_home = round(odds_home * row['stats_win'], 3)
-        yield_away = round(odds_away * (1 - row['stats_win']), 3)
+        yield_home = round(odds_home * row['stats_win_clay'], 3)
+        yield_away = round(odds_away * (1 - row['stats_win_clay']), 3)
     except TypeError:
         yield_home = 0
         yield_away = 0

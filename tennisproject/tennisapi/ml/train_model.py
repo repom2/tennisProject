@@ -38,6 +38,8 @@ def get_data_atp_data(params):
             b.start_at,
             b.home_odds, b.away_odds,
             elo_prob,
+            elo_prob_grass,
+            elo_prob_clay,
             year_elo_prob,
             stats_win,
             home_fatigue - away_fatigue as fatigue,
@@ -78,6 +80,8 @@ def get_data_wta_data():
             b.home_odds, b.away_odds,
             elo_prob,
             year_elo_prob,
+            elo_prob_grass,
+            elo_prob_clay,
             stats_win,
             home_fatigue - away_fatigue as fatigue,
             home_fatigue,
@@ -150,18 +154,18 @@ def classifier(
     return model, model_rf
 
 
-def train_ml_model(row, level, params, surface):
+def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field):
     logging.info("-" * 50)
     # logging.info(f"Training model for {row['winner_name']} vs {row['loser_name']}")
     home_name = row['winner_fullname']
     away_name = row['loser_fullname']
     features = [
         #'home_odds',
-        'elo_prob',
         'year_elo_prob',
-        'stats_win',
-        #'fatigue',
-        #'h2h_win',
+        stats_win_field,
+        elo_prob_field,
+        'fatigue',
+        'h2h_win',
         #'home_fatigue',
         #'away_fatigue',
         #'walkover_home',
@@ -200,10 +204,18 @@ def train_ml_model(row, level, params, surface):
     if df['year_elo_prob'].isnull().values.any():
         features.remove("year_elo_prob")
 
-
-    if surface == "clay":
-        df["stats_win"] = df["stats_win_clay"]
     df = df[features]
+
+    if surface == 'grass':
+        print("Modify features for grass")
+        df = df.rename(columns={
+            'elo_prob_grass': 'elo_prob',
+            'stats_win_grass': 'stats_win'
+            })
+        # replace from list features value stats_win_grass to stats_win
+        features = [w.replace('stats_win_grass', 'stats_win') for w in features]
+        features = [w.replace('elo_prob_grass', 'elo_prob') for w in features]
+
     if level == 'atp':
         data = get_data_atp_data(params)
     else:
@@ -258,8 +270,8 @@ def train_ml_model(row, level, params, surface):
     odds_limit_home = round(1/prob_home, 3)
     odds_limit_away = round(1/prob_away, 3)
     try:
-        yield_home = round(odds_home * row['stats_win_clay'], 3)
-        yield_away = round(odds_away * (1 - row['stats_win_clay']), 3)
+        yield_home = round(odds_home * row[stats_win_field], 3)
+        yield_away = round(odds_away * (1 - row[stats_win_field]), 3)
     except TypeError:
         yield_home = 0
         yield_away = 0

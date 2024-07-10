@@ -104,21 +104,24 @@ def moniveto(list_index, moniveto_id):
     calc_probs(qs, sport)
 
     estimated_avg_goals = [
-        [0, 0.9, 1.55],
-        [1, 1.975, 0.775],
-        [2, 0.85, 1.86],
-        #[3, 1.45, 1.15],
+        [0, 1.8, 0.8],
+        [1, 1.75, 0.6],
+        [2, 1.2, 1.4],
+        #[3, 0.9, 2.22],
     ]
 
     lst = [
-        [0, 0.72, 0.20, 0.08, 'seriea'],
-        [1, 0.36, 0.32, 0.32, 'laliga'],
-        [2, 0.37, 0.31, 0.32, 'ligue1'],
-        #[3, 0.25, 0.3, 0.45, 'premier'],
+        [0, 2.9, 3.2, 2.9, 'seriea'],
+        [1, 1.4, 5.0, 11.0, 'laliga'],
+        [2, 2.9, 3.2, 2.9, 'ligue1'],
+        #[3, 1.49, 4.2, 6.7, 'premier'],
     ]
-    is_using_own_data = True
+    # divie all values in list of item by 1
+    for i, item in enumerate(lst):
+        lst[i] = [item[0], 1/ item[1], 1 / item[2], 1 / item[3], item[4]]
+    is_using_own_data = False
     ice_hockey = False
-    est_goals_from_prob = False
+    est_goals_from_prob = True
     if not is_using_own_data and not ice_hockey:
         for i, item in enumerate(lst):
             arbitrage_check(item)

@@ -44,6 +44,8 @@ def calculate_prob(combination, df):
 
 
 def calculate_probabilities():
+    for i, item in enumerate(lst):
+        lst[i] = [item[0], 1/ item[1], 1 / item[2], 1 / item[3]]
     for i in lst:
         arbitrage_check(i)
     cost = 0.1

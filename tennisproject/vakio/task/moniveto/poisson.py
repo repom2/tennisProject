@@ -13,7 +13,7 @@ def calculate_poisson(
 ):
     print(f"Team A: {average_goals_team_a} Team B: {average_goals_team_b}")
     # All possible number of goals scored
-    max_goals = 19
+    max_goals = 9
 
     # Calculate Poisson PMF for each team up to max goals
     poisson_team_a = sps.poisson.pmf(np.arange(max_goals + 1), average_goals_team_a)

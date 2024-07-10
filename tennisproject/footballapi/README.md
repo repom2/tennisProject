@@ -32,8 +32,8 @@ docker compose exec tennisproject poetry run dbt run --project-dir dbt/tennis_me
 docker compose exec tennisproject poetry run python manage.py football_elo all
 docker compose exec tennisproject poetry run python manage.py football all
 
-docker compose exec tennisproject poetry run python manage.py elo_rate atp 'clay'
+docker compose exec tennisproject poetry run python manage.py elo_rate atp 'grass'
 
-docker compose exec tennisproject poetry run python manage.py predict predict 'atp' 'ge'
+docker compose exec tennisproject poetry run python manage.py predict predict 'atp' 'wimb'
 
 docker compose exec tennisproject poetry run python manage.py football pred 'premier'

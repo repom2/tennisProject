@@ -31,6 +31,7 @@ def atp_elorate(surface):
         Q(round_name='Final') |
         Q(round_name='Semifinal') |
         Q(round_name='Quarterfinal') |
+        Q(round_name='Quarterfinals') |
         Q(round_name='R16') |
         Q(round_name='R32') |
         Q(round_name='R64') |

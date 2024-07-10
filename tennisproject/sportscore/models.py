@@ -232,7 +232,7 @@ class TennisTournaments(models.Model):
     name_translations = models.JSONField(null=True)
     has_logo = models.BooleanField(null=True)
     logo = models.TextField(null=True)
-    start_date = models.DateField(null=True, blank=True)
+    start_date = models.TextField(null=True, blank=True)
     end_date = models.TextField(null=True, blank=True)
     priority = models.TextField(null=True)
     host = models.JSONField(null=True)

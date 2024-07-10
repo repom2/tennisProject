@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 logging = logging.getLogger(__name__)
 
 
-def tennisabstract_scrape(row, home):
+def tennisabstract_scrape(row, home, surface):
     try:
         if home == "home":
             index_columns = [
@@ -80,6 +80,9 @@ def tennisabstract_scrape(row, home):
             "https://www.tennisabstract.com/cgi-bin/wplayer-classic.cgi?p="
             + player_name
         )
+
+        if surface == "grass":
+            url += "&f=ACareerqqB2"
         driver.get(url)
 
         # Get the HTML content
@@ -203,19 +206,34 @@ def tennisabstract_scrape(row, home):
                     dr_clay = None
                     matches_clay = None
                 print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
-            if stat[0] == "Grass":
-                matches_grass = stat[1]
-                try:
-                    rpw_grass = float(stat[7].replace("%", ""))
-                    dr_grass = float(stat[8])
-                    spw_grass = round((100 - rpw_grass / dr_grass) * 0.01, 3)
-                    rpw_grass = round(rpw_grass * 0.01, 3)
-                except ValueError:
-                    spw_grass = None
-                    rpw_grass = None
-                    dr_grass = None
-                    matches_grass = None
-                print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
+            if surface == "grass":
+                if "Time Span" in stat[0]:
+                    matches_grass = stat[1]
+                    try:
+                        rpw_grass = float(stat[7].replace("%", ""))
+                        dr_grass = float(stat[8])
+                        spw_grass = round((100 - rpw_grass / dr_grass) * 0.01, 3)
+                        rpw_grass = round(rpw_grass * 0.01, 3)
+                    except ValueError:
+                        spw_grass = None
+                        rpw_grass = None
+                        dr_grass = None
+                        matches_grass = None
+                    print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
+            else:
+                if stat[0] == "Grass":
+                    matches_grass = stat[1]
+                    try:
+                        rpw_grass = float(stat[7].replace("%", ""))
+                        dr_grass = float(stat[8])
+                        spw_grass = round((100 - rpw_grass / dr_grass) * 0.01, 3)
+                        rpw_grass = round(rpw_grass * 0.01, 3)
+                    except ValueError:
+                        spw_grass = None
+                        rpw_grass = None
+                        dr_grass = None
+                        matches_grass = None
+                    print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
 
         # MATCHES TABLE
         try:
@@ -288,8 +306,6 @@ def tennisabstract_scrape(row, home):
             index=index_columns,
         )
     except Exception as e:
-        print(e)
-        driver.quit()
         return pd.Series(
             [
                 None,

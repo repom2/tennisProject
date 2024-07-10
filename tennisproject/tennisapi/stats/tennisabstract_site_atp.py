@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 logging = logging.getLogger(__name__)
 
 
-def tennisabstract_scrape_atp(row, home):
+def tennisabstract_scrape_atp(row, home, surface):
     if home == "home":
         index_columns = [
             "home_spw",
@@ -82,6 +82,8 @@ def tennisabstract_scrape_atp(row, home):
 
     # Target URL
     url = "https://www.tennisabstract.com/cgi-bin/player-classic.cgi?p=" + player_name
+    if surface == "grass":
+        url += "&f=ACareerqqB2"
     driver.get(url)
 
     # Get the HTML content
@@ -219,18 +221,32 @@ def tennisabstract_scrape_atp(row, home):
                 dr_clay = None
                 matches_clay = None
             print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
-        if stat[0] == "Grass":
-            matches_grass = stat[1]
-            try:
-                rpw_grass = round(float(stat[10].replace("%", "")) * 0.01, 3)
-                dr_grass = float(stat[12])
-                spw_grass = round(float(stat[8].replace("%", "")) * 0.01, 3)
-            except ValueError:
-                spw_grass = None
-                rpw_grass = None
-                dr_grass = None
-                matches_grass = None
-            print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
+        if surface == "grass":
+            if "Time Span" in stat[0]:
+                matches_grass = stat[1]
+                try:
+                    rpw_grass = round(float(stat[10].replace("%", "")) * 0.01, 3)
+                    dr_grass = float(stat[12])
+                    spw_grass = round(float(stat[8].replace("%", "")) * 0.01, 3)
+                except ValueError:
+                    spw_grass = None
+                    rpw_grass = None
+                    dr_grass = None
+                    matches_grass = None
+                print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
+            """else:
+                if stat[0] == "Grass":
+                    matches_grass = stat[1]
+                    try:
+                        rpw_grass = round(float(stat[10].replace("%", "")) * 0.01, 3)
+                        dr_grass = float(stat[12])
+                        spw_grass = round(float(stat[8].replace("%", "")) * 0.01, 3)
+                    except ValueError:
+                        spw_grass = None
+                        rpw_grass = None
+                        dr_grass = None
+                        matches_grass = None
+                    print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")"""
 
     try:
         # MATCHES TABLE

@@ -196,7 +196,7 @@ class Command(BaseCommand):
     # Update database
     def events_by_leagues(self, options):
         leagues = []
-        yes = datetime.now() - timedelta(days=1)
+        yes = datetime.now() - timedelta(days=3)
         today = datetime.now()
         tomorrow = datetime.now() + timedelta(days=1)
         dates = [yes, today, tomorrow]
@@ -837,5 +837,8 @@ class Command(BaseCommand):
             with tqdm(total=len(data_df)) as pbar:
                 for item in data_df:
                     m = TennisTournaments(**item)
-                    m.save()
+                    try:
+                        m.save()
+                    except ValidationError:
+                        exit()
                     pbar.update(1)

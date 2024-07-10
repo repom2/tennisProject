@@ -157,7 +157,7 @@ def find_lines(list_index, vakio_id, max_bet_eur, bet):
     columns = ['combination', 'bets', 'prob', 'win', 'yield', 'share']
     yield_limit = 0.0
     df = df[df['yield'] >= yield_limit]
-    df = df[df['win'] >= 150000]
+    #df = df[df['win'] >= 150000]
     #df = df[df['win'] == 100000]
     #df = df[df['share'] >= 0]
     #df = df[df['bets'] == 1]

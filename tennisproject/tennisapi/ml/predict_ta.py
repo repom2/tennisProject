@@ -34,10 +34,13 @@ def predict_ta(level, tour):
     now = timezone.now().date()
     from_at = now  # - timedelta(days=3)
     end_at = now + timedelta(days=2)
-    params, match_qs, bet_qs, player_qs = define_query_parameters(
+    params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
         level, tour, now, end_at
     )
     data = get_data(params)
+
+    # filter data from df where winner_fullname contains "Fognini"
+    #data = data[data["loser_fullname"].str.contains("Humbert")]
     if len(data.index) == 0:
         print("No data")
         return
@@ -65,7 +68,7 @@ def predict_ta(level, tour):
                 "home_dr_grass",
                 "home_matches_grass",
             ]
-        ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "home"), axis=1)
+        ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "home", surface), axis=1)
         data[
             [
                 "away_spw",
@@ -86,7 +89,7 @@ def predict_ta(level, tour):
                 "away_dr_grass",
                 "away_matches_grass",
             ]
-        ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "away"), axis=1)
+        ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "away", surface), axis=1)
     else:
         data[
             [
@@ -108,7 +111,7 @@ def predict_ta(level, tour):
                 "home_dr_grass",
                 "home_matches_grass",
             ]
-        ] = data.apply(lambda row: tennisabstract_scrape(row, "home"), axis=1)
+        ] = data.apply(lambda row: tennisabstract_scrape(row, "home", surface), axis=1)
         data[
             [
                 "away_spw",
@@ -129,7 +132,7 @@ def predict_ta(level, tour):
                 "away_dr_grass",
                 "away_matches_grass",
             ]
-        ] = data.apply(lambda row: tennisabstract_scrape(row, "away"), axis=1)
+        ] = data.apply(lambda row: tennisabstract_scrape(row, "away", surface), axis=1)
 
     data["player1"] = data.apply(
         lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
@@ -190,6 +193,15 @@ def predict_ta(level, tour):
     logging.info(
         f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}"
     )
+    if surface == "clay":
+        stats_win_field = "stats_win_clay"
+        elo_prob_field = "elo_prob_clay"
+    elif surface == "grass":
+        stats_win_field= "stats_win_grass"
+        elo_prob_field = "elo_prob_grass"
+    else:
+        stats_win_field = "stats_win"
+        elo_prob_field = "elo_prob"
     # Away player stats win
     data[
         [
@@ -212,8 +224,8 @@ def predict_ta(level, tour):
         ]
     ] = data.apply(
         lambda x: match_prob(
-            x.player2 if x.player2 else None,
-            1 - x.player1 if x.player1 else None,
+            x.player1 if x.player1 else None,
+            1 - x.player2 if x.player2 else None,
             gv=0,
             gw=0,
             sv=0,
@@ -435,7 +447,7 @@ def predict_ta(level, tour):
     for index, row in data.iterrows():
         # try:
         home_prob, away_prob, home_yield, away_yield = train_ml_model(
-            row, level, params, "hard"
+            row, level, params, surface, stats_win_field, elo_prob_field
         )
         # except Exception as e:
         #   log.error(e)

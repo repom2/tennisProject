@@ -55,9 +55,9 @@ def define_surface(level, tour, from_at):
                 logging.info("Surface not found: %s", qs)
                 exit()
         except TypeError:
-            logging.info(qs)
-            surface = ""
-            exit()
+            logging.info("No surface found!")
+            surface = "grass"
+            #exit()
     return surface
 
 
@@ -105,7 +105,8 @@ def define_query_parameters(level, tour, now, end_at):
         "event": AsIs(tour),
         "date": date,
     }
-    return params, match_qs, bet_qs, player_qs
+    log.info("Surface: %s", surface)
+    return params, match_qs, bet_qs, player_qs, surface
 
 def print_dataframe(data):
     columns = [
@@ -122,6 +123,6 @@ def print_dataframe(data):
         "atp_away_fullname",
     ]
 
-    logging.info(
+    log.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
     )

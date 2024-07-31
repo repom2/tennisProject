@@ -197,6 +197,7 @@ def tennisabstract_scrape_atp(row, home, surface):
         stats_data.append(stats)
 
     spw, rpw, dr, matches = None, None, None, None
+    spw_grass, rpw_grass, dr_grass, matches_grass = None, None, None, None
     # Displaying the results
     print("\nStatistics:")
     for stat in stats_data:

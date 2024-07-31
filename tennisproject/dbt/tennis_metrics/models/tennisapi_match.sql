@@ -56,11 +56,12 @@ from (
         b.id as home_id,
 	    c.id as away_id,
         start_at,
-        (
-          SELECT value
-          FROM jsonb_array_elements(facts) AS elements
-          WHERE (elements ->> 'name') ilike '%ground%type%'
-        )::json ->> 'value' AS surface,
+        --(
+          --SELECT value
+          --FROM jsonb_array_elements(facts) AS elements
+          --WHERE (elements ->> 'name') ilike '%ground%type%'
+        --)::json ->> 'value' AS surface,
+        ground_type as surface,
         winner_code::integer,
         round_info ->> 'name' as round_name,
         (main_odds ->> 'outcome_1')::json ->> 'value' as home_odds,

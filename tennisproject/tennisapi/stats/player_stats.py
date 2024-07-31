@@ -13,7 +13,8 @@ def player_stats(player_id, start_at, params):
             select
                round(avg(SPW), 2) as SPW,
                round(avg(RPW), 2) as RPW,
-               round(avg(RPW)/(1-avg(SPW)),2) as DR
+               round(avg(RPW)/(1-avg(SPW)),2) as DR,
+               count(*) as matches
             from (
             select
                (firstwon + secondwon) / nullif(service_points::numeric, 0) as SPW,
@@ -46,11 +47,13 @@ def player_stats(player_id, start_at, params):
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
                and surface ilike '%%%(surface)s%%'
                and round_name not ilike 'qualification%%'
-               and t.date < date(%(start_at)s)
-               ) a order by date desc limit 22
+               --and t.date >= date(%(start_at)s)
+               ) a order by date desc limit %(limit)s
             ) s
         """
     df = pd.read_sql(query, connection, params=params)
     spw = df.iloc[0]['spw']
     rpw = df.iloc[0]['rpw']
-    return [spw, rpw]
+    matches = df.iloc[0]['matches']
+
+    return [spw, rpw, matches]

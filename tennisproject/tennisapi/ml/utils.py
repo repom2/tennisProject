@@ -37,6 +37,7 @@ def define_surface(level, tour, from_at):
         else:
             logging.info("Surface not found: %s", qs)
             exit()
+        query_surface = surface
 
     else:
         qs = (
@@ -54,16 +55,19 @@ def define_surface(level, tour, from_at):
             else:
                 logging.info("Surface not found: %s", qs)
                 exit()
+            query_surface = surface
         except TypeError:
             logging.info("No surface found!")
-            surface = "grass"
-            #exit()
-    return surface
+            # let user input surface
+            surface = input("Enter surface: ")
+            # empty query string for asiIs
+            query_surface = AsIs("")
+    return surface, query_surface
 
 
 def define_query_parameters(level, tour, now, end_at):
     if level == "atp":
-        surface = define_surface(level, tour, now)
+        surface, query_surface = define_surface(level, tour, now)
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
         player_qs = Players.objects.all()
@@ -76,7 +80,7 @@ def define_query_parameters(level, tour, now, end_at):
         clay_elo = "tennisapi_atpelo"
         bet_table = "tennisapi_bet"
     else:
-        surface = define_surface(level, tour, now)
+        surface, query_surface = define_surface(level, tour, now)
         bet_qs = BetWta.objects.all()
         match_qs = WtaMatch.objects.all()
         player_qs = WTAPlayers.objects.all()
@@ -101,6 +105,7 @@ def define_query_parameters(level, tour, now, end_at):
         "start_at": now,
         "end_at": end_at,
         "surface": AsIs(surface),
+        "query_surface": AsIs(query_surface),
         "bet_table": AsIs(bet_table),
         "event": AsIs(tour),
         "date": date,

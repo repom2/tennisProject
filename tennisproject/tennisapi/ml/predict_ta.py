@@ -33,7 +33,7 @@ warnings.filterwarnings("ignore")
 def predict_ta(level, tour):
     now = timezone.now().date()
     from_at = now  # - timedelta(days=3)
-    end_at = now + timedelta(days=2)
+    end_at = now + timedelta(days=3)
     params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
         level, tour, now, end_at
     )
@@ -44,9 +44,74 @@ def predict_ta(level, tour):
     if len(data.index) == 0:
         print("No data")
         return
+    #data = data.head(1)
     print_dataframe(data)
     event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
 
+    stats_params = params
+    stats_params["start_at"] = '2024-06-01'
+    stats_params["limit"] = 15
+    if level == "atp":
+        sets = 3
+    else:
+        sets = 3
+    data[['home_spw', 'home_rpw', 'home_matches']] = pd.DataFrame(
+        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], stats_params)),
+        index=data.index)
+    data[['away_spw', 'away_rpw', 'away_matches']] = pd.DataFrame(
+        np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], data['start_at'], stats_params)),
+        index=data.index)
+    data["player1"] = data.apply(
+        lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
+        if (x.away_rpw and x.home_spw)
+        else None,
+        axis=1,
+    )
+    data["player2"] = data.apply(
+        lambda x: tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw)
+        if (x.home_rpw and x.away_spw)
+        else None,
+        axis=1,
+    )
+    data[
+        [
+            "stats_win",
+            "away_wins_single_game",
+            "away_wins_single_set",
+            "away_wins_1_set",
+            "away_wins_2_set",
+            "away_ah_7_5",
+            "away_ah_6_5",
+            "away_ah_5_5",
+            "away_ah_4_5",
+            "away_ah_3_5",
+            "away_ah_2_5",
+            "games_over_21_5",
+            "games_over_22_5",
+            "games_over_23_5",
+            "games_over_24_5",
+            "games_over_25_5",
+        ]
+    ] = data.apply(
+        lambda x: match_prob(
+            x.player1 if x.player1 else None,
+            1 - x.player2 if x.player2 else None,
+            gv=0,
+            gw=0,
+            sv=0,
+            sw=0,
+            mv=0,
+            mw=0,
+            sets=sets,
+        ),
+        axis=1,
+    ).round(
+        2
+    )
+    columns = ['winner_fullname', 'loser_fullname', 'home_spw', 'home_rpw', 'away_spw', 'away_rpw', 'player1', 'player2', 'stats_win', 'home_matches', 'away_matches']
+    logging.info(
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
+    #exit()
     if level == "atp":
         data[
             [
@@ -330,8 +395,8 @@ def predict_ta(level, tour):
         ]
     ] = data.apply(
         lambda x: match_prob(
-            x.player1_grass if x.player1_grass else None,
-            1 - x.player2_grass if x.player2_grass else None,
+            x.player1_grass if x.player1_grass else 0,
+            1 - x.player2_grass if x.player2_grass else 0,
             gv=0,
             gw=0,
             sv=0,

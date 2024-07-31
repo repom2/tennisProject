@@ -111,10 +111,10 @@ def moniveto(list_index, moniveto_id):
     ]
 
     lst = [
-        [0, 2.9, 3.2, 2.9, 'seriea'],
-        [1, 1.4, 5.0, 11.0, 'laliga'],
-        [2, 2.9, 3.2, 2.9, 'ligue1'],
-        #[3, 1.49, 4.2, 6.7, 'premier'],
+        [0, 2.52, 3.0, 3.7, 'seriea'],
+        [1, 2.15, 3.0, 4.4, 'laliga'],
+        [2, 4.55, 4.1, 1.8, 'ligue1'],
+        #[3, 1.65, 4.0, 4.75, 'premier'],
     ]
     # divie all values in list of item by 1
     for i, item in enumerate(lst):

@@ -151,7 +151,9 @@ def get_data(params):
             left join %(player_table)s h on h.id = b.home_id
             left join %(player_table)s aw on aw.id = b.away_id
             left join %(bet_table)s bet on bet.match_id = b.id
-            where b.surface ilike '%%%(surface)s%%' and b.start_at between %(start_at)s and %(end_at)s
+            where
+                --b.surface ilike '%%%(query_surface)s%%' and
+                b.start_at between %(start_at)s and %(end_at)s
             and (
             (tourney_name ilike '%%%(tour)s%%' ))
             )

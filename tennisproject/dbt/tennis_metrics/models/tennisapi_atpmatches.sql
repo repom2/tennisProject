@@ -100,13 +100,12 @@ from (
     select
         a.id as match_num,
         league ->> 'slug' as tourney_name,
-        case when league_id = '11352' then 'Hard'
-        else
-        (
-          SELECT value
-          FROM jsonb_array_elements(facts) AS elements
-          WHERE (elements ->> 'name') ilike '%ground%type%'
-        )::json ->> 'value' end AS surface,
+       --(
+          --SELECT value
+          --FROM jsonb_array_elements(facts) AS elements
+          --WHERE (elements ->> 'name') ilike '%ground%type%'
+        --)::json ->> 'value' AS surface,
+        ground_type as surface,
         league_id as tour_id,
         case when winner_code = '1' then b.id else c.id end winner_id,
 	    case when winner_code = '2' then b.id else c.id end loser_id,

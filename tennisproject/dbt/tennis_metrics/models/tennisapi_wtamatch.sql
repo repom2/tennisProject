@@ -49,11 +49,12 @@ from (
         a.id as match_num,
         league_id as tour_id,
         league ->> 'slug' as tourney_name,
-        (
-          SELECT value
-          FROM jsonb_array_elements(facts) AS elements
-          WHERE (elements ->> 'name') ilike '%ground%type%'
-        )::json ->> 'value' AS surface,
+        --(
+          --SELECT value
+          --FROM jsonb_array_elements(facts) AS elements
+          --WHERE (elements ->> 'name') ilike '%ground%type%'
+        --)::json ->> 'value' AS surface,
+        ground_type as surface,
         b.id as home_id,
 	    c.id as away_id,
         start_at,

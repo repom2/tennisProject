@@ -164,8 +164,8 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         'year_elo_prob',
         stats_win_field,
         elo_prob_field,
-        'fatigue',
-        'h2h_win',
+        #'fatigue',
+        #'h2h_win',
         #'home_fatigue',
         #'away_fatigue',
         #'walkover_home',
@@ -215,6 +215,16 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         # replace from list features value stats_win_grass to stats_win
         features = [w.replace('stats_win_grass', 'stats_win') for w in features]
         features = [w.replace('elo_prob_grass', 'elo_prob') for w in features]
+
+    if surface == 'clay':
+        print("Modify features for clay")
+        df = df.rename(columns={
+            'elo_prob_clay': 'elo_prob',
+            'stats_win_clay': 'stats_win'
+            })
+        # replace from list features value stats_win_grass to stats_win
+        features = [w.replace('stats_win_clay', 'stats_win') for w in features]
+        features = [w.replace('elo_prob_clay', 'elo_prob') for w in features]
 
     if level == 'atp':
         data = get_data_atp_data(params)
@@ -270,8 +280,8 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     odds_limit_home = round(1/prob_home, 3)
     odds_limit_away = round(1/prob_away, 3)
     try:
-        yield_home = round(odds_home * row[stats_win_field], 3)
-        yield_away = round(odds_away * (1 - row[stats_win_field]), 3)
+        yield_home = round(odds_home * prob_home, 3)
+        yield_away = round(odds_away * prob_away, 3)
     except TypeError:
         yield_home = 0
         yield_away = 0

@@ -161,7 +161,7 @@ def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
         )
 
     elif sets == 5:
-        if win_set > 0.5:
+        if c[0] > 0.5:
            win_set  = 1 - c[0]
         else:
             win_set = c[0]
@@ -173,9 +173,7 @@ def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
         p_2_3 = (1 - win_set) ** 3 * win_set ** 2 * 6
         wins_1_set = p_1_3 + p_2_3 + p_3_0 + p_3_1 + p_3_2
         wins_2_set = p_2_3 + p_3_0 + p_3_1 + p_3_2
-        home_plus_75_handicap_prob, home_plus_65_handicap_prob, home_plus_55_handicap_prob, home_plus_45_handicap_prob, home_plus_35_handicap_prob, home_plus_25_handicap_prob, prob_over_215, prob_over_225, prob_over_235, prob_over_245, prob_over_255 = (
-            None * 11
-        )
+        home_plus_75_handicap_prob, home_plus_65_handicap_prob, home_plus_55_handicap_prob, home_plus_45_handicap_prob, home_plus_35_handicap_prob, home_plus_25_handicap_prob, prob_over_215, prob_over_225, prob_over_235, prob_over_245, prob_over_255 = (None,) * 11
 
     if gv == 0 and gw == 0:  ## no point score
         if sv == 0 and sw == 0:  ## no game score

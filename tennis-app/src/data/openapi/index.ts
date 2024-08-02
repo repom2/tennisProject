@@ -13,6 +13,8 @@ export type { Bets } from './models/Bets';
 export type { EloRatings } from './models/EloRatings';
 export type { FootballBets } from './models/FootballBets';
 export type { Players } from './models/Players';
+export type { PlayerStatistics } from './models/PlayerStatistics';
 
 export { BetsService } from './services/BetsService';
 export { PlayersService } from './services/PlayersService';
+export { StatisticsService } from './services/StatisticsService';

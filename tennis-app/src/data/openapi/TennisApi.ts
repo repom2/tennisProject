@@ -7,6 +7,7 @@ import { FetchHttpRequest } from './core/FetchHttpRequest';
 
 import { BetsService } from './services/BetsService';
 import { PlayersService } from './services/PlayersService';
+import { StatisticsService } from './services/StatisticsService';
 
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 
@@ -14,6 +15,7 @@ export class TennisApi {
 
     public readonly bets: BetsService;
     public readonly players: PlayersService;
+    public readonly statistics: StatisticsService;
 
     public readonly request: BaseHttpRequest;
 
@@ -32,6 +34,7 @@ export class TennisApi {
 
         this.bets = new BetsService(this.request);
         this.players = new PlayersService(this.request);
+        this.statistics = new StatisticsService(this.request);
     }
 }
 

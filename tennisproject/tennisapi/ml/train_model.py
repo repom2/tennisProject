@@ -33,7 +33,7 @@ warnings.filterwarnings("ignore")
 def get_data_atp_data(params):
     query = \
         """
-        select m.tour_id, home_name, away_name, 
+        select m.tour_id, m.home_name, m.away_name,
             case when winner_code = 1 then 0 else 1 end as winner_code, 
             b.start_at,
             b.home_odds, b.away_odds,

@@ -22,6 +22,8 @@ select
     ) }} as id,
     tour_id,
     tourney_name,
+    home_name,
+    away_name,
     surface,
     home_id,
     away_id,
@@ -49,6 +51,8 @@ from (
         a.id as match_num,
         league_id as tour_id,
         league ->> 'slug' as tourney_name,
+        home_team ->> 'name' as home_name,
+        away_team ->> 'name' as away_name,
         --(
           --SELECT value
           --FROM jsonb_array_elements(facts) AS elements

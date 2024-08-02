@@ -20,7 +20,7 @@ export class PlayersService {
         level,
     }: {
         /**
-         * Players
+         * League level
          */
         level?: string,
     }): CancelablePromise<Players> {
@@ -45,7 +45,7 @@ export class PlayersService {
         level,
     }: {
         /**
-         * Players
+         * League level
          */
         level?: string,
     }): CancelablePromise<EloRatings> {

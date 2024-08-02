@@ -23,6 +23,8 @@ select
     ) }} as id,
     tour_id,
     tourney_name,
+    winner_name,
+    loser_name,
     surface,
     winner_id,
     loser_id,
@@ -64,6 +66,8 @@ from (
     select
         match_num,
         tourney_name,
+        null as winner_name,
+        null as loser_name,
         surface,
         tourney_id as tour_id,
         case when b.id is null then winner_id else b.id end as winner_id,
@@ -100,6 +104,8 @@ from (
     select
         a.id as match_num,
         league ->> 'slug' as tourney_name,
+        case when winner_code = '1' then home_team ->> 'name' else away_team ->> 'name' end as winner_name,
+        case when winner_code = '2' then home_team ->> 'name' else away_team ->> 'name' end as loser_name,
        --(
           --SELECT value
           --FROM jsonb_array_elements(facts) AS elements

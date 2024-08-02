@@ -367,5 +367,9 @@ export type Bets = {
      * Away player matches on grass
      */
     awayMatchesGrass?: string;
+    /**
+     * clay
+     */
+    surface?: string;
 };
 

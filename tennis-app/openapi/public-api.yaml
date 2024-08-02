@@ -65,6 +65,25 @@ paths:
                 $ref: '#/components/schemas/Bets'
         '404':
           description: Bet list not found
+  /player-statistics:
+    get:
+      tags:
+        - statistics
+      summary: Get player statistics
+      operationId: getPlayerStatistics
+      parameters:
+        - $ref: '#/components/parameters/levelParam'
+        - $ref: '#/components/parameters/playerIdParam'
+        - $ref: '#/components/parameters/surfaceParam'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStatistics'
+        '404':
+          description: Player statistics not found
   /football-bet-list:
     get:
       tags:
@@ -90,10 +109,24 @@ components:
     levelParam:
       in: query
       name: level
-      description: Players
+      description: League level
       schema:
         type: string
         example: "WTA"
+    playerIdParam:
+        in: query
+        name: playerId
+        description: Player ID
+        schema:
+            type: string
+            example: "4b145708-4e99-4547-ad02-1f3332e7708d"
+    surfaceParam:
+        in: query
+        name: surface
+        description: Surface
+        schema:
+            type: string
+            example: "clay"
     leagueParam:
       in: query
       name: level
@@ -149,6 +182,57 @@ components:
         latest_date:
           type: integer
           description: "Latest Record Date"
+    PlayerStatistics:
+      type: object
+      properties:
+        playerSPW:
+          type: number
+          example: 0.6
+          description: "Service Points Won"
+        playerRPW:
+            type: number
+            example: 0.4
+            description: "Return Points Won"
+        playerMatches:
+            type: number
+            example: 10
+            description: "Matches Played"
+        matches:
+          type: object
+          properties:
+            date:
+              type: array
+              items:
+                type: string
+                format: date
+                description: Date of the match
+            surface:
+              type: array
+              items:
+                type: string
+                description: Surface type of the match
+            round_name:
+              type: array
+              items:
+                type: string
+                description: Round name of the match
+            tourney_name:
+              type: array
+              items:
+                type: string
+                description: Tournament name of the match
+            spw:
+              type: array
+              items:
+                type: number
+                format: float
+                description: Serve points won in the match
+            rpw:
+              type: array
+              items:
+                type: number
+                format: float
+                description: Return points won in the match
     Bets:
       type: object
       properties:
@@ -427,6 +511,9 @@ components:
         awayMatchesGrass:
             type: string
             description: "Away player matches on grass"
+        surface:
+          type: string
+          description: "clay"
     FootballBets:
       type: object
       properties:

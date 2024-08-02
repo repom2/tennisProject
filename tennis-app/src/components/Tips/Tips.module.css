@@ -51,26 +51,26 @@
 }
 
 .tooltipContainer {
-  display: inline;
-  position: relative;
+    display: inline;
+    position: relative;
 }
 
 .tooltipText {
-  visibility: hidden;
-  width: 200px;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  padding: 15px 20px 0px;
-  border-radius: 6px;
-  position: absolute;
-  z-index: 1;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+    visibility: hidden;
+    width: 200px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 15px 20px 0px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* Class used to make the tooltip visible */
 .visible {
-  visibility: visible;
+    visibility: visible;
 }

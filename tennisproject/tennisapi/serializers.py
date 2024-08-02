@@ -111,6 +111,7 @@ class BetSerializer(serializers.Serializer):
     awayWinSingleSet = serializers.FloatField(source='away_win_single_set')
     awayWin1Set = serializers.FloatField(source='away_win_1_set')
     awayWin2Set = serializers.FloatField(source='away_win_2_set')
+    surface = serializers.CharField()
 
 
     class Meta:

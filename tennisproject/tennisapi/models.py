@@ -181,6 +181,8 @@ class AtpMatches(models.Model):
     id = models.TextField(primary_key=True)
     tour_id = models.TextField(null=True)
     tourney_name = models.TextField(null=True)
+    winner_name = models.TextField(null=True)
+    loser_name = models.TextField(null=True)
     surface = models.TextField(null=True)
     winner = models.ForeignKey(
         to=Players,
@@ -254,6 +256,8 @@ class WtaMatches(models.Model):
     id = models.TextField(primary_key=True)
     tour_id = models.TextField(null=True)
     tourney_name = models.TextField(null=True)
+    winner_name = models.TextField(null=True)
+    loser_name = models.TextField(null=True)
     surface = models.TextField(null=True)
     winner = models.ForeignKey(
         to=WTAPlayers,
@@ -312,6 +316,8 @@ class Match(models.Model):
         blank=True,
         related_name="away",
     )
+    home_name = models.TextField(null=True)
+    away_name = models.TextField(null=True)
     start_at = models.DateTimeField(null=True)
     round_name = models.TextField(null=True)
     match_num = models.IntegerField(null=True)
@@ -373,6 +379,8 @@ class WtaMatch(models.Model):
         blank=True,
         related_name="away",
     )
+    home_name = models.TextField(null=True)
+    away_name = models.TextField(null=True)
     start_at = models.DateTimeField(null=True)
     round_name = models.TextField(null=True)
     match_num = models.IntegerField(null=True)

@@ -28,14 +28,14 @@ def atp_elorate(surface):
         surface__icontains=surface,
         round_name__isnull=False,
     ).filter(
-        Q(round_name='Final') |
-        Q(round_name='Semifinal') |
-        Q(round_name='Quarterfinal') |
-        Q(round_name='Quarterfinals') |
-        Q(round_name='R16') |
-        Q(round_name='R32') |
-        Q(round_name='R64') |
-        Q(round_name='R128')
+        Q(round_name__icontains='Final') |
+        Q(round_name__icontains='Semifinal') |
+        Q(round_name__icontains='Quarterfinal') |
+        Q(round_name__icontains='Quarterfinals') |
+        Q(round_name__icontains='16') |
+        Q(round_name__icontains='32') |
+        Q(round_name__icontains='64') |
+        Q(round_name__icontains='128')
     ).order_by('date', 'match_num').distinct()
 
     if surface == 'clay':

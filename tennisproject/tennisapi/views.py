@@ -1,21 +1,25 @@
-from django.shortcuts import render
+import logging
+
+from dateutil.relativedelta import relativedelta
+from django.contrib.auth.models import User
+from django.db.models import F, Max, OuterRef, Subquery
+from django.db.models.functions import Greatest
 from django.http import Http404
-from rest_framework import viewsets
+from django.shortcuts import render
+from django.utils import timezone
+from psycopg2.extensions import AsIs
+from rest_framework import generics, viewsets
+from rest_framework.authentication import (BasicAuthentication,
+                                           SessionAuthentication)
 from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Bet, AtpTour, AtpElo, AtpHardElo, BetWta
-from tennisapi.models import BetWta, Bet
+from tennisapi.models import Bet, BetWta
+from tennisapi.stats.player_stats import player_stats, match_stats
+
+from .models import AtpElo, AtpHardElo, AtpTour, Bet, BetWta
 from .serializers import AtpEloSerializer, BetSerializer
-from rest_framework import generics
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from django.contrib.auth.models import User
-from rest_framework.permissions import IsAdminUser
-from django.db.models import F, Max, Subquery, OuterRef
-from django.db.models.functions import Greatest
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -24,33 +28,37 @@ class AtpEloList(generics.ListAPIView):
     queryset = AtpHardElo.objects.all()
     serializer_class = AtpEloSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
-    #permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
     def list(self, request):
         now = timezone.now()
         year_ago = now - relativedelta(days=180)
 
-        players = self.get_queryset().filter(date__range=(year_ago, now))\
+        players = (
+            self.get_queryset()
+            .filter(date__range=(year_ago, now))
             .values(
-            'player_id',
-            'elo',
-            'games',
-            'player__last_name',
-            'player__first_name',
-            'date'
-        ).order_by('-elo')
+                "player_id",
+                "elo",
+                "games",
+                "player__last_name",
+                "player__first_name",
+                "date",
+            )
+            .order_by("-elo")
+        )
 
         max_date_elo_by_player = {}
         data = []
         for player in players:
-            if player['player_id'] not in max_date_elo_by_player:
-                max_date_elo_by_player[player['player_id']] = player['elo']
+            if player["player_id"] not in max_date_elo_by_player:
+                max_date_elo_by_player[player["player_id"]] = player["elo"]
                 player_data = {
-                    'id': player['player_id'],
-                    'first_name': player['player__first_name'],
-                    'last_name': player['player__last_name'],
-                    'latest_date': player['date'],
-                    'elo': player['elo']
+                    "id": player["player_id"],
+                    "first_name": player["player__first_name"],
+                    "last_name": player["player__last_name"],
+                    "latest_date": player["date"],
+                    "elo": player["elo"],
                 }
                 data.append(player_data)
 
@@ -58,25 +66,75 @@ class AtpEloList(generics.ListAPIView):
 
 
 class BetList(generics.ListAPIView):
-
     authentication_classes = [SessionAuthentication, BasicAuthentication]
-    #permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
 
     def list(self, request):
         # Get the level parameter from the URL query string
-        level = request.GET.get('level', None)
+        level = request.GET.get("level", None)
 
         # Define your default queryset which will be used if 'level' is not 'wta'
         queryset = Bet.objects.all()
 
         # Change the queryset if 'level' is 'wta'
-        if level == 'wta':
+        if level == "wta":
             queryset = BetWta.objects.all()
         now = timezone.now()
         from_date = now - relativedelta(hours=55)
-        queryset = queryset.filter(start_at__gte=from_date).order_by('start_at')
+        queryset = queryset.filter(start_at__gte=from_date).order_by("start_at")
         queryset = queryset.annotate(
-            max_value=Greatest(F('home_yield'), F('away_yield'))
-        ).order_by('-max_value')
+            max_value=Greatest(F("home_yield"), F("away_yield"))
+        ).order_by("-max_value")
         serializer = BetSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class PlayerStatistics(generics.ListAPIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # permission_classes = [IsAdminUser]
+
+    def list(self, request):
+        # Get the level parameter from the URL query string
+        now = timezone.now()
+        start_at = now - relativedelta(days=365)
+        level = request.GET.get("level", "atp")
+        player_id = request.GET.get("playerId", "63bb0df01198c882a8c730abba4160d4")
+        if level == "atp":
+            matches_table = "tennisapi_atpmatches"
+            hard_elo = "tennisapi_atphardelo"
+            grass_elo = "tennisapi_atpgrasselo"
+            clay_elo = "tennisapi_atpelo"
+        elif level == "wta":
+            matches_table = "tennisapi_wtamatches"
+            hard_elo = "tennisapi_wtahardelo"
+            grass_elo = "tennisapi_wtagrasselo"
+            clay_elo = "tennisapi_wtaelo"
+        else:
+            raise Http404
+        log.info(f"Player ID: {player_id}")
+        log.info(f"Level: {level}")
+        stats_params = {
+            "limit": request.GET.get("limit", 5),
+            "start_at": request.GET.get("start_at", start_at),
+            "surface": AsIs(request.GET.get("surface", "Hard")),
+            "matches_table": AsIs(matches_table),
+            "hard_elo": AsIs(hard_elo),
+            "grass_elo": AsIs(grass_elo),
+            "clay_elo": AsIs(clay_elo),
+        }
+        player_spw, player_rpw, player_matches = player_stats(
+            player_id, start_at, stats_params
+        )
+
+        matches = match_stats(player_id, start_at, stats_params)
+
+        # pandas DataFrame to JSON
+        #matches = matches.to_json(orient="records")
+
+        content = {
+            "playerSPW": player_spw,
+            "playerRPW": player_rpw,
+            "playerMatches": player_matches,
+            "matches": matches,
+        }
+        return Response(content)

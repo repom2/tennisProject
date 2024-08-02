@@ -11,16 +11,22 @@ def player_stats(player_id, start_at, params):
     params["start_at"] = start_at
     query = """
             select
-               round(avg(SPW), 2) as SPW,
+                round(avg(SPW), 2) as SPW,
                round(avg(RPW), 2) as RPW,
                round(avg(RPW)/(1-avg(SPW)),2) as DR,
                count(*) as matches
             from (
             select
-               (firstwon + secondwon) / nullif(service_points::numeric, 0) as SPW,
-               (opponen_service_points - opponen_firstwon - opponen_secondwon) / nullif(opponen_service_points::numeric, 0) as RPW,
+               case when SPW is not null and SPW > 0.1 then SPW  when SPW2 is not null and SPW2 > 0.1 then SPW2 else null end as SPW,
+               case when RPW is not null and RPW > 0.1 then RPW  when RPW2 is not null and RPW2 > 0.1 then RPW2 else null end as RPW
+            from (
+            select
+               (player_service_points_won) / nullif(service_points::numeric, 0) as SPW,
+               (player_receiver_points_won) / nullif(opponent_service_points::numeric, 0) as RPW,
                service_points - firstwon - secondwon as service_points_lost,
-               opponen_service_points - opponen_firstwon - opponen_secondwon as return_points_won
+               opponent_service_points - opponent_firstwon - opponent_secondwon as return_points_won,
+               (firstwon + secondwon) / nullif(service_points::numeric, 0) as SPW2,
+               (opponent_service_points - opponent_firstwon - opponent_secondwon) / nullif(opponent_service_points::numeric, 0) as RPW2
             from (
             select
             distinct on (date)
@@ -36,13 +42,19 @@ def player_stats(player_id, start_at, params):
                else l_secondwon end as secondwon,
                case when winner_id = %(player_id)s
                then l_svpt
-               else w_svpt end as opponen_service_points,
+               else w_svpt end as opponent_service_points,
                case when winner_id = %(player_id)s
                then l_firstwon
-               else w_firstwon end as opponen_firstwon,
+               else w_firstwon end as opponent_firstwon,
                case when winner_id = %(player_id)s
                then l_secondwon
-               else w_secondwon end as opponen_secondwon
+               else w_secondwon end as opponent_secondwon,
+               case when winner_id = %(player_id)s
+               then winner_service_points_won
+               else loser_service_points_won end as player_service_points_won,
+               case when winner_id = %(player_id)s
+               then winner_receiver_points_won
+               else loser_receiver_points_won end as player_receiver_points_won
             from %(matches_table)s t 
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
                and surface ilike '%%%(surface)s%%'
@@ -50,6 +62,7 @@ def player_stats(player_id, start_at, params):
                --and t.date >= date(%(start_at)s)
                ) a order by date desc limit %(limit)s
             ) s
+                ) ss
         """
     df = pd.read_sql(query, connection, params=params)
     spw = df.iloc[0]["spw"]
@@ -98,11 +111,11 @@ def match_stats(player_id, start_at, params):
             round_name,
             tourney_name,
             opponent_name,
-            SPW,
-            RPW,
+            case when SPW is not null and SPW > 0.1 then SPW  when SPW2 is not null and SPW2 > 0.1 then SPW2 else null end as SPW,
+            case when RPW is not null and RPW > 0.1 then RPW  when RPW2 is not null and RPW2 > 0.1 then RPW2 else null end as RPW,
             service_points_lost,
             return_points_won,
-            round(RPW/(1-nullif(SPW, 0)),2) as DR,
+            round((case when RPW is not null then RPW else RPW2 end)/(1-nullif((case when SPW is not null then SPW else SPW2 end), 0)),2) as DR,
             opponent_id
         from (
             select
@@ -112,10 +125,12 @@ def match_stats(player_id, start_at, params):
                 tourney_name,
                 opponent_name,
                 opponent_id,
-                round((firstwon + secondwon) / nullif(service_points::numeric, 0), 2) as SPW,
-                round((opponen_service_points - opponen_firstwon - opponen_secondwon) / nullif(opponen_service_points::numeric, 0), 2) as RPW,
+                round((player_service_points_won) / nullif(service_points::numeric, 0), 2) as SPW,
+                round((player_receiver_points_won) / nullif(opponent_service_points::numeric, 0), 2) as RPW,
                 service_points - firstwon - secondwon as service_points_lost,
-                opponen_service_points - opponen_firstwon - opponen_secondwon as return_points_won
+                opponent_service_points - opponent_firstwon - opponent_secondwon as return_points_won,
+                round((firstwon + secondwon) / nullif(service_points::numeric, 0), 2) as SPW2,
+                round((opponent_service_points - opponent_firstwon - opponent_secondwon) / nullif(opponent_service_points::numeric, 0), 2) as RPW2
             from (
             select
             distinct on (date)
@@ -140,13 +155,19 @@ def match_stats(player_id, start_at, params):
                else l_secondwon end as secondwon,
                case when winner_id = %(player_id)s
                then l_svpt
-               else w_svpt end as opponen_service_points,
+               else w_svpt end as opponent_service_points,
                case when winner_id = %(player_id)s
                then l_firstwon
-               else w_firstwon end as opponen_firstwon,
+               else w_firstwon end as opponent_firstwon,
                case when winner_id = %(player_id)s
                then l_secondwon
-               else w_secondwon end as opponen_secondwon
+               else w_secondwon end as opponent_secondwon,
+               case when winner_id = %(player_id)s
+               then winner_service_points_won
+               else loser_service_points_won end as player_service_points_won,
+               case when winner_id = %(player_id)s
+               then winner_receiver_points_won
+               else loser_receiver_points_won end as player_receiver_points_won
             from %(matches_table)s t
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
                and surface ilike '%%%(surface)s%%'

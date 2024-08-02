@@ -222,6 +222,12 @@ class AtpMatches(models.Model):
     l_bpfaced = models.IntegerField(null=True)
     event_id = models.TextField(null=True)
     winner_code = models.TextField(null=True)
+    winner_service_points_won = models.IntegerField(null=True)
+    winner_total_points = models.IntegerField(null=True)
+    winner_receiver_points_won = models.IntegerField(null=True)
+    loser_service_points_won = models.IntegerField(null=True)
+    loser_total_points = models.IntegerField(null=True)
+    loser_receiver_points_won = models.IntegerField(null=True)
 
 
 class ChMatches(models.Model):
@@ -297,6 +303,12 @@ class WtaMatches(models.Model):
     l_bpfaced = models.IntegerField(null=True)
     event_id = models.TextField(null=True)
     winner_code = models.TextField(null=True)
+    winner_service_points_won = models.IntegerField(null=True)
+    winner_total_points = models.IntegerField(null=True)
+    winner_receiver_points_won = models.IntegerField(null=True)
+    loser_service_points_won = models.IntegerField(null=True)
+    loser_total_points = models.IntegerField(null=True)
+    loser_receiver_points_won = models.IntegerField(null=True)
 
 
 class Match(models.Model):

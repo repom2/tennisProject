@@ -60,6 +60,12 @@ select
     l_svgms::integer,
     l_bpsaved::integer,
     l_bpfaced::integer,
+    winner_service_points_won::integer,
+    winner_total_points::integer,
+    winner_receiver_points_won::integer,
+    loser_service_points_won::integer,
+    loser_total_points::integer,
+    loser_receiver_points_won::integer,
     event_id,
     winner_code
 from (
@@ -92,6 +98,12 @@ from (
         l_svgms,
         l_bpsaved,
         l_bpfaced,
+        0 as winner_service_points_won,
+        0 as winner_total_points,
+        0 as winner_receiver_points_won,
+        0 as loser_service_points_won,
+        0 as loser_total_points,
+        0 as loser_receiver_points_won,
         null as event_id,
         null as winner_code,
         minutes::integer * 60 as court_time
@@ -135,6 +147,30 @@ from (
         l_svgms,
         l_bpsaved,
         l_bpfaced,
+        CASE
+            WHEN winner_service_points_won::text ~ '^[0-9]+$' THEN winner_service_points_won::integer
+            ELSE NULL
+        END as winner_service_points_won,
+        CASE
+            WHEN winner_total_points::text ~ '^[0-9]+$' THEN winner_total_points::integer
+            ELSE NULL
+        END as winner_total_points,
+        CASE
+            WHEN winner_receiver_points_won::text ~ '^[0-9]+$' THEN winner_receiver_points_won::integer
+            ELSE NULL
+        END as winner_receiver_points_won,
+        CASE
+            WHEN loser_service_points_won::text ~ '^[0-9]+$' THEN loser_service_points_won::integer
+            ELSE NULL
+        END as loser_service_points_won,
+        CASE
+            WHEN loser_total_points::text ~ '^[0-9]+$' THEN loser_total_points::integer
+            ELSE NULL
+        END as loser_total_points,
+        CASE
+            WHEN loser_receiver_points_won::text ~ '^[0-9]+$' THEN loser_receiver_points_won::integer
+            ELSE NULL
+        END as loser_receiver_points_won,
         a.id as event_id,
         winner_code,
         coalesce((replace(periods_time, '''', '"')::json ->> 'period_1_time')::integer, 0)
@@ -166,10 +202,28 @@ from (
             sum(l_bpsaved) + sum(w_bpfaced) as l_bpfaced,
             sum(l_bpsaved) as l_bpsaved,
             sum(l_firstwon) as l_firstwon,
-            sum(l_secondwon) as l_secondwon
+            sum(l_secondwon) as l_secondwon,
+            sum(winner_service_points_won) as winner_service_points_won,
+            sum(winner_total_points) as winner_total_points,
+            sum(winner_receiver_points_won) as winner_receiver_points_won,
+            sum(loser_service_points_won) as loser_service_points_won,
+            sum(loser_total_points) as loser_total_points,
+            sum(loser_receiver_points_won) as loser_receiver_points_won
         from (
         select
             stat_name,
+            case when stat_name = 'service_points_won'
+            then winner::integer end as winner_service_points_won,
+            case when stat_name = 'total'
+            then winner::integer end as winner_total_points,
+            case when stat_name = 'receiver_points_won'
+            then winner::integer end as winner_receiver_points_won,
+            case when stat_name = 'service_points_won'
+            then loser::integer end as loser_service_points_won,
+            case when stat_name = 'total'
+            then loser::integer end as loser_total_points,
+            case when stat_name = 'receiver_points_won'
+            then loser::integer end as loser_receiver_points_won,
             case when stat_name = 'firstin'
             then split_part(replace(winner, '/', ' '), ' ', 1)::integer end as w_firstin,
             case when stat_name = 'firstin'
@@ -227,6 +281,9 @@ from (
             when name = 'break_points_saved' then 'bpsaved'
             when name = 'double_faults' then 'df'
             when name = 'service_games_played' then 'svgms'
+            when name = 'service_points_won' then 'service_points_won'
+            when name = 'total' then 'total'
+            when name = 'receiver_points_won' then 'receiver_points_won'
             else 'other' end as stat_name,
             *
         from (

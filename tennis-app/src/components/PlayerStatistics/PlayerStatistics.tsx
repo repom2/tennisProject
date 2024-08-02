@@ -11,8 +11,6 @@ const PlayerStats = (data: any) => {
     }
 
     const {playerSPW, playerRPW, playerMatches, matches} = data.data.data;
-    console.log("matches", matches);
-    console.log("data", data);
 
     const matchesJsonString = transformMatchesToJSONString(matches);
 

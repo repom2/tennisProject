@@ -84,6 +84,28 @@ paths:
                 $ref: '#/components/schemas/PlayerStatistics'
         '404':
           description: Player statistics not found
+  /match-probs:
+    get:
+      tags:
+        - statistics
+      summary: Get match probabilities
+      operationId: getMatchProbabilities
+      parameters:
+        - $ref: '#/components/parameters/tourNameParam'
+        - $ref: '#/components/parameters/homeSPWParam'
+        - $ref: '#/components/parameters/surfaceParam'
+        - $ref: '#/components/parameters/homeRPWParam'
+        - $ref: '#/components/parameters/awayRPWParam'
+        - $ref: '#/components/parameters/awaySPWParam'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchProbabilities'
+        '404':
+          description: Match probabilities not found
   /football-bet-list:
     get:
       tags:
@@ -127,6 +149,41 @@ components:
         schema:
             type: string
             example: "clay"
+    tourNameParam:
+        in: query
+        name: tourName
+        description: Tournament Name
+        schema:
+            type: string
+            example: "Wimbledon"
+    homeSPWParam:
+        in: query
+        name: homeSPW
+        description: Home Service Points Won
+        schema:
+            type: number
+            example: 0.6
+    homeRPWParam:
+        in: query
+        name: homeRPW
+        description: Home Return Points Won
+        schema:
+            type: number
+            example: 0.4
+    awaySPWParam:
+        in: query
+        name: awaySPW
+        description: Away Service Points Won
+        schema:
+            type: number
+            example: 0.6
+    awayRPWParam:
+        in: query
+        name: awayRPW
+        description: Away Return Points Won
+        schema:
+            type: number
+            example: 0.4
     leagueParam:
       in: query
       name: level
@@ -182,6 +239,21 @@ components:
         latest_date:
           type: integer
           description: "Latest Record Date"
+    MatchProbabilities:
+      type: object
+      properties:
+        eventSPW:
+          type: number
+          example: 0.6
+          description: "Event Average Service Points Won"
+        eventRPW:
+          type: number
+          example: 0.4
+          description: "Event Average Return Points Won"
+        matchProb:
+          type: number
+          example: 0.6
+          description: "Match Probability"
     PlayerStatistics:
       type: object
       properties:

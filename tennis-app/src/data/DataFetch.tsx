@@ -13,4 +13,6 @@ export const getBets = api.bets.getBets.bind(api.bets);
 
 export const getPlayerStatistics = api.statistics.getPlayerStatistics.bind(api.statistics);
 
+export const getMatchProbabilities = api.statistics.getMatchProbabilities.bind(api.statistics);
+
 export const getFootballBets = api.bets.getFootballBets.bind(api.bets);

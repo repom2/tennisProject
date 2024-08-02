@@ -20,6 +20,8 @@ from tennisapi.stats.player_stats import player_stats, match_stats
 
 from .models import AtpElo, AtpHardElo, AtpTour, Bet, BetWta
 from .serializers import AtpEloSerializer, BetSerializer
+from tennisapi.stats.avg_swp_rpw_by_event import event_stats
+from tennisapi.stats.prob_by_serve.winning_match import match_prob, matchProb
 
 log = logging.getLogger(__name__)
 
@@ -111,8 +113,7 @@ class PlayerStatistics(generics.ListAPIView):
             clay_elo = "tennisapi_wtaelo"
         else:
             raise Http404
-        log.info(f"Player ID: {player_id}")
-        log.info(f"Level: {level}")
+
         stats_params = {
             "limit": request.GET.get("limit", 5),
             "start_at": request.GET.get("start_at", start_at),
@@ -137,4 +138,71 @@ class PlayerStatistics(generics.ListAPIView):
             "playerMatches": player_matches,
             "matches": matches,
         }
+        return Response(content)
+
+
+class MatchProbability(generics.ListAPIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # permission_classes = [IsAdminUser]
+
+    def list(self, request):
+        # Get the level parameter from the URL query string
+        now = timezone.now()
+        start_at = now - relativedelta(days=365)
+        level = request.GET.get("level", "atp")
+        player_id = request.GET.get("playerId", "63bb0df01198c882a8c730abba4160d4")
+        if level == "atp":
+            matches_table = "tennisapi_atpmatches"
+            hard_elo = "tennisapi_atphardelo"
+            grass_elo = "tennisapi_atpgrasselo"
+            clay_elo = "tennisapi_atpelo"
+        elif level == "wta":
+            matches_table = "tennisapi_wtamatches"
+            hard_elo = "tennisapi_wtahardelo"
+            grass_elo = "tennisapi_wtagrasselo"
+            clay_elo = "tennisapi_wtaelo"
+        else:
+            raise Http404
+
+        tour_name = request.GET.get("tour", "olympics")
+        home_spw = request.GET.get("homeSPW", 0.72)
+        away_spw = request.GET.get("awaySPW", 0.68)
+        home_rpw = request.GET.get("homeRPW", 0.49)
+        away_rpw = request.GET.get("awayRPW", 0.42)
+        params = {
+            "limit": request.GET.get("limit", 5),
+            "start_at": request.GET.get("start_at", start_at),
+            "surface": AsIs(request.GET.get("surface", "Hard")),
+            "matches_table": AsIs(matches_table),
+            "hard_elo": AsIs(hard_elo),
+            "grass_elo": AsIs(grass_elo),
+            "clay_elo": AsIs(clay_elo),
+            "event": AsIs(tour_name),
+            "date": "2015-1-1",
+        }
+        event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
+
+        home_spw = tour_spw + (home_spw - tour_spw) - (away_rpw - tour_rpw)
+        away_spw = tour_spw + (away_spw - tour_spw) - (home_rpw - tour_rpw)
+
+        match_prob = matchProb(
+            home_spw,
+            1 - away_spw,
+            gv=0,
+            gw=0,
+            sv=0,
+            sw=0,
+            mv=0,
+            mw=0,
+            sets=3,
+        )
+
+        content = {
+            "eventSPW": event_spw,
+            "eventRPW": event_rpw,
+            "tourSPW": tour_spw,
+            "tourRPW": tour_rpw,
+            "matchProb": round(match_prob, 2),
+        }
+
         return Response(content)

@@ -283,7 +283,12 @@ from (
     ) s_stats on event=a.id
     where start_at::timestamp > '2023-12-24'
     and a.sport_id='2'
-    and a.section ->> 'id'='145' and status !='canceled'
+    and (
+    a.section ->> 'id'='145'
+    or a.section ->> 'id'='139'
+    or a.league ->> 'section_id'='145'
+    or a.league ->> 'section_id'='139'
+    ) and status !='canceled'
     and status = 'finished'
     and (winner_code = '1' or winner_code = '2')
 ) s

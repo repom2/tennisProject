@@ -1,4 +1,4 @@
-from tennisapi.models import WtaHardElo, WtaGrassElo, WtaElo, WtaMatches, WTAPlayers, WtaTour
+from tennisapi.models import WtaHardElo, WtaGrassElo, WtaClayElo, WtaMatches, WTAPlayers, WtaTour
 from django.db.models import Q, Exists, OuterRef
 
 
@@ -39,8 +39,8 @@ def wta_elorate(surface):
 
     if surface == 'clay':
         matches = matches.filter(
-            ~Exists(WtaElo.objects.filter(id=OuterRef('wtamatch'))))
-        elo_table = WtaElo
+            ~Exists(WtaClayElo.objects.filter(id=OuterRef('wtamatch'))))
+        elo_table = WtaClayElo
     elif surface == 'hard':
         matches = matches.filter(
             ~Exists(WtaHardElo.objects.filter(id=OuterRef('wtahardmatch'))))

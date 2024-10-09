@@ -1,4 +1,4 @@
-from tennisapi.models import ChElo, ChMatches, Players
+from tennisapi.models import ChClayElo, ChMatches, Players
 from django.db.models import Q, Exists, OuterRef
 
 

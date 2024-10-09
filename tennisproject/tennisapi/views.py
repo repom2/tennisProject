@@ -1,4 +1,5 @@
 import logging
+import pandas as pd
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
@@ -9,8 +10,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from psycopg2.extensions import AsIs
 from rest_framework import generics, viewsets
-from rest_framework.authentication import (BasicAuthentication,
-                                           SessionAuthentication)
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -18,10 +18,11 @@ from rest_framework.views import APIView
 from tennisapi.models import Bet, BetWta
 from tennisapi.stats.player_stats import player_stats, match_stats
 
-from .models import AtpElo, AtpHardElo, AtpTour, Bet, BetWta
+from .models import AtpClayElo, AtpHardElo, AtpTour, Bet, BetWta
 from .serializers import AtpEloSerializer, BetSerializer
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.prob_by_serve.winning_match import match_prob, matchProb
+from tennisapi.ml.utils import define_query_parameters
 
 log = logging.getLogger(__name__)
 
@@ -105,17 +106,17 @@ class PlayerStatistics(generics.ListAPIView):
             matches_table = "tennisapi_atpmatches"
             hard_elo = "tennisapi_atphardelo"
             grass_elo = "tennisapi_atpgrasselo"
-            clay_elo = "tennisapi_atpelo"
+            clay_elo = "tennisapi_atpclayelo"
         elif level == "wta":
             matches_table = "tennisapi_wtamatches"
             hard_elo = "tennisapi_wtahardelo"
             grass_elo = "tennisapi_wtagrasselo"
-            clay_elo = "tennisapi_wtaelo"
+            clay_elo = "tennisapi_wtaclayelo"
         else:
             raise Http404
 
         stats_params = {
-            "limit": request.GET.get("limit", 5),
+            "limit": request.GET.get("limit", 7),
             "start_at": request.GET.get("start_at", start_at),
             "surface": AsIs(request.GET.get("surface", "Hard")),
             "matches_table": AsIs(matches_table),
@@ -130,7 +131,7 @@ class PlayerStatistics(generics.ListAPIView):
         matches = match_stats(player_id, start_at, stats_params)
 
         # pandas DataFrame to JSON
-        #matches = matches.to_json(orient="records")
+        # matches = matches.to_json(orient="records")
 
         content = {
             "playerSPW": player_spw,
@@ -150,59 +151,73 @@ class MatchProbability(generics.ListAPIView):
         now = timezone.now()
         start_at = now - relativedelta(days=365)
         level = request.GET.get("level", "atp")
+        if level == "atp":
+            sets = 3
+        else:
+            sets = 3
         player_id = request.GET.get("playerId", "63bb0df01198c882a8c730abba4160d4")
         if level == "atp":
             matches_table = "tennisapi_atpmatches"
             hard_elo = "tennisapi_atphardelo"
             grass_elo = "tennisapi_atpgrasselo"
-            clay_elo = "tennisapi_atpelo"
+            clay_elo = "tennisapi_atpclayelo"
         elif level == "wta":
             matches_table = "tennisapi_wtamatches"
             hard_elo = "tennisapi_wtahardelo"
             grass_elo = "tennisapi_wtagrasselo"
-            clay_elo = "tennisapi_wtaelo"
+            clay_elo = "tennisapi_wtaclayelo"
         else:
             raise Http404
 
-        tour_name = request.GET.get("tour", "olympics")
-        home_spw = request.GET.get("homeSPW", 0.72)
-        away_spw = request.GET.get("awaySPW", 0.68)
-        home_rpw = request.GET.get("homeRPW", 0.49)
-        away_rpw = request.GET.get("awayRPW", 0.42)
-        params = {
-            "limit": request.GET.get("limit", 5),
-            "start_at": request.GET.get("start_at", start_at),
-            "surface": AsIs(request.GET.get("surface", "Hard")),
-            "matches_table": AsIs(matches_table),
-            "hard_elo": AsIs(hard_elo),
-            "grass_elo": AsIs(grass_elo),
-            "clay_elo": AsIs(clay_elo),
-            "event": AsIs(tour_name),
-            "date": "2015-1-1",
-        }
+        tour = request.GET.get("tour", level + "-hua-hin")
+        tour = request.GET.get("tour", level + "-tokyo")
+        tour = request.GET.get("tour", level + "-shanghai")
+
+        home_spw = request.GET.get("homeSPW", 0.651)
+        away_spw = request.GET.get("awaySPW", 0.661)
+        home_rpw = request.GET.get("homeRPW", 0.349)
+        away_rpw = request.GET.get("awayRPW", 0.351)
+        end_at = now + relativedelta(days=3)
+        params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
+            level, tour, now, end_at
+        )
+
         event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
 
         home_spw = tour_spw + (home_spw - tour_spw) - (away_rpw - tour_rpw)
         away_spw = tour_spw + (away_spw - tour_spw) - (home_rpw - tour_rpw)
 
-        match_prob = matchProb(
-            home_spw,
-            1 - away_spw,
-            gv=0,
-            gw=0,
-            sv=0,
-            sw=0,
-            mv=0,
-            mw=0,
-            sets=3,
+        data = pd.DataFrame()
+        data = match_prob(
+            home_spw, 1 - away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=sets
         )
 
+        log.info(data)
+        win_prob = data["stats_win"]
+        # replace nan with 0
+        data = data.fillna(0)
+
         content = {
+            "sets": sets,
             "eventSPW": event_spw,
             "eventRPW": event_rpw,
             "tourSPW": tour_spw,
             "tourRPW": tour_rpw,
-            "matchProb": round(match_prob, 2),
+            "matchProb": round(win_prob, 3),
+            "homeWinsSingleGame": round(data["home_wins_single_game"], 3),
+            "homeWinsSingleSet": round(data["home_wins_single_set"], 3),
+            "homeWins1Set": round(data["home_wins_1_set"], 3),
+            "home_ah_7_5": round(data["home_ah_7_5"], 3),
+            "home_ah_6_5": round(data["home_ah_6_5"], 3),
+            "home_ah_5_5": round(data["home_ah_5_5"], 3),
+            "home_ah_4_5": round(data["home_ah_4_5"], 3),
+            "home_ah_3_5": round(data["home_ah_3_5"], 3),
+            "home_ah_2_5": round(data["home_ah_2_5"], 3),
+            "games_over_21_5": round(data["games_over_21_5"], 3),
+            "games_over_22_5": round(data["games_over_22_5"], 3),
+            "games_over_23_5": round(data["games_over_23_5"], 3),
+            "games_over_24_5": round(data["games_over_24_5"], 3),
+            "games_over_25_5": round(data["games_over_25_5"], 3),
         }
 
         return Response(content)

@@ -18,7 +18,7 @@ lst = [
         [0, 0.52, 0.27, 0.21, 'seriea'],
         [1, 0.52, 0.27, 0.21, 'laliga'],
         [2, 0.44, 0.28, 0.28, 'ligue1'],
-        #[3, 0.25, 0.3, 0.45, 'premier'],
+        [3, 0.25, 0.3, 0.45, 'premier'],
     ]
 
 matches_to_bet = len(lst)
@@ -27,7 +27,7 @@ goals = [
     [0, 30/11, 14/11, 14/11, 10/11, 'esp'],
     [1, 13/10, 6/10, 13/11, 22/11, 'ita'],
     [2, 7/4, 6/8, 11/8, 3/4, 'ita'],
-    #[3, 73/23, 52/23, 68/24, 57/24, 'liiga'],
+    [3, 73/23, 52/23, 68/24, 57/24, 'liiga'],
 ]
 
 
@@ -111,10 +111,10 @@ def moniveto(list_index, moniveto_id):
     ]
 
     lst = [
-        [0, 2.52, 3.0, 3.7, 'seriea'],
-        [1, 2.15, 3.0, 4.4, 'laliga'],
-        [2, 4.55, 4.1, 1.8, 'ligue1'],
-        #[3, 1.65, 4.0, 4.75, 'premier'],
+        [0, 2.26, 3.9, 2.9, 'seriea'],
+        [1, 1.35, 5.4, 8.0, 'laliga'],
+        [2, 7.0, 5.4, 1.5, 'ligue1'],
+        #[3, 1.7, 6.76, 4.55, 'premier'],
     ]
     # divie all values in list of item by 1
     for i, item in enumerate(lst):
@@ -122,7 +122,7 @@ def moniveto(list_index, moniveto_id):
     is_using_own_data = False
     ice_hockey = False
     est_goals_from_prob = True
-    if not is_using_own_data and not ice_hockey:
+    if not is_using_own_data and not ice_hockey and not est_goals_from_prob:
         for i, item in enumerate(lst):
             arbitrage_check(item)
             estimated_goals = estimated_avg_goals_calc(goals[i])
@@ -150,7 +150,7 @@ def moniveto(list_index, moniveto_id):
                 sport,
             )
             print("---------------------------")
-    if est_goals_from_prob:
+    elif est_goals_from_prob:
         for i, item in enumerate(lst):
             estimated_avg_goals = match_probability(item[1], item[2], item[3])
             calculate_poisson(

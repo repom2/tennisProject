@@ -1,4 +1,4 @@
-from .models import AtpElo, AtpMatches, AtpTour, Players, Bet
+from .models import AtpClayElo, AtpMatches, AtpTour, Players, Bet
 from tennis_api.models import BetWta
 from rest_framework import serializers
 
@@ -26,7 +26,7 @@ class BetSerializer(serializers.Serializer):
     awayName = serializers.CharField(source='away_name')
     homeOdds = serializers.FloatField(source='home_odds')
     awayOdds = serializers.FloatField(source='away_odds')
-    eloProb = serializers.FloatField(source='elo_prob')
+    eloProbHard = serializers.FloatField(source='elo_prob_hard')
     eloProbClay = serializers.FloatField(source='elo_prob_clay')
     eloProbGrass = serializers.FloatField(source='elo_prob_grass')
     yearEloProb = serializers.FloatField(source='year_elo_prob')
@@ -43,6 +43,7 @@ class BetSerializer(serializers.Serializer):
     awaySpwGrass = serializers.FloatField(source='away_spw_grass')
     awayRpwGrass = serializers.FloatField(source='away_rpw_grass')
     statsWin = serializers.FloatField(source='stats_win')
+    statsWinHard = serializers.FloatField(source='stats_win_hard')
     statsWinClay = serializers.FloatField(source='stats_win_clay')
     statsWinGrass = serializers.FloatField(source='stats_win_grass')
     homeFatigue = serializers.FloatField(source='home_fatigue')
@@ -142,5 +143,5 @@ class AtpEloSerializer(serializers.Serializer):
     elo = serializers.IntegerField()
 
     class Meta:
-        model = AtpElo
+        model = AtpClayElo
         fields = ['elo', 'slug__last_name', 'twe']

@@ -1,8 +1,11 @@
 import logging
+from datetime import timedelta
 
 from psycopg2.extensions import AsIs
-from tennisapi.models import Bet, BetWta, Match, Players, WtaMatch, WTAPlayers
+from tennisapi.models import Bet, BetWta, AtpMatches, Match, Players, WtaMatch, WtaMatches, WTAPlayers
 from tabulate import tabulate
+from django.db.models import Q
+from datetime import datetime, timedelta
 
 log = logging.getLogger(__name__)
 
@@ -19,55 +22,83 @@ def label_round(data, mapping):
 
 
 def define_surface(level, tour, from_at):
+    from_at = from_at - timedelta(days=10)
     if level == "atp":
         qs = (
-            Match.objects.filter(tourney_name__icontains=tour, start_at__gte=from_at)
-            .values_list("surface", flat=True)
+            Match.objects.filter(
+                Q(tourney_name__icontains=tour) &
+                ~Q(tourney_name__icontains="double") &
+                Q(start_at__gte=from_at)
+                #& Q(surface__isnull=False)
+            )
+            .values("surface", "tourney_name", "tour_id")[2]
+        )
+        log.info(qs)
+        log.info('level: %s', level)
+        if qs is None:
+            logging.info("qs not found: %s", qs)
+            exit()
+        surface = qs["surface"]
+        if surface is None:
+            logging.info("Surface not found: %s", qs)
+            if "beijing" in qs["tourney_name"]:
+                logging.info("Surface not found: %s", qs)
+                surface = "hard"
+                logging.info("Surface is hard")
+            else:
+                logging.info("Surface not found: %s", qs)
+                exit()
+        tour_id = qs["tour_id"]
+        tourney_name = qs["tourney_name"]
+
+        if "clay" in surface or "Clay" in surface:
+            surface = "clay"
+        elif "grass" in surface or "Grass" in surface:
+            surface = "grass"
+        elif "hard" in surface or "Hard" in surface:
+            surface = "hard"
+        else:
+            logging.info("Surface not found: %s", qs)
+            exit()
+        query_surface = surface
+    else:
+        qs = (
+            WtaMatch.objects.filter(
+                Q(tourney_name__icontains=tour) &
+                ~Q(tourney_name__icontains="double") &
+                Q(start_at__gte=from_at) &
+                Q(surface__isnull=False)
+            )
+            .values("surface", "tourney_name", "tour_id")
             .first()
         )
         if qs is None:
-            surface = "grass"
-            logging.info("Surface not found: %s", surface)
-        elif "clay" in qs or "Clay" in qs:
+            logging.info("Surface not found: %s", qs)
+            exit()
+        surface = qs["surface"]
+        if surface is None:
+            logging.info("Surface not found: %s", qs)
+            exit()
+        tour_id = qs["tour_id"]
+        tourney_name = qs["tourney_name"]
+
+        if "clay" in surface or "Clay" in surface:
             surface = "clay"
-        elif "grass" in qs or "Grass" in qs:
+        elif "grass" in surface or "Grass" in surface:
             surface = "grass"
-        elif "hard" in qs or "Hard" in qs:
+        elif "hard" in surface or "Hard" in surface:
             surface = "hard"
         else:
             logging.info("Surface not found: %s", qs)
             exit()
         query_surface = surface
 
-    else:
-        qs = (
-            WtaMatch.objects.filter(tourney_name__icontains=tour, start_at__gte=from_at)
-            .values_list("surface", flat=True)
-            .first()
-        )
-        try:
-            if "clay" in qs or "Clay" in qs:
-                surface = "clay"
-            elif "grass" in qs or "Grass" in qs:
-                surface = "grass"
-            elif "hard" in qs or "Hard" in qs:
-                surface = "hard"
-            else:
-                logging.info("Surface not found: %s", qs)
-                exit()
-            query_surface = surface
-        except TypeError:
-            logging.info("No surface found!")
-            # let user input surface
-            surface = input("Enter surface: ")
-            # empty query string for asiIs
-            query_surface = AsIs("")
-    return surface, query_surface
+    return surface, query_surface, tour_id, tourney_name
 
 
 def define_query_parameters(level, tour, now, end_at):
+    surface, query_surface, tour_id, tourney_name = define_surface(level, tour, now)
     if level == "atp":
-        surface, query_surface = define_surface(level, tour, now)
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
         player_qs = Players.objects.all()
@@ -77,10 +108,9 @@ def define_query_parameters(level, tour, now, end_at):
         player_table = "tennisapi_players"
         hard_elo = "tennisapi_atphardelo"
         grass_elo = "tennisapi_atpgrasselo"
-        clay_elo = "tennisapi_atpelo"
+        clay_elo = "tennisapi_atpclayelo"
         bet_table = "tennisapi_bet"
     else:
-        surface, query_surface = define_surface(level, tour, now)
         bet_qs = BetWta.objects.all()
         match_qs = WtaMatch.objects.all()
         player_qs = WTAPlayers.objects.all()
@@ -90,7 +120,7 @@ def define_query_parameters(level, tour, now, end_at):
         player_table = "tennisapi_wtaplayers"
         hard_elo = "tennisapi_wtahardelo"
         grass_elo = "tennisapi_wtagrasselo"
-        clay_elo = "tennisapi_wtaelo"
+        clay_elo = "tennisapi_wtaclayelo"
         bet_table = "tennisapi_betwta"
     date = "2015-1-1"
     params = {
@@ -109,6 +139,8 @@ def define_query_parameters(level, tour, now, end_at):
         "bet_table": AsIs(bet_table),
         "event": AsIs(tour),
         "date": date,
+        "event_id": AsIs(tour_id),
+        "tourney_name": AsIs(tourney_name),
     }
     log.info("Surface: %s", surface)
     return params, match_qs, bet_qs, player_qs, surface

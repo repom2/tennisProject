@@ -37,7 +37,7 @@ def get_data_atp_data(params):
             case when winner_code = 1 then 0 else 1 end as winner_code, 
             b.start_at,
             b.home_odds, b.away_odds,
-            elo_prob,
+            elo_prob_hard,
             elo_prob_grass,
             elo_prob_clay,
             year_elo_prob,
@@ -78,7 +78,7 @@ def get_data_wta_data():
             case when winner_code = 1 then 0 else 1 end as winner_code, 
             b.start_at,
             b.home_odds, b.away_odds,
-            elo_prob,
+            elo_prob_hard,
             year_elo_prob,
             elo_prob_grass,
             elo_prob_clay,
@@ -225,6 +225,12 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         # replace from list features value stats_win_grass to stats_win
         features = [w.replace('stats_win_clay', 'stats_win') for w in features]
         features = [w.replace('elo_prob_clay', 'elo_prob') for w in features]
+    if surface == 'hard':
+        df = df.rename(columns={
+            'stats_win_hard': 'stats_win'
+            })
+        # replace from list features value stats_win_grass to stats_win
+        features = [w.replace('stats_win_hard', 'stats_win') for w in features]
 
     if level == 'atp':
         data = get_data_atp_data(params)

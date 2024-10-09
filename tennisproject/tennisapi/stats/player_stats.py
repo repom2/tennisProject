@@ -111,11 +111,11 @@ def match_stats(player_id, start_at, params):
             round_name,
             tourney_name,
             opponent_name,
-            case when SPW is not null and SPW > 0.17 then SPW  when SPW2 is not null and SPW2 > 0.17 then SPW2 else null end as SPW,
-            case when RPW is not null and RPW > 0.17 then RPW  when RPW2 is not null and RPW2 > 0.17 then RPW2 else null end as RPW,
+            case when SPW is not null and SPW > 0.21 and SPW < 1 then SPW  when SPW2 is not null and SPW2 > 0.21 and SPW2 < 1 then SPW2 else null end as SPW,
+            case when RPW is not null and RPW > 0.21 and RPW < 0.8 then RPW  when RPW2 is not null and RPW2 > 0.21 and RPW2 < 0.8 then RPW2 else null end as RPW,
             service_points_lost,
             return_points_won,
-            round((case when RPW is not null and RPW > 0.17 then RPW  when RPW2 is not null and RPW2 > 0.17 then RPW2 else null end)/(1-nullif((case when SPW is not null and SPW > 0.17 then SPW  when SPW2 is not null and SPW2 > 0.17 then SPW2 else null end), 0)),2) as DR,
+            round((case when RPW is not null and RPW > 0.21 and RPW < 0.8 then RPW  when RPW2 is not null and RPW2 > 0.21 and RPW2 < 0.8 then RPW2 else null end)/(1-nullif((case when SPW is not null and SPW > 0.21 and SPW < 1 then SPW  when SPW2 is not null and SPW2 > 0.21 and SPW2 < 1 then SPW2 else null end), 0)),2) as DR,
             opponent_id
         from (
             select
@@ -133,7 +133,7 @@ def match_stats(player_id, start_at, params):
                 round((opponent_service_points - opponent_firstwon - opponent_secondwon) / nullif(opponent_service_points::numeric, 0), 2) as RPW2
             from (
             select
-            distinct on (date)
+            distinct on (event_id)
                t.date,
                 t.surface,
                 t.round_name,

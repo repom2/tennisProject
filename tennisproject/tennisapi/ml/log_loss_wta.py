@@ -57,20 +57,20 @@ def get_data():
                 aw.last_name as loser_name, \
                 round_name, \
                 winner_code, \
-                (select elo from tennisapi_wtaelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_elo, \
+                (select elo from tennisapi_wtaclayelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_elo, \
                 (select elo from tennisapi_wtahardelo el where el.player_id=home_id and el.date < date(b.start_at) order by el.date desc limit 1) as winner_hardelo, \
-                (select count(*) from tennisapi_wtaelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
-                (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_games, \
-                (select elo from tennisapi_wtaelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_elo,  \
+                (select count(*) from tennisapi_wtaclayelo c where c.player_id=home_id and c.date < date(b.start_at)) as winner_games, \
+                (select count(*) from tennisapi_wtaclayelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_year_games, \
+                (select elo from tennisapi_wtaclayelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_elo,  \
                 (select elo from tennisapi_wtahardelo el where el.player_id=away_id and el.date < date(b.start_at) order by games desc limit 1) as loser_hardelo,  \
-                (select count(*) from tennisapi_wtaelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
-                (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_games, \
+                (select count(*) from tennisapi_wtaclayelo c where c.player_id=away_id and c.date < date(b.start_at)) as loser_games, \
+                (select count(*) from tennisapi_wtaclayelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_year_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_wtaelo c \
+                 from tennisapi_wtaclayelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.away_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as loser_win, \
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_wtaelo c \
+                 from tennisapi_wtaclayelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.home_id and aa.date < date(b.start_at) and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM b.start_at)) as winner_win \
             from tennisapi_wtamatchrolandg b \
@@ -109,22 +109,22 @@ def get_data2():
                 h.last_name as winner_name, \
                 aw.last_name as loser_name, \
                 round_name, \
-                (select elo from tennisapi_wtaelo el where el.player_id=winner_id and el.match_id=b.id) as winner_elo, " \
+                (select elo from tennisapi_wtaclayelo el where el.player_id=winner_id and el.match_id=b.id) as winner_elo, " \
                 "(select elo from tennisapi_wtahardelo el where el.player_id=winner_id and el.date < b.date order by games desc limit 1) as winner_hardelo, \
-                (select elo_change from tennisapi_wtaelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
-                (select count(*) from tennisapi_wtaelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
-                (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
-                (select elo from tennisapi_wtaelo el where el.player_id=loser_id and el.match_id=b.id) as loser_elo, \
+                (select elo_change from tennisapi_wtaclayelo el where el.player_id=winner_id and el.match_id=b.id) as winner_change, \
+                (select count(*) from tennisapi_wtaclayelo c where c.player_id=winner_id and c.date < b.date) as winner_games, \
+                (select count(*) from tennisapi_wtaclayelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_year_games, \
+                (select elo from tennisapi_wtaclayelo el where el.player_id=loser_id and el.match_id=b.id) as loser_elo, \
                 (select elo from tennisapi_wtahardelo el where el.player_id=loser_id and el.date < b.date order by games desc limit 1) as loser_hardelo, \
-                (select elo_change from tennisapi_wtaelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
-                (select count(*) from tennisapi_wtaelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
-                (select count(*) from tennisapi_wtaelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
+                (select elo_change from tennisapi_wtaclayelo el where el.player_id=loser_id and el.match_id=b.id) as loser_change, \
+                (select count(*) from tennisapi_wtaclayelo c where c.player_id=loser_id and c.date < b.date) as loser_games, \
+                (select count(*) from tennisapi_wtaclayelo c inner join tennisapi_wtamatches aa on aa.id=c.match_id where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_year_games, \
                 (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_wtaelo c \
+                 from tennisapi_wtaclayelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.loser_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as loser_win, \
                  (select sum(case when aa.winner_id=c.player_id then 1 else 0 end) \
-                 from tennisapi_wtaelo c \
+                 from tennisapi_wtaclayelo c \
                  inner join tennisapi_wtamatches aa on aa.id=c.match_id \
                  where c.player_id=b.winner_id and EXTRACT(YEAR FROM aa.date)=EXTRACT(YEAR FROM a.date)) as winner_win," \
                 "(select sum(court_time) from tennisapi_wtamatches c " \

@@ -11,7 +11,7 @@ interface MatchProbabilitiesProps {
 }
 
 export async function getMatchProbabilities({
-    tourName,
+    matchId,
     surface,
     homeSPW,
     awaySPW,

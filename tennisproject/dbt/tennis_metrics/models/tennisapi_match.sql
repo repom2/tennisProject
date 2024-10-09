@@ -83,4 +83,10 @@ from (
     left join tennisapi_players c on away_team_id::integer = c.sportscore_id
     where
     a.sport_id='2'
+    and (
+        a.section ->> 'id'='145'
+        or a.section ->> 'id'='139'
+        or a.league ->> 'section_id'='145'
+        or a.league ->> 'section_id'='139'
+        )
 ) s

@@ -119,6 +119,11 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         }
     );
 
+
+
+    console.log(homeStats?.data.playerSPW);
+    console.log(matchData);
+
     useEffect(() => {
         if (openIndex === index && homeId) {
             reFetch();
@@ -173,6 +178,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                         <div>{matchData.awayOdds}</div>
                     </td>
                     <td>{matchData.statsWin}</td>
+                    <td>{matchData.statsWinHard}</td>
                     <td>{matchData.statsWinClay}</td>
                     <td>
                         <Tooltip content={matchData}>
@@ -203,7 +209,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                         <div className={styles.NoWrap}>{matchData.homeMatchesClay}</div>
                         <div className={styles.NoWrap}>{matchData.awayMatchesClay}</div>
                     </td>
-                    <td>{matchData.eloProb}</td>
+                    <td>{matchData.eloProbHard}</td>
                     <td>{matchData.eloProbClay}</td>
                     <td>{matchData.yearEloProb}</td>
                     <td>{matchData.homeProb}</td>

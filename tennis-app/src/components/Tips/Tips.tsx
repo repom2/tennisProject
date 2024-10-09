@@ -124,6 +124,7 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                         <th>Yield</th>
                         <th>Dr</th>
                         <th>Odds</th>
+                        <th>StatsWin</th>
                         <th>Hard%</th>
                         <th>Clay%</th>
                         <th>Show</th>

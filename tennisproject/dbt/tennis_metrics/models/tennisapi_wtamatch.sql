@@ -76,5 +76,5 @@ from (
     left join tennisapi_wtaplayers b on home_team_id::integer = b.sportscore_id
     left join tennisapi_wtaplayers c on away_team_id::integer = c.sportscore_id
     where
-    a.sport_id='2'
+    a.sport_id='2' and (a.section ->> 'id'='144' or a.league ->> 'section_id'='144')
 ) s

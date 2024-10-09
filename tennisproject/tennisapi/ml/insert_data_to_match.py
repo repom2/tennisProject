@@ -19,6 +19,11 @@ from tennisapi.stats.common_opponent import common_opponent
 from tennisapi.stats.analysis import match_analysis
 from tennisapi.models import Bet, Match, Players, WtaMatch, WTAPlayers, BetWta
 import logging
+from tennisapi.ml.utils import (
+    define_query_parameters,
+    print_dataframe,
+    probability_of_winning,
+)
 
 log = logging.getLogger(__name__)
 
@@ -147,50 +152,18 @@ def label_round(data, mapping):
 
 
 def insert_data_to_match(level, tour):
-    surface = 'hard'
-    if level == 'atp':
-        bet_qs = Bet.objects.all()
-        match_qs = Match.objects.all()
-        player_qs = Players.objects.all()
-        tour_table = 'tennisapi_atptour'
-        matches_table = 'tennisapi_atpmatches'
-        match_table = 'tennisapi_match'
-        player_table = 'tennisapi_players'
-        hard_elo = 'tennisapi_atphardelo'
-        grass_elo = 'tennisapi_atpgrasselo'
-        clay_elo = 'tennisapi_atpelo'
-        if surface == 'clay':
-            hard_elo = clay_elo
-            clay_elo = 'tennisapi_atphardelo'
-    else:
-        bet_qs = BetWta.objects.all()
-        match_qs = WtaMatch.objects.all()
-        player_qs = WTAPlayers.objects.all()
-        tour_table = 'tennisapi_wtatour'
-        matches_table = 'tennisapi_wtamatches'
-        match_table = 'tennisapi_wtamatch'
-        player_table = 'tennisapi_wtaplayers'
-        hard_elo = 'tennisapi_wtahardelo'
-        grass_elo = 'tennisapi_wtagrasselo'
-        clay_elo = 'tennisapi_wtaclayelo'
-    params = {
-        'tour_table': AsIs(tour_table),
-        'matches_table': AsIs(matches_table),
-        'player_table': AsIs(player_table),
-        'match_table': AsIs(match_table),
-        'hard_elo': AsIs(hard_elo),
-        'grass_elo': AsIs(grass_elo),
-        'clay_elo': AsIs(clay_elo),
-        'tour': AsIs(tour),
-        'surface': AsIs(surface),
-        'start_at': '2000-01-19 18:00:00',
-        'end_at': '20214-01-20 18:00:00',
-    }
+    now = timezone.now().date()
+    from_at = now  # - timedelta(days=3)
+    end_at = now + timedelta(days=3)
+    params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
+        level, tour, now, end_at
+    )
+
+    params['start_at'] = '2000-01-01'
+    params['end_at'] = '2025-01-01'
+    params['limit'] = 50
     data = get_data(params)
 
-    log.info(data)
-    log.info(data['start_at'].describe())
-    #exit(0)
     l = len(data.index)
     if l == 0:
         log.info("No data")
@@ -201,25 +174,17 @@ def insert_data_to_match(level, tour):
     else:
         tour_spw, tour_rpw = 0.565, 0.435
 
-    date = '2015-1-1'
-    params = {
-        'event': AsIs(tour),
-        'tour_table': AsIs(tour_table),
-        'matches_table': AsIs(matches_table),
-        'date': date,
-        'surface': AsIs(surface),
-    }
-    event_spw, event_rpw = event_stats(params)
+    event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
     if event_spw is None:
         if level == 'atp':
             tour_spw, tour_rpw = 0.645, 0.355
         else:
             tour_spw, tour_rpw = 0.565, 0.435
 
-    data[['spw1', 'rpw1']] = pd.DataFrame(
+    data[['spw1', 'rpw1', 'home_matches']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], params)),
         index=data.index)
-    data[['spw2', 'rpw2']] = pd.DataFrame(
+    data[['spw2', 'rpw2', 'away_matches']] = pd.DataFrame(
         np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], data['start_at'], params)),
         index=data.index)
     data['player1'] = data.apply(lambda x: event_spw + (x.spw1 - tour_spw) - (x.rpw2 - tour_rpw) if (x.rpw2 and x.spw1) else None, axis=1)

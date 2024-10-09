@@ -342,7 +342,7 @@ components:
         awayYield:
           type: number
           description: "Away yield"
-        eloProb:
+        eloProbHard:
           type: number
           description: "Elo Probability"
         eloProbClay:
@@ -369,6 +369,9 @@ components:
         statsWin:
           type: number
           description: "Calculate home win probability based on stats"
+        statsWinHard:
+          type: number
+          description: "Calculate home win probability based on stats on hard"
         homeFatigue:
           type: number
           description: "Fatigue score for home player"

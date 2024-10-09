@@ -50,7 +50,7 @@ export type Bets = {
     /**
      * Elo Probability
      */
-    eloProb?: number;
+    eloProbHard?: number;
     /**
      * Elo Probability on Clay
      */
@@ -83,6 +83,10 @@ export type Bets = {
      * Calculate home win probability based on stats
      */
     statsWin?: number;
+    /**
+     * Calculate home win probability based on stats on hard
+     */
+    statsWinHard?: number;
     /**
      * Fatigue score for home player
      */

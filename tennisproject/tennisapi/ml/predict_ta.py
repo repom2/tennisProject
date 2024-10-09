@@ -32,12 +32,14 @@ warnings.filterwarnings("ignore")
 
 def predict_ta(level, tour):
     now = timezone.now().date()
-    from_at = now  # - timedelta(days=3)
+    from_at = now + timedelta(days=1)
     end_at = now + timedelta(days=3)
     params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
         level, tour, now, end_at
     )
     data = get_data(params)
+    #data = data.head(18)
+    print_dataframe(data)
 
     # filter data from df where winner_fullname contains "Fognini"
     #data = data[data["loser_fullname"].str.contains("Humbert")]
@@ -94,8 +96,8 @@ def predict_ta(level, tour):
         ]
     ] = data.apply(
         lambda x: match_prob(
-            x.player1 if x.player1 else None,
-            1 - x.player2 if x.player2 else None,
+            x.player1 if x.player1 else 0,
+            1 - x.player2 if x.player2 else 0,
             gv=0,
             gw=0,
             sv=0,
@@ -265,12 +267,12 @@ def predict_ta(level, tour):
         stats_win_field= "stats_win_grass"
         elo_prob_field = "elo_prob_grass"
     else:
-        stats_win_field = "stats_win"
-        elo_prob_field = "elo_prob"
+        stats_win_field = "stats_win_hard"
+        elo_prob_field = "elo_prob_hard"
     # Away player stats win
     data[
         [
-            "stats_win",
+            "stats_win_hard",
             "away_wins_single_game",
             "away_wins_single_set",
             "away_wins_1_set",
@@ -297,7 +299,7 @@ def predict_ta(level, tour):
             sw=0,
             mv=0,
             mw=0,
-            sets=3,
+            sets=sets,
         ),
         axis=1,
     ).round(
@@ -306,7 +308,7 @@ def predict_ta(level, tour):
     # Home player stats win
     data[
         [
-            "stats_win",
+            "stats_win_hard",
             "home_wins_single_game",
             "home_wins_single_set",
             "home_wins_1_set",
@@ -325,15 +327,15 @@ def predict_ta(level, tour):
         ]
     ] = data.apply(
         lambda x: match_prob(
-            x.player1 if x.player1 else None,
-            1 - x.player2 if x.player2 else None,
+            x.player1 if x.player1 else 0,
+            1 - x.player2 if x.player2 else 0,
             gv=0,
             gw=0,
             sv=0,
             sw=0,
             mv=0,
             mw=0,
-            sets=3,
+            sets=sets,
         ),
         axis=1,
     ).round(
@@ -360,15 +362,15 @@ def predict_ta(level, tour):
         ]
     ] = data.apply(
         lambda x: match_prob(
-            x.player1_clay if x.player1_clay else None,
-            1 - x.player2_clay if x.player2_clay else None,
+            x.player1_clay if x.player1_clay else 0,
+            1 - x.player2_clay if x.player2_clay else 0,
             gv=0,
             gw=0,
             sv=0,
             sw=0,
             mv=0,
             mw=0,
-            sets=3,
+            sets=sets,
         ),
         axis=1,
     ).round(
@@ -403,13 +405,13 @@ def predict_ta(level, tour):
             sw=0,
             mv=0,
             mw=0,
-            sets=3,
+            sets=sets,
         ),
         axis=1,
     ).round(
         2
     )
-    columns = ["stats_win_clay", "stats_win_grass", "stats_win"]
+    columns = ["stats_win_clay", "stats_win_grass", "stats_win_hard"]
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
     )
@@ -494,8 +496,8 @@ def predict_ta(level, tour):
     data["home_odds"] = data["home_odds"].astype(float)
     data["away_odds"] = data["away_odds"].astype(float)
 
-    data["elo_prob"] = data["winner_hardelo"] - data["loser_hardelo"]
-    data["elo_prob"] = data["elo_prob"].apply(probability_of_winning).round(2)
+    data["elo_prob_hard"] = data["winner_hardelo"] - data["loser_hardelo"]
+    data["elo_prob_hard"] = data["elo_prob_hard"].apply(probability_of_winning).round(2)
 
     data["elo_prob_clay"] = data["winner_clayelo"] - data["loser_clayelo"]
     data["elo_prob_clay"] = data["elo_prob_clay"].apply(probability_of_winning).round(2)
@@ -548,7 +550,7 @@ def predict_ta(level, tour):
                 row.home_md_table,
                 row.away_md_table,
                 row.stats_win,
-                row.elo_prob,
+                row.elo_prob_hard,
                 row.home_matches,
                 row.away_matches,
             )
@@ -574,7 +576,7 @@ def predict_ta(level, tour):
                 "away_name": row.loser_name,
                 "home_odds": row["home_odds"],
                 "away_odds": row["away_odds"],
-                "elo_prob": row["elo_prob"],
+                "elo_prob_hard": row["elo_prob_hard"],
                 "elo_prob_clay": row["elo_prob_clay"],
                 "elo_prob_grass": row["elo_prob_grass"],
                 "year_elo_prob": row["year_elo_prob"],
@@ -591,6 +593,7 @@ def predict_ta(level, tour):
                 "away_spw_grass": row["away_spw_grass"],
                 "away_rpw_grass": row["away_rpw_grass"],
                 "stats_win": row["stats_win"],
+                "stats_win_hard": row["stats_win_hard"],
                 "home_fatigue": row["home_fatigue"],
                 "away_fatigue": row["away_fatigue"],
                 "h2h_win": row["h2h_win"],

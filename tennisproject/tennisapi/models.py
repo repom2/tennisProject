@@ -58,7 +58,7 @@ class WtaTour(models.Model):
     surface = models.TextField(null=True)
 
 
-class AtpElo(models.Model):
+class AtpClayElo(models.Model):
     match = models.ForeignKey(
         'AtpMatches',
         on_delete=models.DO_NOTHING,
@@ -109,7 +109,7 @@ class AtpGrassElo(models.Model):
     date = models.DateField(null=True)
 
 
-class ChElo(models.Model):
+class ChClayElo(models.Model):
     match = models.ForeignKey(
         'ChMatches',
         on_delete=models.DO_NOTHING,
@@ -126,7 +126,7 @@ class ChElo(models.Model):
     date = models.DateField(null=True)
 
 
-class WtaElo(models.Model):
+class WtaClayElo(models.Model):
     match = models.ForeignKey(
         'WtaMatches',
         on_delete=models.DO_NOTHING,
@@ -428,7 +428,7 @@ class Bet(models.Model):
     away_name = models.TextField(null=True)
     home_odds = models.FloatField(null=True)
     away_odds = models.FloatField(null=True)
-    elo_prob = models.FloatField(null=True)
+    elo_prob_hard = models.FloatField(null=True)
     elo_prob_clay = models.FloatField(null=True)
     elo_prob_grass = models.FloatField(null=True)
     year_elo_prob = models.FloatField(null=True)
@@ -516,6 +516,7 @@ class Bet(models.Model):
     away_dr_grass = models.FloatField(null=True)
     away_matches_grass = models.TextField(null=True)
     stats_win_grass = models.FloatField(null=True)
+    stats_win_hard = models.FloatField(null=True)
 
 
 class BetWta(models.Model):
@@ -540,7 +541,7 @@ class BetWta(models.Model):
     away_name = models.TextField(null=True)
     home_odds = models.FloatField(null=True)
     away_odds = models.FloatField(null=True)
-    elo_prob = models.FloatField(null=True)
+    elo_prob_hard = models.FloatField(null=True)
     elo_prob_clay = models.FloatField(null=True)
     elo_prob_grass = models.FloatField(null=True)
     year_elo_prob = models.FloatField(null=True)
@@ -628,4 +629,5 @@ class BetWta(models.Model):
     away_dr_grass = models.FloatField(null=True)
     away_matches_grass = models.TextField(null=True)
     stats_win_grass = models.FloatField(null=True)
+    stats_win_hard = models.FloatField(null=True)
 

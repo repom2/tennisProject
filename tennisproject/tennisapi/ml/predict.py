@@ -180,7 +180,7 @@ def predict(level, tour):
         player_table = 'tennisapi_players'
         hard_elo = 'tennisapi_atphardelo'
         grass_elo = 'tennisapi_atpgrasselo'
-        clay_elo = 'tennisapi_atpelo'
+        clay_elo = 'tennisapi_atpclayelo'
         if surface == 'clay':
             hard_elo = clay_elo
     else:

@@ -696,11 +696,11 @@ class Command(BaseCommand):
 
     def match_statistics(self, options):
         sportscore_ids = list(
-            AtpMatches.objects.filter(Q(date__gt='2024-3-1') & Q(w_ace__isnull=True)).values_list('event_id')
+            AtpMatches.objects.filter(Q(date__gt='2024-9-1') & Q(w_ace__isnull=True)).values_list('event_id')
         )
         sportscore_wta_ids = list(
             WtaMatches.objects.filter(
-                Q(date__gt='2024-3-1') & Q(w_ace__isnull=True)).values_list(
+                Q(date__gt='2024-9-1') & Q(w_ace__isnull=True)).values_list(
                 'event_id')
         )
 

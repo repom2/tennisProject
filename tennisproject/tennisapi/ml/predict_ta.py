@@ -31,14 +31,15 @@ warnings.filterwarnings("ignore")
 
 
 def predict_ta(level, tour):
+    use_scrape = True
     now = timezone.now().date()
-    from_at = now + timedelta(days=1)
+    from_at = now - timedelta(days=1)
     end_at = now + timedelta(days=3)
     params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
-        level, tour, now, end_at
+        level, tour, from_at, end_at
     )
     data = get_data(params)
-    #data = data.head(18)
+    #data = data.tail(9)
     print_dataframe(data)
 
     # filter data from df where winner_fullname contains "Fognini"
@@ -47,12 +48,11 @@ def predict_ta(level, tour):
         print("No data")
         return
     #data = data.head(1)
-    print_dataframe(data)
     event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
 
     stats_params = params
-    stats_params["start_at"] = '2024-06-01'
-    stats_params["limit"] = 15
+    stats_params["start_at"] = '2023-01-01'
+    stats_params["limit"] = 52
     if level == "atp":
         sets = 3
     else:
@@ -114,49 +114,94 @@ def predict_ta(level, tour):
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
     #exit()
-    if level == "atp":
-        data[
-            [
-                "home_spw",
-                "home_rpw",
-                "home_dr",
-                "home_matches",
-                "home_peak_rank",
-                "home_current_rank",
-                "home_plays",
-                "home_player_info",
-                "home_md_table",
-                "home_spw_clay",
-                "home_rpw_clay",
-                "home_dr_clay",
-                "home_matches_clay",
-                "home_spw_grass",
-                "home_rpw_grass",
-                "home_dr_grass",
-                "home_matches_grass",
-            ]
-        ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "home", surface), axis=1)
-        data[
-            [
-                "away_spw",
-                "away_rpw",
-                "away_dr",
-                "away_matches",
-                "away_peak_rank",
-                "away_current_rank",
-                "away_plays",
-                "away_player_info",
-                "away_md_table",
-                "away_spw_clay",
-                "away_rpw_clay",
-                "away_dr_clay",
-                "away_matches_clay",
-                "away_spw_grass",
-                "away_rpw_grass",
-                "away_dr_grass",
-                "away_matches_grass",
-            ]
-        ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "away", surface), axis=1)
+
+    if use_scrape:
+        if level == "atp":
+            data[
+                [
+                    "home_spw",
+                    "home_rpw",
+                    "home_dr",
+                    "home_matches",
+                    "home_peak_rank",
+                    "home_current_rank",
+                    "home_plays",
+                    "home_player_info",
+                    "home_md_table",
+                    "home_spw_clay",
+                    "home_rpw_clay",
+                    "home_dr_clay",
+                    "home_matches_clay",
+                    "home_spw_grass",
+                    "home_rpw_grass",
+                    "home_dr_grass",
+                    "home_matches_grass",
+                ]
+            ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "home", surface), axis=1)
+            data[
+                [
+                    "away_spw",
+                    "away_rpw",
+                    "away_dr",
+                    "away_matches",
+                    "away_peak_rank",
+                    "away_current_rank",
+                    "away_plays",
+                    "away_player_info",
+                    "away_md_table",
+                    "away_spw_clay",
+                    "away_rpw_clay",
+                    "away_dr_clay",
+                    "away_matches_clay",
+                    "away_spw_grass",
+                    "away_rpw_grass",
+                    "away_dr_grass",
+                    "away_matches_grass",
+                ]
+            ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "away", surface), axis=1)
+        else:
+            data[
+                [
+                    "home_spw",
+                    "home_rpw",
+                    "home_dr",
+                    "home_matches",
+                    "home_peak_rank",
+                    "home_current_rank",
+                    "home_plays",
+                    "home_player_info",
+                    "home_md_table",
+                    "home_spw_clay",
+                    "home_rpw_clay",
+                    "home_dr_clay",
+                    "home_matches_clay",
+                    "home_spw_grass",
+                    "home_rpw_grass",
+                    "home_dr_grass",
+                    "home_matches_grass",
+                ]
+            ] = data.apply(lambda row: tennisabstract_scrape(row, "home", surface), axis=1)
+            data[
+                [
+                    "away_spw",
+                    "away_rpw",
+                    "away_dr",
+                    "away_matches",
+                    "away_peak_rank",
+                    "away_current_rank",
+                    "away_plays",
+                    "away_player_info",
+                    "away_md_table",
+                    "away_spw_clay",
+                    "away_rpw_clay",
+                    "away_dr_clay",
+                    "away_matches_clay",
+                    "away_spw_grass",
+                    "away_rpw_grass",
+                    "away_dr_grass",
+                    "away_matches_grass",
+                ]
+            ] = data.apply(lambda row: tennisabstract_scrape(row, "away", surface), axis=1)
     else:
         data[
             [
@@ -178,7 +223,7 @@ def predict_ta(level, tour):
                 "home_dr_grass",
                 "home_matches_grass",
             ]
-        ] = data.apply(lambda row: tennisabstract_scrape(row, "home", surface), axis=1)
+        ] = None
         data[
             [
                 "away_spw",
@@ -199,8 +244,7 @@ def predict_ta(level, tour):
                 "away_dr_grass",
                 "away_matches_grass",
             ]
-        ] = data.apply(lambda row: tennisabstract_scrape(row, "away", surface), axis=1)
-
+        ] = None
     data["player1"] = data.apply(
         lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
         if (x.away_rpw and x.home_spw)
@@ -291,8 +335,8 @@ def predict_ta(level, tour):
         ]
     ] = data.apply(
         lambda x: match_prob(
-            x.player1 if x.player1 else None,
-            1 - x.player2 if x.player2 else None,
+            x.player1 if x.player1 else 0,
+            1 - x.player2 if x.player2 else 0,
             gv=0,
             gw=0,
             sv=0,

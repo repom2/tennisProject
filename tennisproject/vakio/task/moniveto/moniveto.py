@@ -1,5 +1,5 @@
 from vakio.task.moniveto.match_prob import match_probability
-from vakio.task.moniveto.poisson import calculate_poisson
+from vakio.task.moniveto.poisson import calculate_poisson, calculate_poisson_football
 from vakio.task.moniveto.odds_from_stats import odds_from_stats
 from vakio.task.moniveto.calc_probs import calc_probs
 import logging
@@ -104,17 +104,17 @@ def moniveto(list_index, moniveto_id):
     calc_probs(qs, sport)
 
     estimated_avg_goals = [
-        [0, 1.8, 0.8],
-        [1, 1.75, 0.6],
-        [2, 1.2, 1.4],
-        #[3, 0.9, 2.22],
+        [0, 1.0, 1.8],
+        [1, 2.35, 0.8],
+        [2, 0.95, 2.67],
+        [3, 2.15, 0.75],
     ]
 
     lst = [
-        [0, 2.26, 3.9, 2.9, 'seriea'],
-        [1, 1.35, 5.4, 8.0, 'laliga'],
-        [2, 7.0, 5.4, 1.5, 'ligue1'],
-        #[3, 1.7, 6.76, 4.55, 'premier'],
+        [0, 1.13, 10.5, 22.8, 'seriea'],
+        [1, 1.75, 3.7, 6.5, 'laliga'],
+        [2, 3.0, 3.8, 2.3, 'ligue1'],
+        [3, 110.95, 55.55, 1.041, 'premier'],
     ]
     # divie all values in list of item by 1
     for i, item in enumerate(lst):
@@ -122,20 +122,27 @@ def moniveto(list_index, moniveto_id):
     is_using_own_data = False
     ice_hockey = False
     est_goals_from_prob = True
-    if not is_using_own_data and not ice_hockey and not est_goals_from_prob:
+    last = True
+    use_estimated_avg_goals = True
+    if use_estimated_avg_goals:
         for i, item in enumerate(lst):
             arbitrage_check(item)
-            estimated_goals = estimated_avg_goals_calc(goals[i])
-            logging.info( estimated_goals)
-            calculate_poisson(
-                estimated_avg_goals[i][1],
-                #estimated_goals[1],
-                estimated_avg_goals[i][2],
-                #estimated_goals[2],
-                item[0],
-                moniveto_id,
-                list_index,
-            )
+            if sport == 'football':
+                calculate_poisson_football(
+                    estimated_avg_goals[i][1],
+                    estimated_avg_goals[i][2],
+                    item[0],
+                    moniveto_id,
+                    list_index,
+                )
+            else:
+                calculate_poisson(
+                    estimated_avg_goals[i][1],
+                    estimated_avg_goals[i][2],
+                    item[0],
+                    moniveto_id,
+                    list_index,
+                )
             print("---------------------------")
     elif ice_hockey:
         for i, item in enumerate(lst):
@@ -153,7 +160,8 @@ def moniveto(list_index, moniveto_id):
     elif est_goals_from_prob:
         for i, item in enumerate(lst):
             estimated_avg_goals = match_probability(item[1], item[2], item[3])
-            calculate_poisson(
+            calculate_poisson_football(
+            #calculate_poisson(
                 estimated_avg_goals[0],
                 estimated_avg_goals[1],
                 item[0],

@@ -66,16 +66,18 @@ def define_surface(level, tour, from_at):
             WtaMatch.objects.filter(
                 Q(tourney_name__icontains=tour) &
                 ~Q(tourney_name__icontains="double") &
-                Q(start_at__gte=from_at) &
-                Q(surface__isnull=False)
+                Q(start_at__gte=from_at)
+                #& Q(surface__isnull=False)
             )
             .values("surface", "tourney_name", "tour_id")
             .first()
         )
+
         if qs is None:
-            logging.info("Surface not found: %s", qs)
+            logging.info("Queryset not found: %s", qs)
             exit()
         surface = qs["surface"]
+        logging.info('surface: %s', surface)
         if surface is None:
             logging.info("Surface not found: %s", qs)
             exit()

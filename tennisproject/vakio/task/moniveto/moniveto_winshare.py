@@ -21,11 +21,11 @@ logging.basicConfig(
 
 bonus = 0
 scores_default = [
-        "0,1,2,3,4-0,1,2,3",
-        "0,1,2,3,4,5-0,1,2",
-        "0,1,2-0,1,2,3,4,5",
-    ]
-
+        "0,1,2,3,4-0,1,2,3,4",
+        "0,1,2,3,4,5-0,1,2,3",
+        "0,1,2,3-0,1,2,3,4,5",
+        "0,1,2,3,4,5-0,1,2,3",
+]
 
 def get_sport_winshare(draw_id, matches, moniveto_id, list_index):
     host = "https://www.veikkaus.fi"

@@ -1,7 +1,7 @@
 # import beautifulsoup4
 import logging
 from datetime import datetime
-
+import time
 from bs4 import BeautifulSoup
 
 import pandas as pd
@@ -12,6 +12,7 @@ logging = logging.getLogger(__name__)
 
 
 def tennisabstract_scrape(row, home, surface):
+    time.sleep(1)
     try:
         if home == "home":
             index_columns = [
@@ -136,20 +137,22 @@ def tennisabstract_scrape(row, home, surface):
                     play_hand = text_content.split(": ")[1].strip()
                 elif "Peak rank" in text_content:
                     peak_rank = text_content
-
         # change the date of birth to age
         date_format = "%d-%b-%Y"
-        birthdate = datetime.strptime(date_of_birth, date_format)
-        current_date = datetime.now()
-        age = (
-            current_date.year
-            - birthdate.year
-            - (
-                (current_date.month, current_date.day)
-                < (birthdate.month, birthdate.day)
+        try:
+            birthdate = datetime.strptime(date_of_birth, date_format)
+            current_date = datetime.now()
+            age = (
+                current_date.year
+                - birthdate.year
+                - (
+                    (current_date.month, current_date.day)
+                    < (birthdate.month, birthdate.day)
+                )
             )
-        )
-
+        except TypeError:
+            birthdate = None
+            age = None
         player_info = {
             "name_country": name_country,
             "current_rank": current_rank,

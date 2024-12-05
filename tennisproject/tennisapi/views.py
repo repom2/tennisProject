@@ -169,14 +169,12 @@ class MatchProbability(generics.ListAPIView):
         else:
             raise Http404
 
-        tour = request.GET.get("tour", level + "-hua-hin")
-        tour = request.GET.get("tour", level + "-tokyo")
-        tour = request.GET.get("tour", level + "-shanghai")
+        tour = request.GET.get("tour", level + "-final")
 
-        home_spw = request.GET.get("homeSPW", 0.651)
-        away_spw = request.GET.get("awaySPW", 0.661)
-        home_rpw = request.GET.get("homeRPW", 0.349)
-        away_rpw = request.GET.get("awayRPW", 0.351)
+        home_spw = request.GET.get("homeSPW", 0.686)
+        home_rpw = request.GET.get("homeRPW", 0.364)
+        away_spw = request.GET.get("awaySPW", 0.703)
+        away_rpw = request.GET.get("awayRPW", 0.414)
         end_at = now + relativedelta(days=3)
         params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
             level, tour, now, end_at

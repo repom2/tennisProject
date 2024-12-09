@@ -21,10 +21,9 @@ logging.basicConfig(
 
 bonus = 0
 scores_default = [
-        "0,1,2,3,4-0,1,2,3,4",
-        "0,1,2,3,4,5-0,1,2,3",
-        "0,1,2,3-0,1,2,3,4,5",
-        "0,1,2,3,4,5-0,1,2,3",
+        '0,1,2,3,4,5-0,1,2,3,4',
+        '0,1,2,3,4,5,6-0,1,2,3',
+        '0,1,2,3-0,1,2,3,4,5,6',
 ]
 
 def get_sport_winshare(draw_id, matches, moniveto_id, list_index):

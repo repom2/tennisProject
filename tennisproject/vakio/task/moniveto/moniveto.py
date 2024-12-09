@@ -5,10 +5,6 @@ from vakio.task.moniveto.calc_probs import calc_probs
 import logging
 from vakio.models import Moniveto
 
-
-
-
-
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s: %(message)s'
@@ -101,20 +97,20 @@ def moniveto(list_index, moniveto_id):
 
     sport = 'football'
 
-    calc_probs(qs, sport)
+    #calc_probs(qs, sport)
 
     estimated_avg_goals = [
-        [0, 1.0, 1.8],
-        [1, 2.35, 0.8],
-        [2, 0.95, 2.67],
-        [3, 2.15, 0.75],
+        [0, 1.7, 0.95],
+        [1, 2.0, 0.6],
+        [2, 0.8, 2.0],
+        #[3, 1.7, 2.0],
     ]
 
     lst = [
         [0, 1.13, 10.5, 22.8, 'seriea'],
         [1, 1.75, 3.7, 6.5, 'laliga'],
         [2, 3.0, 3.8, 2.3, 'ligue1'],
-        [3, 110.95, 55.55, 1.041, 'premier'],
+        #[3, 110.95, 55.55, 1.041, 'premier'],
     ]
     # divie all values in list of item by 1
     for i, item in enumerate(lst):

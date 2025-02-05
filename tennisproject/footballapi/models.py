@@ -95,6 +95,93 @@ class FaCup(models.Model):
     start_at = models.DateTimeField(null=True, blank=True, default=None)
 
 
+class CopaDelRey(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_copa_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_copa_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True, default=None)
+
+
+class ItaliaCup(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_italia_cup_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_italia_cup_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True, default=None)
+
+
+class LeagueCup(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_league_cup_matches",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_league_cup_matches",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True, default=None)
+
+
 class PremierElo(models.Model):
     match = models.ForeignKey(
         'PremierLeague',

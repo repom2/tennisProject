@@ -37,10 +37,10 @@ class Command(BaseCommand):
         list_sports_cmd = subparsers.add_parser("sports")
         list_sports_cmd.set_defaults(subcommand=self.list_sports)
 
-        list_sections_cmd = subparsers.add_parser("sections")
+        list_sections_cmd = subparsers.add_parser("sections") # Find section like spain
         list_sections_cmd.set_defaults(subcommand=self.list_sections)
 
-        list_league_by_section_cmd = subparsers.add_parser("leagues-by-section")
+        list_league_by_section_cmd = subparsers.add_parser("leagues-by-section") # then find the league like fa cup
         list_league_by_section_cmd.set_defaults(subcommand=self.list_leagues_by_section_id)
 
         list_tennis_tournaments_cmd = subparsers.add_parser("tennis-tournaments")
@@ -109,13 +109,14 @@ class Command(BaseCommand):
 
     # SECTION ID
     def list_sections(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/2/sections"
+        url = "https://sportscore1.p.rapidapi.com/sports/1/sections"
         headers = {
             "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
-        querystring = {"page": "1"}
+        querystring = {"page": "2"} # Change page number to get more data
+        # spain 32 ,england 40, italy 101
 
         response = requests.request(
             "GET", url, headers=headers, params=querystring
@@ -221,7 +222,7 @@ class Command(BaseCommand):
             try:
                 data = json.loads(data)
                 data_df = data['data']
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, KeyError):
                 print(data)
                 continue
 
@@ -302,10 +303,13 @@ class Command(BaseCommand):
             ['317', 'Premier League'],
             ['326', 'Championship'],
             ['326', 'FA Cup'],
+            ['320', 'EFL Cup'],
             ['251', 'La Liga'],
+            ['252', 'Cop Del Rey'],
             ['512', 'Bundesliga'],
             ['498', 'Ligue 1'],
-            ['592', 'Serie A']
+            ['592', 'Serie A'],
+            ['593', 'Coppa Italia'],
         ]
 
         for league_id in football_leagues:

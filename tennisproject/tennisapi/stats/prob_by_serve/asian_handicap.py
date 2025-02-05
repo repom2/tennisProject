@@ -10,8 +10,7 @@ def asian_handicap(set_score_probs):
     game_diffs = {
         score: int(score[0]) - int(score[1]) for score in set_score_probs.keys()
     }
-    log.info("Game Score Differences for Each Set: %s", game_diffs)
-    print("Game Score Differences for Each Set: %s", game_diffs)
+    #log.info("Game Score Differences for Each Set: %s", game_diffs)
 
     # Calculate the individual games won in each set score
     games_won = {
@@ -165,7 +164,7 @@ def asian_handicap(set_score_probs):
         prob for diff, prob in cumulative_game_diff_probs.items() if diff >= -2
     )
 
-    log.info(
+    """log.info(
         f"Probability of the home player covering a +5.5 game handicap: {home_plus_55_handicap_prob}"
     )
     log.info(
@@ -176,7 +175,7 @@ def asian_handicap(set_score_probs):
     )
     log.info(f"Probability of the games total going over 21.5: {prob_over_215}")
     log.info(f"Probability of the games total going over 22.5: {prob_over_225}")
-    log.info(f"Probability of the games total going over 23.5: {prob_over_235}")
+    log.info(f"Probability of the games total going over 23.5: {prob_over_235}")"""
 
     return (
         home_plus_75_handicap_prob,
@@ -196,8 +195,7 @@ def asian_handicap(set_score_probs):
 def asian_handicap_prob_best_of_five(set_score_probs):
     # Calculate the game differences for each set score
     game_diffs = {score: int(score[0]) - int(score[1]) for score in set_score_probs.keys()}
-    log.info("Game Score Differences for Each Set: %s", game_diffs)
-    print("Game Score Differences for Each Set: %s", game_diffs)
+    #log.info("Game Score Differences for Each Set: %s", game_diffs)
 
     # Calculate the individual games won in each set score
     games_won = {score: int(score[0]) + int(score[1]) for score in set_score_probs.keys()}
@@ -282,14 +280,14 @@ def asian_handicap_prob_best_of_five(set_score_probs):
     home_plus_35_handicap_prob = sum(prob for diff, prob in cumulative_game_diff_probs.items() if diff >= -3)
     home_plus_25_handicap_prob = sum(prob for diff, prob in cumulative_game_diff_probs.items() if diff >= -2)
 
-    log.info(f"Probability of the home player covering a +7.5 game handicap: {home_plus_75_handicap_prob}")
+    """log.info(f"Probability of the home player covering a +7.5 game handicap: {home_plus_75_handicap_prob}")
     log.info(f"Probability of the home player covering a +6.5 game handicap: {home_plus_65_handicap_prob}")
     log.info(f"Probability of the home player covering a +5.5 game handicap: {home_plus_55_handicap_prob}")
     log.info(f"Probability of the home player covering a +4.5 game handicap: {home_plus_45_handicap_prob}")
     log.info(f"Probability of the home player covering a +3.5 game handicap: {home_plus_35_handicap_prob}")
     log.info(f"Probability of the games total going over 21.5: {prob_over_215}")
     log.info(f"Probability of the games total going over 22.5: {prob_over_225}")
-    log.info(f"Probability of the games total going over 23.5: {prob_over_235}")
+    log.info(f"Probability of the games total going over 23.5: {prob_over_235}")"""
 
     return (
         home_plus_75_handicap_prob,

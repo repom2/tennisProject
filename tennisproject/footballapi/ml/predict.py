@@ -9,7 +9,7 @@ import joblib
 import logging
 import sys
 from psycopg2.extensions import AsIs
-from footballapi.models import Teams, PremierLeague, Championship, LaLiga, SerieA, Bundesliga, Ligue1, BetFootball
+from footballapi.models import FaCup, Teams, LeagueCup, ItaliaCup, PremierLeague, CopaDelRey, Championship, LaLiga, SerieA, Bundesliga, Ligue1, BetFootball
 from django.contrib.contenttypes.models import ContentType
 from footballapi.ml.train_model import train_ml_model
 import logging
@@ -49,10 +49,10 @@ def get_data(params):
                 h.name as home_name,
                 aw.name as away_name,
                 winner_code,
-                (select avg(home_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at between '2024-8-1' and  date(b.start_at)) as home_goals,
-				(select avg(away_score) from %(match_table)s l where l.home_team_id=b.home_team_id and l.start_at between '2024-8-1' and date(b.start_at)) as home_conceded,
-				(select avg(away_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at between '2024-8-1' and date(b.start_at)) as away_goals,
-				(select avg(home_score) from %(match_table)s l where l.away_team_id=b.away_team_id and l.start_at between '2024-8-1' and date(b.start_at)) as away_conceded,
+                (select avg(home_score) from %(match_table_avg)s l where l.home_team_id=b.home_team_id and l.start_at between '2024-8-1' and  date(b.start_at)) as home_goals,
+				(select avg(away_score) from %(match_table_avg)s l where l.home_team_id=b.home_team_id and l.start_at between '2024-8-1' and date(b.start_at)) as home_conceded,
+				(select avg(away_score) from %(match_table_avg)s l where l.away_team_id=b.away_team_id and l.start_at between '2024-8-1' and date(b.start_at)) as away_goals,
+				(select avg(home_score) from %(match_table_avg)s l where l.away_team_id=b.away_team_id and l.start_at between '2024-8-1' and date(b.start_at)) as away_conceded,
                 (select elo from %(elo_table)s elo where elo.team_id=b.home_team_id and elo.date < date(b.start_at) order by games desc limit 1) as home_elo,
                 (select elo from %(elo_table)s elo where elo.team_id=b.away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as away_elo,
                 (select elo from %(elo_home)s elo where elo.team_id=b.away_team_id and elo.date < date(b.start_at) order by games desc limit 1) as elo_home,
@@ -77,6 +77,7 @@ def label_round(data, mapping):
 def predict(level):
     teams_qs = Teams.objects.all()
     bet_qs = BetFootball.objects.all()
+    match_table_avg  = None
     if level == 'premier':
         match_qs = PremierLeague.objects.all()
         league_avg_home_goals = PremierLeague.objects.aggregate(home_goals=Avg('home_score'))
@@ -117,14 +118,42 @@ def predict(level):
         elo_table = 'footballapi_ligue1elo'
         elo_home = 'footballapi_ligue1elohome'
         elo_away = 'footballapi_ligue1eloaway'
-    elif level == 'facup':
-        match_table = 'footballapi_facup'
+    elif level == 'facup' or level == 'leaguecup':
+        if level == 'facup':
+            match_qs = FaCup.objects.all()
+            match_table = 'footballapi_facup'
+            league_avg_home_goals = FaCup.objects.aggregate(home_goals=Avg('home_score'))
+            league_avg_away_goals = FaCup.objects.aggregate(away_goals=Avg('away_score'))
+        else:
+            match_qs = LeagueCup.objects.all()
+            league_avg_home_goals = LeagueCup.objects.aggregate(home_goals=Avg('home_score'))
+            league_avg_away_goals = LeagueCup.objects.aggregate(away_goals=Avg('away_score'))
+            match_table = 'footballapi_leaguecup'
+        match_table_avg = 'footballapi_premier'
         elo_table = 'footballapi_championshipelo'
         elo_home = 'footballapi_championshipelohome'
         elo_away = 'footballapi_championshipeloaway'
         elo_table = 'footballapi_premierelo'
         elo_home = 'footballapi_premierelohome'
         elo_away = 'footballapi_premiereloaway'
+    elif level == 'copa':
+        match_qs = CopaDelRey.objects.all()
+        league_avg_home_goals = CopaDelRey.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = CopaDelRey.objects.aggregate(away_goals=Avg('away_score'))
+        match_table = 'footballapi_copadelrey'
+        match_table_avg = 'footballapi_laliga'
+        elo_table = 'footballapi_laligaelo'
+        elo_home = 'footballapi_laligaelohome'
+        elo_away = 'footballapi_laligaeloaway'
+    elif level == 'coppa':
+        match_qs = ItaliaCup.objects.all()
+        league_avg_home_goals = ItaliaCup.objects.aggregate(home_goals=Avg('home_score'))
+        league_avg_away_goals = ItaliaCup.objects.aggregate(away_goals=Avg('away_score'))
+        match_table = 'footballapi_italiacup'
+        match_table_avg = 'footballapi_seriea'
+        elo_table = 'footballapi_serieaelo'
+        elo_home = 'footballapi_serieaelohome'
+        elo_away = 'footballapi_serieaeloaway'
     else:
         match_qs = Championship.objects.all()
         league_avg_home_goals = Championship.objects.aggregate(home_goals=Avg('home_score'))
@@ -133,6 +162,8 @@ def predict(level):
         elo_table = 'footballapi_championshipelo'
         elo_home = 'footballapi_championshipelohome'
         elo_away = 'footballapi_championshipeloaway'
+    if not match_table_avg:
+        match_table_avg = match_table
     logging.info(f'Average home goals: {league_avg_home_goals}')
     logging.info(f'Average away goals: {league_avg_away_goals}')
 
@@ -146,6 +177,7 @@ def predict(level):
 
     params = {
         'match_table': AsIs(match_table),
+        'match_table_avg': AsIs(match_table_avg),
         'elo_table': AsIs(elo_table),
         'elo_home': AsIs(elo_home),
         'elo_away': AsIs(elo_away),

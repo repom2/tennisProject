@@ -70,15 +70,15 @@ def matchProb(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     ## sets: "best of", so default is best of 3
 
     a = gameProb(s)
-    log.info("probability of server winning a single game: %s", a)
+    #log.info("probability of server winning a single game: %s", a)
 
     b = gameProb(t)
     wins_single_game = b
-    log.info("probability of returner winning a single game: %s", b)
+    #log.info("probability of returner winning a single game: %s", b)
 
     c = setGeneral(s, t)
     wins_single_set = c[0]
-    log.info("probability of server winning a single set: %s", c)
+    #log.info("probability of server winning a single set: %s", c)
 
     if gv == 0 and gw == 0:  ## no point score
         if sv == 0 and sw == 0:  ## no game score
@@ -135,15 +135,15 @@ def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     ]
 
     a = gameProb(s)
-    log.info("probability of server winning a single game: %s", a)
+    #log.info("probability of server winning a single game: %s", a)
 
     b = gameProb(t)
     wins_single_game = b
-    log.info("probability of returner winning a single game: %s", b)
+    #log.info("probability of returner winning a single game: %s", b)
 
     c = setGeneral(s, t)
     wins_single_set = c[0]
-    log.info("probability of server winning a single set: %s", c)
+    #log.info("probability of server winning a single set: %s", c)
 
     # probability to win one set in best of 3
     if sets == 3:

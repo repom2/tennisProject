@@ -169,7 +169,7 @@ class MatchProbability(generics.ListAPIView):
         else:
             raise Http404
 
-        tour = request.GET.get("tour", level + "-final")
+        tour = request.GET.get("tour", level + "-australia")
 
         home_spw = request.GET.get("homeSPW", 0.686)
         home_rpw = request.GET.get("homeRPW", 0.364)

@@ -160,7 +160,7 @@ def tennisabstract_scrape(row, home, surface):
             "play_hand": play_hand,
             "peak_rank": peak_rank,
         }
-        logging.info(player_info)
+        # logging.info(player_info)
 
         # Now let's get the statistics from the 'wonloss' section
         stats_table = soup.find(id="wonloss")

@@ -1,7 +1,7 @@
 # import beautifulsoup4
 import logging
 from datetime import datetime
-
+import time
 from bs4 import BeautifulSoup
 
 import pandas as pd
@@ -14,7 +14,6 @@ logging.basicConfig(
 
 
 def tennisabstract_scrape_atp():
-
     try:
         # Specify the URL where the Selenium Hub is running
         hub_url = (
@@ -142,7 +141,6 @@ def tennisabstract_scrape_atp():
         print(headers)
         for stat in stats_data:
             print(stat)
-
 
         # MATCHES TABLE
         try:

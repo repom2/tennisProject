@@ -589,6 +589,43 @@ components:
         surface:
           type: string
           description: "clay"
+        homeEloHard:
+          type: number
+          description: "Home player elo on hard"
+        homeEloClay:
+          type: number
+          description: "Home player elo on clay"
+        homeEloGrass:
+          type: number
+          description: "Home player elo on grass"
+        awayEloHard:
+          type: number
+          description: "Away player elo on hard"
+        awayEloClay:
+          type: number
+          description: "Away player elo on clay"
+        awayEloGrass:
+          type: number
+          description: "Away player elo on grass"
+        homeEloHardGames:
+          type: number
+          description: "Home player elo on hard games"
+        homeEloClayGames:
+            type: number
+            description: "Home player elo on clay games"
+        homeEloGrassGames:
+          type: number
+          description: "Home player elo on grass games"
+        awayEloHardGames:
+          type: number
+          description: "Away player elo on hard games"
+        awayEloClayGames:
+          type: number
+          description: "Away player elo on clay games"
+        awayEloGrassGames:
+          type: number
+          description: "Away player elo on grass games"
+
     FootballBets:
       type: object
       properties:

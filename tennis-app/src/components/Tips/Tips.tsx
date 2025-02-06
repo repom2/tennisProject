@@ -133,6 +133,7 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                         <th>S/RPW(Clay)</th>
                         <th>MClay</th>
                         <th>EloHard</th>
+                        <th></th>
                         <th>EloClay</th>
                         <th>YElo</th>
                         <th>MLProb</th>

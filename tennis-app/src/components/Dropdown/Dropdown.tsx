@@ -207,6 +207,10 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                         <div className={styles.NoWrap}>{matchData.awayMatchesClay}</div>
                     </td>
                     <td>{matchData.eloProbHard}</td>
+                    <td>
+                        <div className={styles.NoWrap}>{matchData.homeEloHard} / {matchData.homeEloHardGames}</div>
+                        <div className={styles.NoWrap}>{matchData.awayEloHard} / {matchData.awayEloHardGames}</div>
+                    </td>
                     <td>{matchData.eloProbClay}</td>
                     <td>{matchData.yearEloProb}</td>
                     <td>{matchData.homeProb}</td>

@@ -113,6 +113,18 @@ class BetSerializer(serializers.Serializer):
     awayWin1Set = serializers.FloatField(source='away_win_1_set')
     awayWin2Set = serializers.FloatField(source='away_win_2_set')
     surface = serializers.CharField()
+    homeEloHard = serializers.FloatField(source='home_elo_hard')
+    homeEloClay = serializers.FloatField(source='home_elo_clay')
+    homeEloGrass = serializers.FloatField(source='home_elo_grass')
+    awayEloHard = serializers.FloatField(source='away_elo_hard')
+    awayEloClay = serializers.FloatField(source='away_elo_clay')
+    awayEloGrass = serializers.FloatField(source='away_elo_grass')
+    homeEloHardGames = serializers.FloatField(source='home_elo_hard_games')
+    homeEloClayGames = serializers.FloatField(source='home_elo_clay_games')
+    homeEloGrassGames = serializers.FloatField(source='home_elo_grass_games')
+    awayEloHardGames = serializers.FloatField(source='away_elo_hard_games')
+    awayEloClayGames = serializers.FloatField(source='away_elo_clay_games')
+    awayEloGrassGames = serializers.FloatField(source='away_elo_grass_games')
 
 
     class Meta:

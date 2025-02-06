@@ -375,5 +375,53 @@ export type Bets = {
      * clay
      */
     surface?: string;
+    /**
+     * Home player elo on hard
+     */
+    homeEloHard?: number;
+    /**
+     * Home player elo on clay
+     */
+    homeEloClay?: number;
+    /**
+     * Home player elo on grass
+     */
+    homeEloGrass?: number;
+    /**
+     * Away player elo on hard
+     */
+    awayEloHard?: number;
+    /**
+     * Away player elo on clay
+     */
+    awayEloClay?: number;
+    /**
+     * Away player elo on grass
+     */
+    awayEloGrass?: number;
+    /**
+     * Home player elo on hard games
+     */
+    homeEloHardGames?: number;
+    /**
+     * Home player elo on clay games
+     */
+    homeEloClayGames?: number;
+    /**
+     * Home player elo on grass games
+     */
+    homeEloGrassGames?: number;
+    /**
+     * Away player elo on hard games
+     */
+    awayEloHardGames?: number;
+    /**
+     * Away player elo on clay games
+     */
+    awayEloClayGames?: number;
+    /**
+     * Away player elo on grass games
+     */
+    awayEloGrassGames?: number;
 };
 

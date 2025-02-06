@@ -3,6 +3,7 @@ import {MatchProbabilities} from "data/openapi";
 
 interface MatchProbabilitiesProps {
     tourName: string;
+    matchId: string;
     homeSPW: number | null;
     awaySPW: number | null;
     homeRPW: number | null;
@@ -12,6 +13,7 @@ interface MatchProbabilitiesProps {
 
 export async function getMatchProbabilities({
     matchId,
+    tourName,
     surface,
     homeSPW,
     awaySPW,

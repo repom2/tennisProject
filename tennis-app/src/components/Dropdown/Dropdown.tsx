@@ -2,7 +2,7 @@ import React, {useState, useEffect} from "react";
 import {useQuery} from "react-query";
 //import styles from './YourStyles.module.css';
 import {getPlayerStatistics} from "common/functions/playerStatistics";
-import {getMatchProbabilities} from "common/functions/matchProbabilities";
+//import {getMatchProbabilities} from "common/functions/matchProbabilities";
 import PlayerStats from "components/PlayerStatistics/PlayerStatistics";
 import styles from "components/Tips/Tips.module.css";
 import {Bets} from "data/openapi";
@@ -119,9 +119,6 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         }
     );
 
-
-
-    console.log(homeStats?.data.playerSPW);
     console.log(matchData);
 
     useEffect(() => {

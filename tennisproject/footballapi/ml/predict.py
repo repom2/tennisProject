@@ -129,7 +129,7 @@ def predict(level):
             league_avg_home_goals = LeagueCup.objects.aggregate(home_goals=Avg('home_score'))
             league_avg_away_goals = LeagueCup.objects.aggregate(away_goals=Avg('away_score'))
             match_table = 'footballapi_leaguecup'
-        match_table_avg = 'footballapi_premier'
+        match_table_avg = 'footballapi_premierleague'
         elo_table = 'footballapi_championshipelo'
         elo_home = 'footballapi_championshipelohome'
         elo_away = 'footballapi_championshipeloaway'

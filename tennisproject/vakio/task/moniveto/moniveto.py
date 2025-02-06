@@ -100,9 +100,9 @@ def moniveto(list_index, moniveto_id):
     #calc_probs(qs, sport)
 
     estimated_avg_goals = [
-        [0, 1.95, 0.55],
-        [1, 1.55, 1.0],
-        [2, 1.7, 0.6],
+        [0, 3.0, 1.0],
+        [1, 0.8, 2.5],
+        [2, 1.5, 0.8],
         #[3, 1.25, 1.65],
     ]
 

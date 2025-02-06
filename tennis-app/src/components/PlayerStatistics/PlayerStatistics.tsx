@@ -19,7 +19,7 @@ const PlayerStats = (data: any) => {
             <h3>Player Statistics</h3>
             <p>Serve Points Won (SPW): {playerSPW}</p>
             <p>Return Points Won (RPW): {playerRPW}</p>
-            <p>Dominance Ratio (DR): {Math.round((playerSPW / (1-playerRPW)) * 100) / 100}</p>
+            <p>Dominance Ratio (DR): {Math.round((playerSPW / (1 - playerRPW)) * 100) / 100}</p>
             <p>Matches Played: {playerMatches}</p>
             <h4>Match Details</h4>
             <table>

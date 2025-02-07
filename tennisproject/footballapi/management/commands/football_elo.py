@@ -13,7 +13,8 @@ from footballapi.elo_ratings.ligue1_elo import ligue1_elorate
 from footballapi.elo_ratings.ligue1_elo_home import ligue1_elo_home
 from icehockeyapi.elo_ratings.liiga_elo import liiga_elorate
 from icehockeyapi.elo_ratings.liiga_elo_home import liiga_elo_home
-
+from icehockeyapi.elo_ratings.mestis_elo import mestis_elorate
+from icehockeyapi.elo_ratings.mestis_elo_home import mestis_elo_home
 
 class Command(BaseCommand):
     """Sportscore Data"""
@@ -81,6 +82,8 @@ class Command(BaseCommand):
         ligue1_elo_home()
         liiga_elorate()
         liiga_elo_home()
+        mestis_elorate()
+        mestis_elo_home()
 
     def premier(self, options):
         premier_elorate()

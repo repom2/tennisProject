@@ -42,6 +42,39 @@ class Liiga(models.Model):
         return f'{self.home_score}-{self.away_score}'
 
 
+class Mestis(models.Model):
+    id = models.TextField(primary_key=True)
+    slug = models.TextField(null=True)
+    name = models.TextField(null=True)
+    home_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="home_matches_mestis",
+    )
+    away_team = models.ForeignKey(
+        Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="away_matches_mestis",
+    )
+    challenge_id = models.IntegerField(null=True)
+    status = models.TextField(null=True)
+    status_more = models.TextField(null=True)
+    start_at = models.TextField(null=True, blank=True)
+    home_team_name = models.TextField(null=True)
+    away_team_name = models.TextField(null=True)
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
+    winner_code = models.IntegerField(null=True, blank=True)
+    home_odds = models.FloatField(null=True)
+    away_odds = models.FloatField(null=True)
+    draw_odds = models.FloatField(null=True)
+    start_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def combined_score(self):
+        return f'{self.home_score}-{self.away_score}'
+
+
 class LiigaElo(models.Model):
     match = models.ForeignKey(
         'Liiga',
@@ -86,6 +119,57 @@ class LiigaEloAway(models.Model):
         to=Teams,
         on_delete=models.DO_NOTHING,
         related_name="elo_rating_away",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class MestisElo(models.Model):
+    match = models.ForeignKey(
+        'Mestis',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_mestis",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_mestis",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class MestisEloHome(models.Model):
+    match = models.ForeignKey(
+        'Mestis',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_mestis_home",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_mestis_home",
+    )
+    elo = models.IntegerField()
+    elo_change = models.IntegerField()
+    games = models.IntegerField()
+    date = models.DateField(null=True)
+
+
+class MestisEloAway(models.Model):
+    match = models.ForeignKey(
+        'Mestis',
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_mestis_away",
+    )
+    team = models.ForeignKey(
+        to=Teams,
+        on_delete=models.DO_NOTHING,
+        related_name="elo_rating_mestis_away",
     )
     elo = models.IntegerField()
     elo_change = models.IntegerField()

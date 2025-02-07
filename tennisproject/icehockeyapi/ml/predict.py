@@ -9,7 +9,7 @@ import joblib
 import logging
 import sys
 from psycopg2.extensions import AsIs
-from icehockeyapi.models import Teams, Liiga, BetIceHockey
+from icehockeyapi.models import Teams, Liiga, BetIceHockey, Mestis
 from icehockeyapi.ml.train_model import train_ml_model
 import logging
 from tabulate import tabulate
@@ -85,6 +85,16 @@ def predict(level):
         elo_table = 'icehockeyapi_liigaelo'
         elo_home = 'icehockeyapi_liigaelohome'
         elo_away = 'icehockeyapi_liigaeloaway'
+    if level == 'mestis':
+        match_qs = Mestis.objects.all()
+        league_avg_home_goals = Mestis.objects.aggregate(
+            home_goals=Avg('home_score'))
+        league_avg_away_goals = Mestis.objects.aggregate(
+            away_goals=Avg('away_score'))
+        match_table = 'icehockeyapi_mestis'
+        elo_table = 'icehockeyapi_mestiselo'
+        elo_home = 'icehockeyapi_mestiselohome'
+        elo_away = 'icehockeyapi_mestiseloaway'
     else:
         return
     logging.info(f'Average home goals: {league_avg_home_goals}')

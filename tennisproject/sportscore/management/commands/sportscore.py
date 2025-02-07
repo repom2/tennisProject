@@ -109,13 +109,13 @@ class Command(BaseCommand):
 
     # SECTION ID
     def list_sections(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/1/sections"
+        url = "https://sportscore1.p.rapidapi.com/sports/4/sections"
         headers = {
             "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
         }
 
-        querystring = {"page": "2"} # Change page number to get more data
+        querystring = {"page": "1"} # Change page number to get more data
         # spain 32 ,england 40, italy 101
 
         response = requests.request(
@@ -134,7 +134,7 @@ class Command(BaseCommand):
         logging.info(data["meta"])
 
     def list_leagues_by_section_id(self, options):
-        url =  'https://sportscore1.p.rapidapi.com/sections/40/leagues'
+        url =  'https://sportscore1.p.rapidapi.com/sections/210/leagues'
 
         headers = {
             "X-RapidAPI-Key": sport_score_key,
@@ -302,7 +302,7 @@ class Command(BaseCommand):
         football_leagues = [
             ['317', 'Premier League'],
             ['326', 'Championship'],
-            ['326', 'FA Cup'],
+            ['318', 'FA Cup'],
             ['320', 'EFL Cup'],
             ['251', 'La Liga'],
             ['252', 'Cop Del Rey'],
@@ -368,7 +368,7 @@ class Command(BaseCommand):
                     pbar.update(1)
 
     def ice_hockey_events_by_leagues(self, options):
-        ice_hockey_leagues = ['7622'] # mestis 7623
+        ice_hockey_leagues = ['7622', '7623'] # mestis 7623
 
         for league_id in ice_hockey_leagues:
             events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id + "/events"

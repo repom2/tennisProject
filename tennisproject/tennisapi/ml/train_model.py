@@ -244,13 +244,19 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
 
     f = features + ['winner_code'] + ['start_at', 'home_name', 'away_name']
 
-    data = data[f]
+    try:
+        data = data[f]
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        return None, None, None, None
     data_length = len(data)
-    logging.info(f"Lenght of Data All:{data_length} ")
+    # logging.info(f"Lenght of Data All:{data_length} ")
     data = data.dropna()
-    logging.info(f"Lenght of Data All:{data_length} "
-                 f"Home:{len(data[data['winner_code'] == 0])} "
-                 f"Away:{len(data[data['winner_code'] == 1])}")
+    """logging.info(
+        f"Lenght of Data All:{data_length} "
+        f"Home:{len(data[data['winner_code'] == 0])} "
+        f"Away:{len(data[data['winner_code'] == 1])}"
+    )"""
 
     #data, round_mapping = balance_train_data(data)
 

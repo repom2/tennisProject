@@ -15,6 +15,7 @@ from django.conf import settings
 import logging
 from tabulate import tabulate
 from datetime import datetime, timedelta
+from .match_statistics import MatchStatisticsFetcher
 
 logging.basicConfig(
     level=logging.INFO,
@@ -81,10 +82,7 @@ class Command(BaseCommand):
         list_teams_cmd.set_defaults(subcommand=self.list_teams)
 
         stats_cmd = subparsers.add_parser("stats")
-        stats_cmd.set_defaults(subcommand=self.match_statistics)
-
-        tennis_stats_cmd = subparsers.add_parser("tennis-stats")
-        tennis_stats_cmd.set_defaults(subcommand=self.tennis_api_match_statistics)
+        stats_cmd.set_defaults(subcommand=self.tennis_api_match_statistics)
 
     def handle(self, *args, **options):
         options["subcommand"](options)
@@ -698,100 +696,9 @@ class Command(BaseCommand):
                 pbar.update(1)
 
 
-    def match_statistics(self, options):
-        sportscore_ids = list(
-            AtpMatches.objects.filter(Q(date__gt='2024-9-1') & Q(w_ace__isnull=True)).values_list('event_id')
-        )
-        sportscore_wta_ids = list(
-            WtaMatches.objects.filter(
-                Q(date__gt='2024-9-1') & Q(w_ace__isnull=True)).values_list(
-                'event_id')
-        )
-
-        sportscore_ids += sportscore_wta_ids
-
-        logging.info("Total ids to fetch: " + str(len(sportscore_ids)))
-
-        def fetch_date(id):
-            sport_score_key = settings.SPORT_SCORE_KEY
-            url = "https://sportscore1.p.rapidapi.com/events/" + str(id) + "/statistics"
-
-            headers = {
-                "X-RapidAPI-Key": sport_score_key,
-                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
-            }
-
-            response = requests.request(
-                "GET", url, headers=headers,
-            )
-
-            data = response.text
-
-            return data
-
-        with tqdm(total=len(sportscore_ids)) as pbar:
-            for id in sportscore_ids:
-                id = id[0]
-                data = fetch_date(id)
-                if "rate limit per second" in data:
-                    time.sleep(0.5)
-                    data = fetch_date(id)
-                if "rate limit per second" in data:
-                    time.sleep(0.5)
-                    data = fetch_date(id)
-                try:
-                    data = json.loads(data)
-                except json.decoder.JSONDecodeError:
-                    continue
-                m = Stats(id=id, data=data)
-                m.save()
-                pbar.update(1)
-
-
     def tennis_api_match_statistics(self, options):
-        sportscore_ids = list(
-            AtpMatch.objects.filter(Q(start_at__gte='2024-02-02') &  Q(w_ace__isnull=True)).values_list('event_id')
-        )
-
-        sportscore_ids += list(
-            WtaMatch.objects.filter(Q(start_at__gte='2024-02-02') & Q(w_ace__isnull=True)).values_list('event_id')
-        )
-
-        def fetch_date(id):
-            sport_score_key = settings.SPORT_SCORE_KEY
-            url = "https://sportscore1.p.rapidapi.com/events/" + str(id) + "/statistics"
-
-            headers = {
-                "X-RapidAPI-Key": sport_score_key,
-                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
-            }
-
-            response = requests.request(
-                "GET", url, headers=headers,
-            )
-
-            data = response.text
-
-            return data
-
-        with tqdm(total=len(sportscore_ids)) as pbar:
-            for id in sportscore_ids:
-                id = id[0]
-                data = fetch_date(id)
-                if "rate limit per second" in data:
-                    time.sleep(0.5)
-                    data = fetch_date(id)
-                if "rate limit per second" in data:
-                    time.sleep(0.5)
-                    data = fetch_date(id)
-                try:
-                    data = json.loads(data)
-                except json.decoder.JSONDecodeError:
-                    continue
-                m = Stats(id=id, data=data)
-                m.save()
-                pbar.update(1)
-
+        fetcher = MatchStatisticsFetcher(settings.SPORT_SCORE_KEY)
+        fetcher.match_statistics({})
 
     # Tennis tournaments by section id
     def list_tennis_tournaments(self, options):

@@ -182,7 +182,7 @@ def tennisabstract_scrape_atp(row, home, surface):
         # "play_hand": play_hand,
         "peak_rank": peak_rank,
     }
-    logging.info(player_info)
+    #logging.info(player_info)
 
     # Now let's get the statistics from the 'wonloss' section
     stats_table = soup.find(id="wonloss")
@@ -203,7 +203,7 @@ def tennisabstract_scrape_atp(row, home, surface):
     spw, rpw, dr, matches = None, None, None, None
     spw_grass, rpw_grass, dr_grass, matches_grass = None, None, None, None
     # Displaying the results
-    print("\nStatistics:")
+    # print("\nStatistics:")
     for stat in stats_data:
         if stat[0] == "Hard":
             matches = stat[1]
@@ -213,7 +213,7 @@ def tennisabstract_scrape_atp(row, home, surface):
                 spw = round(float(stat[8].replace("%", "")) * 0.01, 3)
             except ValueError:
                 continue
-            print([spw, rpw, dr, matches])
+            # print([spw, rpw, dr, matches])
         if stat[0] == "Clay":
             matches_clay = stat[1]
             try:
@@ -225,7 +225,7 @@ def tennisabstract_scrape_atp(row, home, surface):
                 rpw_clay = None
                 dr_clay = None
                 matches_clay = None
-            print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
+            # print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
         if surface == "grass":
             if "Time Span" in stat[0]:
                 matches_grass = stat[1]
@@ -238,7 +238,7 @@ def tennisabstract_scrape_atp(row, home, surface):
                     rpw_grass = None
                     dr_grass = None
                     matches_grass = None
-                print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
+                # print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
             """else:
                 if stat[0] == "Grass":
                     matches_grass = stat[1]

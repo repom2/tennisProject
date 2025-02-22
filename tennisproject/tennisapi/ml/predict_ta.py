@@ -39,15 +39,25 @@ def predict_ta(level, tour):
         level, tour, from_at, end_at
     )
     data = get_data(params)
-    print_dataframe(data)
+    # print_dataframe(data)
+    columns = [
+        # "start_at",
+        "winner_fullname",
+        "loser_fullname",
+        # "home_player_id",
+        # "away_player_id",
+    ]
+    logging.info(
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
+
+
+    #exit()
 
     data_copy = copy.deepcopy(data)
 
-    for i in range(0, 9):
+    for i in range(0, 30):
         time.sleep(4)
         data = data_copy.iloc[i:i + 1]
-
-        #exit()
 
         if len(data.index) == 0:
             print("No data")
@@ -116,8 +126,8 @@ def predict_ta(level, tour):
             2
         )
         columns = ['winner_fullname', 'loser_fullname', 'stats_win', 'home_matches', 'away_matches']
-        logging.info(
-            f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
+        #logging.info(
+         #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
         #exit()
 
         if use_scrape:
@@ -292,9 +302,9 @@ def predict_ta(level, tour):
             axis=1,
         )
         columns = ["player1", "player2"]
-        logging.info(
-            f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
-        )
+        #logging.info(
+         #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+        #)
         #exit()
         cols = [
             "atp_home_fullname",
@@ -308,9 +318,9 @@ def predict_ta(level, tour):
             "player1",
             "player2",
         ]
-        logging.info(
-            f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}"
-        )
+        #logging.info(
+         #   f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}"
+        #)
         if surface == "clay":
             stats_win_field = "stats_win_clay"
             elo_prob_field = "elo_prob_clay"
@@ -463,9 +473,9 @@ def predict_ta(level, tour):
             2
         )
         columns = ["stats_win_clay", "stats_win_grass", "stats_win_hard"]
-        logging.info(
-            f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
-        )
+        #logging.info(
+         #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+        #)
         # Common opponent
         data[["spw1_c", "spw2_c", "common_opponents_count"]] = pd.DataFrame(
             np.row_stack(

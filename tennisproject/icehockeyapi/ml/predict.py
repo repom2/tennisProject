@@ -85,7 +85,7 @@ def predict(level):
         elo_table = 'icehockeyapi_liigaelo'
         elo_home = 'icehockeyapi_liigaelohome'
         elo_away = 'icehockeyapi_liigaeloaway'
-    if level == 'mestis':
+    elif level == 'mestis':
         match_qs = Mestis.objects.all()
         league_avg_home_goals = Mestis.objects.aggregate(
             home_goals=Avg('home_score'))
@@ -100,8 +100,8 @@ def predict(level):
     logging.info(f'Average home goals: {league_avg_home_goals}')
     logging.info(f'Average away goals: {league_avg_away_goals}')
 
-    now = timezone.now().date() -timedelta(days=1)
-    end_at = now + timedelta(days=2)
+    now = timezone.now().date() - timedelta(days=0)
+    end_at = now + timedelta(days=3)
     params = {
         'match_table': AsIs(match_table),
         'elo_table': AsIs(elo_table),
@@ -159,7 +159,6 @@ def predict(level):
         ), index=data.index)
     logging.info(
         f"DataFrame:\n{tabulate(data[['home_name', 'away_name', 'home_est_goals', 'away_est_goals', 'home_poisson', 'draw_poisson', 'away_poisson', 'home_goals', 'home_conceded', 'away_goals', 'away_conceded', ]], headers='keys', tablefmt='psql', showindex=True)}")
-
 
     data = data.replace(np.nan, None, regex=True)
     for index, row in data.iterrows():

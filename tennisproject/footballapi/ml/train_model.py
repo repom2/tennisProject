@@ -127,7 +127,7 @@ def train_ml_model(row, level, params, league_avg_home_goals, league_avg_away_go
     odds_draw = row['draw_odds']
     if odds_home is None or odds_away is None or odds_draw is None:
         logging.info(f"Odds are not available for {home_name} vs {away_name}")
-        return None
+        pass
     features = [
         #'draw_odds',
         #'away_odds',
@@ -196,9 +196,15 @@ def train_ml_model(row, level, params, league_avg_home_goals, league_avg_away_go
     odds_limit_home = round(1 / prob_home, 3)
     odds_limit_away = round(1 / prob_away, 3)
     odds_limit_draw = round(1 / prob_draw, 3)
-    yield_home = round(odds_home * prob_home, 3)
-    yield_away = round(odds_away * prob_away, 3)
-    yield_draw = round(odds_draw * prob_draw, 3)
+    try:
+        yield_home = round(odds_home * prob_home, 3)
+        yield_away = round(odds_away * prob_away, 3)
+        yield_draw = round(odds_draw * prob_draw, 3)
+    except Exception as e:
+        yield_home = None
+        yield_away = None
+        yield_draw = None
+        pass
 
     title = f"Model for {home_name} vs {away_name}"
     table_str = tabulate(df, headers='keys', tablefmt='psql', showindex=True)

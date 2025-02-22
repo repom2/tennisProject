@@ -100,17 +100,17 @@ def moniveto(list_index, moniveto_id):
     #calc_probs(qs, sport)
 
     estimated_avg_goals = [
-        [0, 2.3, 1.1],
-        [1, 1.04, 1.66],
-        [2, 3.4, 0.9],
-        [3, 2.05, 0.7],
+        [0, 2.3, 0.65],
+        [1, 0.95, 2.95],
+        [2, 1.0, 2.0],
+        #[3, 1.6, 1.5],
     ]
 
     lst = [
         [0, 1.13, 10.5, 22.8, 'seriea'],
         [1, 1.75, 3.7, 6.5, 'laliga'],
         [2, 3.0, 3.8, 2.3, 'ligue1'],
-        [3, 110.95, 55.55, 1.041, 'premier'],
+        #[3, 110.95, 55.55, 1.041, 'premier'],
     ]
     # divie all values in list of item by 1
     for i, item in enumerate(lst):

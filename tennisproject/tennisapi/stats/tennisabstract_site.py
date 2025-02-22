@@ -125,7 +125,7 @@ def tennisabstract_scrape(row, home, surface):
             else None
         )
 
-        print(f"Name and Country: {name_country}")
+        # print(f"Name and Country: {name_country}")
         for tr in soup.find_all("tr"):
             td = tr.find("td")
             if td:
@@ -180,7 +180,7 @@ def tennisabstract_scrape(row, home, surface):
 
         spw, rpw, dr, matches = None, None, None, None
         # Displaying the results
-        print("\nStatistics:")
+        # print("\nStatistics:")
         for stat in stats_data:
             if stat[0] == "Hard":
                 matches = stat[1]
@@ -195,7 +195,7 @@ def tennisabstract_scrape(row, home, surface):
                     dr = None
                     matches = None
 
-                print([spw, rpw, dr, matches], "Hard")
+                # print([spw, rpw, dr, matches], "Hard")
             if stat[0] == "Clay":
                 matches_clay = stat[1]
                 try:
@@ -208,7 +208,7 @@ def tennisabstract_scrape(row, home, surface):
                     rpw_clay = None
                     dr_clay = None
                     matches_clay = None
-                print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
+                # print([spw_clay, rpw_clay, dr_clay, matches_clay], "Clay")
             if surface == "grass":
                 if "Time Span" in stat[0]:
                     matches_grass = stat[1]
@@ -222,7 +222,7 @@ def tennisabstract_scrape(row, home, surface):
                         rpw_grass = None
                         dr_grass = None
                         matches_grass = None
-                    print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
+                    # print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
             else:
                 if stat[0] == "Grass":
                     matches_grass = stat[1]
@@ -236,7 +236,7 @@ def tennisabstract_scrape(row, home, surface):
                         rpw_grass = None
                         dr_grass = None
                         matches_grass = None
-                    print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
+                    # print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")
 
         # MATCHES TABLE
         try:

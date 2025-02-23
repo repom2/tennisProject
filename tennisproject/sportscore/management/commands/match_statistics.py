@@ -22,13 +22,13 @@ class MatchStatisticsFetcher:
     def get_match_ids(self) -> List[int]:
         """Fetch ATP and WTA match IDs."""
         atp_ids = list(
-            AtpMatches.objects.filter(Q(date__gt="2024-12-1")).values_list(
+            AtpMatches.objects.filter(Q(date__gt="2025-2-1")).values_list(
                 "event_id", flat=True
             )
         )
 
         wta_ids = list(
-            WtaMatches.objects.filter(Q(date__gt="2024-12-1")).values_list(
+            WtaMatches.objects.filter(Q(date__gt="2025-2-1")).values_list(
                 "event_id", flat=True
             )
         )

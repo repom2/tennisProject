@@ -50,12 +50,9 @@ def predict_ta(level, tour):
     logging.info(
         f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
 
-
-    #exit()
-
     data_copy = copy.deepcopy(data)
 
-    for i in range(0, 30):
+    for i in range(0, 15):
         time.sleep(4)
         data = data_copy.iloc[i:i + 1]
 

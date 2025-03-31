@@ -1,6 +1,7 @@
 # import beautifulsoup4
 import logging
 from datetime import datetime
+import time
 
 from bs4 import BeautifulSoup
 
@@ -12,6 +13,7 @@ logging = logging.getLogger(__name__)
 
 
 def tennisabstract_scrape_atp(row, home, surface):
+    time.sleep(1)
     if home == "home":
         index_columns = [
             "home_spw",
@@ -149,7 +151,6 @@ def tennisabstract_scrape_atp(row, home, surface):
         else None
     )
 
-    print(f"Name and Country: {name_country}")
     for tr in soup.find_all("tr"):
         td = tr.find("td")
         if td:
@@ -182,7 +183,7 @@ def tennisabstract_scrape_atp(row, home, surface):
         # "play_hand": play_hand,
         "peak_rank": peak_rank,
     }
-    #logging.info(player_info)
+    logging.info(player_info)
 
     # Now let's get the statistics from the 'wonloss' section
     stats_table = soup.find(id="wonloss")
@@ -211,7 +212,8 @@ def tennisabstract_scrape_atp(row, home, surface):
                 rpw = round(float(stat[10].replace("%", "")) * 0.01, 3)
                 dr = float(stat[12])
                 spw = round(float(stat[8].replace("%", "")) * 0.01, 3)
-            except ValueError:
+            except ValueError as e:
+                logging.info(f"Error: {e}")
                 continue
             # print([spw, rpw, dr, matches])
         if stat[0] == "Clay":
@@ -252,20 +254,47 @@ def tennisabstract_scrape_atp(row, home, surface):
                         dr_grass = None
                         matches_grass = None
                     print([spw_grass, rpw_grass, dr_grass, matches_grass], "Grass")"""
-
+    logging.info(f"Stats: {spw}, {rpw}, {dr}, {matches}")
     try:
         # MATCHES TABLE
         matches_table = tables[7].find("table", {"id": "matches"})
         # Extract the headers
         headers = [header.text.strip() for header in matches_table.find_all("th")]
     except Exception as e:
+        logging.info(f"Error L264: {e}")
         matches_table = tables[8].find("table", {"id": "matches"})
         # Extract the headers
-        headers = [header.text.strip() for header in matches_table.find_all("th")]
+        try:
+            headers = [header.text.strip() for header in matches_table.find_all("th")]
+        except Exception as e:
+            logging.info(f"Error L270: {e}")
+            driver.quit()
+            return pd.Series(
+                [
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                ],
+                index=index_columns,
+            )
 
     # Initialize a list to store all match data
     all_matches_data = []
-
+    logging.info("L297: Matches Table")
     # Extract the match details from each row in the matches table body
     for row in matches_table.tbody.find_all("tr"):
         # Initialize a dictionary to store data for the current match
@@ -287,6 +316,7 @@ def tennisabstract_scrape_atp(row, home, surface):
     md_table = df.to_markdown(index=False)
     # print(md_table)
     driver.quit()
+    logging.info("Driver closed")
 
     player_data =  pd.Series(
         [

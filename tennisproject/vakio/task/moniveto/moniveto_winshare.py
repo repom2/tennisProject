@@ -19,13 +19,13 @@ VEIKKAUS_API_HOST = "https://www.veikkaus.fi"
 BONUS = 0
 BATCH_SIZE = 100
 MAX_WORKERS = 20
-MAX_RETRIES = 3
+MAX_RETRIES = 5
 RETRY_DELAY = 5
 
 SCORES_DEFAULT = [
-    "0,1,2,3,4,5,6,7-0,1,2,3,4",
-    "0,1,2,3,4-0,1,2,3,4,5,6,7",
-    "0,1,2,3,4-0,1,2,3,4,5,6,7",
+    "0,1,2,3,4,5,6,7-0,1,2,3",
+    "0,1,2,3,4-0,1,2,3,4,5",
+    "0,1,2,3,4,5-0,1,2,3,4",
 ]
 
 
@@ -44,7 +44,7 @@ class MonivetoDataFetcher:
             .values_list("scores", flat=True)
             .first()
         )
-
+        #saved_scores = None
         if saved_scores is None:
             logger.warning("No scores found, using default scores")
             return SCORES_DEFAULT

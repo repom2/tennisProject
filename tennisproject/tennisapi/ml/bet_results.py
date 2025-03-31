@@ -146,3 +146,42 @@ def bet_results():
     logging.info(bankroll)
     logging.info(bet_count)
     logging.info(match_count)
+
+
+"""In SQL
+select sum(win), sum(case when bet != 0 then 1 else 0 end), count(*) from (
+select
+	date(start_at),
+	home_odds,
+	away_odds,
+	case
+	when bet = 1 and winner_code = 1 then (home_odds -1 ) * 100
+	when bet = 2 and winner_code = 2 then (away_odds -1 ) * 100
+	when bet = 1 and winner_code = 2 then -100
+	when bet = 2 and winner_code = 1 then -100
+	else 0 end win,
+	bet,
+	winner_code,
+	home_yield,
+	away_yield
+from (
+select
+	case when home_yield > 1 then 1 when away_yield > 1 then 2 else 0 end bet,
+	home_odds,
+	away_odds,
+	winner_code,
+	start_at,
+	home_yield,
+	away_yield
+from (
+select start_at, home_odds, away_odds, stats_win * home_odds as home_yield, (1 - stats_win) * away_odds as away_yield, winner_code from (
+select a.start_at, elo_prob_hard stats_win, a.surface, b.home_name, b.away_name, winner_code,b.home_odds, b.away_odds, elo_prob_hard from tennisapi_betwta b
+inner join tennisapi_wtamatch a on a.id=b.match_id
+where b.home_odds is not null
+and a.surface ilike '%hard%'
+order by a.start_at
+) s
+) bet
+) win
+) results;
+"""

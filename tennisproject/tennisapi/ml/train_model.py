@@ -179,6 +179,8 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     df = row.to_frame().T
     odds_home = df['home_odds'].iloc[0]
     odds_away = df['away_odds'].iloc[0]
+    stats_win_home = df[stats_win_field].iloc[0]
+    stats_win_away = 1 - stats_win_home
     df["home_odds"] = 1 / df['home_odds']
     #df['home_fatigue'] = 3
     #df["away_fatigue"] = 0.1
@@ -292,8 +294,10 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     odds_limit_home = round(1/prob_home, 3)
     odds_limit_away = round(1/prob_away, 3)
     try:
-        yield_home = round(odds_home * prob_home, 3)
-        yield_away = round(odds_away * prob_away, 3)
+        #yield_home = round(odds_home * prob_home, 3)
+        #yield_away = round(odds_away * prob_away, 3)
+        yield_home = round(odds_home * stats_win_home, 3)
+        yield_away = round(odds_away * stats_win_away, 3)
     except TypeError:
         yield_home = 0
         yield_away = 0

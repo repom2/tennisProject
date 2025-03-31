@@ -22,13 +22,13 @@ class MatchStatisticsFetcher:
     def get_match_ids(self) -> List[int]:
         """Fetch ATP and WTA match IDs."""
         atp_ids = list(
-            AtpMatches.objects.filter(Q(date__gt="2025-2-1")).values_list(
+            AtpMatches.objects.filter(Q(date__gt="2025-2-15")).values_list(
                 "event_id", flat=True
             )
         )
 
         wta_ids = list(
-            WtaMatches.objects.filter(Q(date__gt="2025-2-1")).values_list(
+            WtaMatches.objects.filter(Q(date__gt="2025-2-15")).values_list(
                 "event_id", flat=True
             )
         )
@@ -38,8 +38,8 @@ class MatchStatisticsFetcher:
     def fetch_statistics(self, match_id: int) -> Dict[str, Any]:
         """Fetch statistics for a single match with retry logic."""
         url = f"https://sportscore1.p.rapidapi.com/events/{match_id}/statistics"
-        max_retries = 3
-        retry_delay = 0.5
+        max_retries = 4
+        retry_delay = 2
 
         for attempt in range(max_retries):
             try:
@@ -48,7 +48,7 @@ class MatchStatisticsFetcher:
                 data = response.json()
                 return data
             except requests.exceptions.RequestException as e:
-                if "rate limit per second" in str(e) and attempt < max_retries - 1:
+                if "Too Many Requests for url" in str(e) and attempt < max_retries - 1:
                     time.sleep(retry_delay)
                     continue
                 logging.error(f"Error fetching data for match {match_id}: {str(e)}")
@@ -62,7 +62,9 @@ class MatchStatisticsFetcher:
         data = self.fetch_statistics(match_id)
         if data:
             try:
-                Stats.objects.create(id=match_id, data=data)
+                # Update or create the match statistics
+                Stats.objects.update_or_create(id=match_id, defaults={"data": data})
+                #Stats.objects.create(id=match_id, data=data)
             except Exception as e:
                 logging.error(f"Error saving stats for match {match_id}: {str(e)}")
 
@@ -73,7 +75,7 @@ class MatchStatisticsFetcher:
 
         # Configure the thread pool size based on your needs
         max_workers = min(
-            32, len(match_ids)
+            10, len(match_ids)
         )  # Adjust the maximum number of workers as needed
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:

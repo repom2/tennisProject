@@ -95,15 +95,15 @@ def moniveto(list_index, moniveto_id):
         'home1', 'away1', 'home2', 'away2', 'home3', 'away3', 'home4', 'away4',
     ).first()
 
-    sport = 'football'
+    sport = 'footbal'
 
     #calc_probs(qs, sport)
 
     estimated_avg_goals = [
-        [0, 2.3, 0.65],
-        [1, 0.95, 2.95],
-        [2, 1.0, 2.0],
-        #[3, 1.6, 1.5],
+        [0, 2.6, 0.6],
+        [1, 0.67, 1.4],
+        [2, 1.87, 1.18],
+        #[3, 2.75, 2.45],
     ]
 
     lst = [

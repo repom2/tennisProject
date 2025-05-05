@@ -66,15 +66,23 @@ def define_query_parameters(level, tour, from_at, end_at, surface, now):
 
 def history_bet():
     now = timezone.now().date()
-    surface = AsIs("hard")
+    surface_name = "clay"
+    surface = AsIs(surface_name)
     level = "atp"
     tour = None
-    from_at = "2022-1-1"
+    from_at = "2024-1-1"
     end_at = now + timedelta(days=3)
     params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
         level, tour, from_at, end_at, surface, now
     )
     data = get_data(params)
+    # filetr by field winner_clayelo_games
+    data = data[
+        (data["winner_clayelo_games"] > 14)
+        & (data["loser_clayelo_games"] > 14)
+        & (data["winner_hardelo_games"] > 14)
+        & (data["loser_hardelo_games"] > 14)
+    ]
     columns = [
         "winner_fullname",
         "loser_fullname",
@@ -87,9 +95,9 @@ def history_bet():
         print("No data")
         return
 
-    if surface == "clay":
+    if surface_name == "clay":
         elo_prob_field = "elo_prob_clay"
-    elif surface == "grass":
+    elif surface_name == "grass":
         elo_prob_field = "elo_prob_grass"
     else:
         elo_prob_field = "elo_prob_hard"
@@ -114,16 +122,20 @@ def history_bet():
     bet_counter = 0
     total = 0
     data = data.replace(np.nan, None, regex=True)
+
     for index, row in data.iterrows():
-        time.sleep(0.1)
-        print(
+        #time.sleep(0.1)
+        """print(
             row["date"],
             row["winner_name"],
             row["loser_name"],
             row["home_id"],
             row["away_id"],
-        )
-        elo_prob = row[elo_prob_field]
+        )"""
+        if bankroll <= 0.1:
+            print("Bankroll is zero", bet_counter, total)
+            break
+        elo_prob = row[elo_prob_field] * 0.75 + row["elo_prob_hard"] * 0.25
         if elo_prob is None:
             continue
         if row["home_odds"] is None or row["away_odds"] is None:
@@ -166,4 +178,4 @@ def history_bet():
             else:
                 continue
         total += 1
-    print(bet_counter, total)
+    print(f"BetCounter: {bet_counter} Total: {total} Bankroll: {bankroll}")

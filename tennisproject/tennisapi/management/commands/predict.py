@@ -7,6 +7,7 @@ from tennisapi.ml.model_interact import feature_importance
 from tennisapi.ml.train_model import train_ml_model
 from tennisapi.ml.bet_results import bet_results
 from tennisapi.history.history_bet import history_bet
+from tennisapi.history.bet_bet import bet_bet
 
 
 class Command(BaseCommand):
@@ -48,6 +49,9 @@ class Command(BaseCommand):
         history_cmd = subparsers.add_parser("history-bet")
         history_cmd.set_defaults(subcommand=self.history_bet)
 
+        history_cmd = subparsers.add_parser("bet-bet")
+        history_cmd.set_defaults(subcommand=self.bet_bet)
+
     def handle(self, *args, **options):
         options["subcommand"](options)
 
@@ -56,6 +60,9 @@ class Command(BaseCommand):
 
     def history_bet(self, options):
         history_bet()
+
+    def bet_bet(self, options):
+        bet_bet()
 
     def predict_matches(self, options):
         level = options["pred"]

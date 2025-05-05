@@ -209,7 +209,6 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     df = df[features]
 
     if surface == 'grass':
-        print("Modify features for grass")
         df = df.rename(columns={
             'elo_prob_grass': 'elo_prob',
             'stats_win_grass': 'stats_win'
@@ -217,9 +216,7 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         # replace from list features value stats_win_grass to stats_win
         features = [w.replace('stats_win_grass', 'stats_win') for w in features]
         features = [w.replace('elo_prob_grass', 'elo_prob') for w in features]
-
     if surface == 'clay':
-        print("Modify features for clay")
         df = df.rename(columns={
             'elo_prob_clay': 'elo_prob',
             'stats_win_clay': 'stats_win'
@@ -227,7 +224,7 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         # replace from list features value stats_win_grass to stats_win
         features = [w.replace('stats_win_clay', 'stats_win') for w in features]
         features = [w.replace('elo_prob_clay', 'elo_prob') for w in features]
-    if surface == 'hard':
+    elif surface == 'hard':
         df = df.rename(columns={
             'stats_win_hard': 'stats_win'
             })
@@ -239,10 +236,12 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     else:
         data = get_data_wta_data()
 
-    #data["home_odds"] = 1/ data['home_odds']
-
-    #data = data[data['h2h_matches'] > 1]
-    #data = data[data['common_opponents_count'] > 1]
+    if surface == 'clay':
+        # Replace column name 'elo_prob_clay' with 'elo_prob'
+        data = data.rename(columns={
+            'elo_prob_clay': 'elo_prob',
+            'stats_win_clay': 'stats_win'
+        })
 
     f = features + ['winner_code'] + ['start_at', 'home_name', 'away_name']
 
@@ -252,13 +251,7 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         logging.error(f"Error: {e}")
         return None, None, None, None
     data_length = len(data)
-    # logging.info(f"Lenght of Data All:{data_length} ")
     data = data.dropna()
-    """logging.info(
-        f"Lenght of Data All:{data_length} "
-        f"Home:{len(data[data['winner_code'] == 0])} "
-        f"Away:{len(data[data['winner_code'] == 1])}"
-    )"""
 
     #data, round_mapping = balance_train_data(data)
 
@@ -279,6 +272,7 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
 
     # Log the table with the title
     logging.info("\n" + log_output)
+
     try:
         y_pred = model_logistic.predict_proba(df)
         y_pred_rf = model_rf.predict_proba(df)
@@ -293,11 +287,12 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     prob_away_rf = round(y_pred_rf[0][1], 3)
     odds_limit_home = round(1/prob_home, 3)
     odds_limit_away = round(1/prob_away, 3)
+
+    p_home = df['elo_prob'].iloc[0]
+    p_away = 1 - p_home
     try:
-        #yield_home = round(odds_home * prob_home, 3)
-        #yield_away = round(odds_away * prob_away, 3)
-        yield_home = round(odds_home * stats_win_home, 3)
-        yield_away = round(odds_away * stats_win_away, 3)
+        yield_home = round(odds_home * prob_home, 3)
+        yield_away = round(odds_away * prob_away, 3)
     except TypeError:
         yield_home = 0
         yield_away = 0

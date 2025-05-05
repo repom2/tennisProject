@@ -1,7 +1,9 @@
+import copy
 import logging
+import time
 import warnings
 from datetime import timedelta
-import time
+
 import numpy as np
 import pandas as pd
 from django.utils import timezone
@@ -24,22 +26,26 @@ from tennisapi.stats.prob_by_serve.winning_match import match_prob, matchProb
 from tennisapi.stats.stats_analysis import stats_analysis
 from tennisapi.stats.tennisabstract_site import tennisabstract_scrape
 from tennisapi.stats.tennisabstract_site_atp import tennisabstract_scrape_atp
-import copy
+
 log = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore")
 
 
 def predict_ta(level, tour):
+    if level == "atp":
+        sets = 3
+    else:
+        sets = 3
     use_scrape = True
     now = timezone.now().date()
-    from_at = now #- timedelta(days=1)
+    from_at = now  # - timedelta(days=1)
     end_at = now + timedelta(days=3)
     params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
         level, tour, from_at, end_at
     )
     data = get_data(params)
-    # print_dataframe(data)
+
     columns = [
         # "start_at",
         "winner_fullname",
@@ -48,43 +54,55 @@ def predict_ta(level, tour):
         # "away_player_id",
     ]
     logging.info(
-        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
+        f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+    )
 
     data_copy = copy.deepcopy(data)
 
-    for i in range(0, 15):
+    event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
+
+    for i in range(0, 30):
         time.sleep(4)
-        data = data_copy.iloc[i:i + 1]
+        data = data_copy.iloc[i : i + 1]
 
         if len(data.index) == 0:
             print("No data")
             return
 
-        event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
-
         stats_params = params
-        stats_params["start_at"] = '2023-01-01'
+        stats_params["start_at"] = "2023-01-01"
         stats_params["limit"] = 52
-        if level == "atp":
-            sets = 5
-        else:
-            sets = 3
-        data[['home_spw', 'home_rpw', 'home_matches']] = pd.DataFrame(
-            np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['home_id'], data['start_at'], stats_params)),
-            index=data.index)
-        data[['away_spw', 'away_rpw', 'away_matches']] = pd.DataFrame(
-            np.row_stack(np.vectorize(player_stats, otypes=['O'])(data['away_id'], data['start_at'], stats_params)),
-            index=data.index)
+
+        data[["home_spw", "home_rpw", "home_matches"]] = pd.DataFrame(
+            np.row_stack(
+                np.vectorize(player_stats, otypes=["O"])(
+                    data["home_id"], data["start_at"], stats_params
+                )
+            ),
+            index=data.index,
+        )
+        data[["away_spw", "away_rpw", "away_matches"]] = pd.DataFrame(
+            np.row_stack(
+                np.vectorize(player_stats, otypes=["O"])(
+                    data["away_id"], data["start_at"], stats_params
+                )
+            ),
+            index=data.index,
+        )
         data["player1"] = data.apply(
-            lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
-            if (x.away_rpw and x.home_spw)
-            else None,
+            lambda x: (
+                tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
+                if (x.away_rpw and x.home_spw)
+                else None
+            ),
             axis=1,
         )
         data["player2"] = data.apply(
-            lambda x: tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw)
-            if (x.home_rpw and x.away_spw)
-            else None,
+            lambda x: (
+                tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw)
+                if (x.home_rpw and x.away_spw)
+                else None
+            ),
             axis=1,
         )
         data[
@@ -122,10 +140,16 @@ def predict_ta(level, tour):
         ).round(
             2
         )
-        columns = ['winner_fullname', 'loser_fullname', 'stats_win', 'home_matches', 'away_matches']
-        #logging.info(
-         #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
-        #exit()
+        columns = [
+            "winner_fullname",
+            "loser_fullname",
+            "stats_win",
+            "home_matches",
+            "away_matches",
+        ]
+        # logging.info(
+        #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}")
+        # exit()
 
         if use_scrape:
             if level == "atp":
@@ -149,7 +173,9 @@ def predict_ta(level, tour):
                         "home_dr_grass",
                         "home_matches_grass",
                     ]
-                ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "home", surface), axis=1)
+                ] = data.apply(
+                    lambda row: tennisabstract_scrape_atp(row, "home", surface), axis=1
+                )
                 time.sleep(4)
                 data[
                     [
@@ -171,7 +197,9 @@ def predict_ta(level, tour):
                         "away_dr_grass",
                         "away_matches_grass",
                     ]
-                ] = data.apply(lambda row: tennisabstract_scrape_atp(row, "away", surface), axis=1)
+                ] = data.apply(
+                    lambda row: tennisabstract_scrape_atp(row, "away", surface), axis=1
+                )
             else:
                 data[
                     [
@@ -193,7 +221,9 @@ def predict_ta(level, tour):
                         "home_dr_grass",
                         "home_matches_grass",
                     ]
-                ] = data.apply(lambda row: tennisabstract_scrape(row, "home", surface), axis=1)
+                ] = data.apply(
+                    lambda row: tennisabstract_scrape(row, "home", surface), axis=1
+                )
                 data[
                     [
                         "away_spw",
@@ -214,7 +244,9 @@ def predict_ta(level, tour):
                         "away_dr_grass",
                         "away_matches_grass",
                     ]
-                ] = data.apply(lambda row: tennisabstract_scrape(row, "away", surface), axis=1)
+                ] = data.apply(
+                    lambda row: tennisabstract_scrape(row, "away", surface), axis=1
+                )
         else:
             data[
                 [
@@ -259,50 +291,58 @@ def predict_ta(level, tour):
                 ]
             ] = None
         data["player1"] = data.apply(
-            lambda x: tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
-            if (x.away_rpw and x.home_spw)
-            else None,
+            lambda x: (
+                tour_spw + (x.home_spw - tour_spw) - (x.away_rpw - tour_rpw)
+                if (x.away_rpw and x.home_spw)
+                else None
+            ),
             axis=1,
         )
         data["player2"] = data.apply(
-            lambda x: tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw)
-            if (x.home_rpw and x.away_spw)
-            else None,
+            lambda x: (
+                tour_spw + (x.away_spw - tour_spw) - (x.home_rpw - tour_rpw)
+                if (x.home_rpw and x.away_spw)
+                else None
+            ),
             axis=1,
         )
         data["player1_clay"] = data.apply(
-            lambda x: tour_spw + (x.home_spw_clay - tour_spw) - (x.away_rpw_clay - tour_rpw)
-            if (x.away_rpw_clay and x.home_spw_clay)
-            else None,
+            lambda x: (
+                tour_spw + (x.home_spw_clay - tour_spw) - (x.away_rpw_clay - tour_rpw)
+                if (x.away_rpw_clay and x.home_spw_clay)
+                else None
+            ),
             axis=1,
         )
         data["player2_clay"] = data.apply(
-            lambda x: tour_spw + (x.away_spw_clay - tour_spw) - (x.home_rpw_clay - tour_rpw)
-            if (x.home_rpw_clay and x.away_spw_clay)
-            else None,
+            lambda x: (
+                tour_spw + (x.away_spw_clay - tour_spw) - (x.home_rpw_clay - tour_rpw)
+                if (x.home_rpw_clay and x.away_spw_clay)
+                else None
+            ),
             axis=1,
         )
         data["player1_grass"] = data.apply(
-            lambda x: tour_spw
-            + (x.home_spw_grass - tour_spw)
-            - (x.away_rpw_grass - tour_rpw)
-            if (x.away_rpw_grass and x.home_spw_grass)
-            else None,
+            lambda x: (
+                tour_spw + (x.home_spw_grass - tour_spw) - (x.away_rpw_grass - tour_rpw)
+                if (x.away_rpw_grass and x.home_spw_grass)
+                else None
+            ),
             axis=1,
         )
         data["player2_grass"] = data.apply(
-            lambda x: tour_spw
-            + (x.away_spw_grass - tour_spw)
-            - (x.home_rpw_grass - tour_rpw)
-            if (x.home_rpw_grass and x.away_spw_grass)
-            else None,
+            lambda x: (
+                tour_spw + (x.away_spw_grass - tour_spw) - (x.home_rpw_grass - tour_rpw)
+                if (x.home_rpw_grass and x.away_spw_grass)
+                else None
+            ),
             axis=1,
         )
         columns = ["player1", "player2"]
-        #logging.info(
-         #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
-        #)
-        #exit()
+        # logging.info(
+        #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+        # )
+        # exit()
         cols = [
             "atp_home_fullname",
             "atp_away_fullname",
@@ -315,14 +355,14 @@ def predict_ta(level, tour):
             "player1",
             "player2",
         ]
-        #logging.info(
-         #   f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}"
-        #)
+        # logging.info(
+        #   f"DataFrame:\n{tabulate(data[cols], headers='keys', tablefmt='psql', showindex=True)}"
+        # )
         if surface == "clay":
             stats_win_field = "stats_win_clay"
             elo_prob_field = "elo_prob_clay"
         elif surface == "grass":
-            stats_win_field= "stats_win_grass"
+            stats_win_field = "stats_win_grass"
             elo_prob_field = "elo_prob_grass"
         else:
             stats_win_field = "stats_win_hard"
@@ -470,14 +510,18 @@ def predict_ta(level, tour):
             2
         )
         columns = ["stats_win_clay", "stats_win_grass", "stats_win_hard"]
-        #logging.info(
-         #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
-        #)
+        # logging.info(
+        #   f"DataFrame:\n{tabulate(data[columns], headers='keys', tablefmt='psql', showindex=True)}"
+        # )
         # Common opponent
         data[["spw1_c", "spw2_c", "common_opponents_count"]] = pd.DataFrame(
             np.row_stack(
                 np.vectorize(common_opponent, otypes=["O"])(
-                    params, data["home_id"], data["away_id"], event_spw, data["start_at"]
+                    params,
+                    data["home_id"],
+                    data["away_id"],
+                    event_spw,
+                    data["start_at"],
                 )
             ),
             index=data.index,
@@ -555,10 +599,14 @@ def predict_ta(level, tour):
         data["away_odds"] = data["away_odds"].astype(float)
 
         data["elo_prob_hard"] = data["winner_hardelo"] - data["loser_hardelo"]
-        data["elo_prob_hard"] = data["elo_prob_hard"].apply(probability_of_winning).round(2)
+        data["elo_prob_hard"] = (
+            data["elo_prob_hard"].apply(probability_of_winning).round(2)
+        )
 
         data["elo_prob_clay"] = data["winner_clayelo"] - data["loser_clayelo"]
-        data["elo_prob_clay"] = data["elo_prob_clay"].apply(probability_of_winning).round(2)
+        data["elo_prob_clay"] = (
+            data["elo_prob_clay"].apply(probability_of_winning).round(2)
+        )
 
         data["elo_prob_grass"] = data["winner_grasselo"] - data["loser_grasselo"]
         data["elo_prob_grass"] = (
@@ -566,7 +614,9 @@ def predict_ta(level, tour):
         )
 
         data["year_elo_prob"] = data["winner_year_elo"] - data["loser_year_elo"]
-        data["year_elo_prob"] = data["year_elo_prob"].apply(probability_of_winning).round(2)
+        data["year_elo_prob"] = (
+            data["year_elo_prob"].apply(probability_of_winning).round(2)
+        )
         # data = data.where(pd.notnull(data), None)
         data = data.replace(np.nan, None, regex=True)
         for index, row in data.iterrows():

@@ -60,7 +60,6 @@ def get_data(params):
                 winner_code
             from (
             select
-
                 b.home_id,
                 b.away_id,
                 b.start_at,

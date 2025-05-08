@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 
 def bet_bet():
     level = "atp"
-    surface = "hard"
+    surface = "clay"
     if level == "atp":
         data = Bet.objects.filter(
             surface=surface
@@ -31,10 +31,11 @@ def bet_bet():
     bankroll = 2000
     bet_counter = 0
     total = 0
+    stakes = 0
 
     for row in data:
         #time.sleep(0.1)
-        print(row.start_at, row.stats_win, row.home_odds, row.away_odds, row.home_prob, row.away_prob, row.home_elo_clay_games)
+        #print(row.start_at, row.stats_win, row.home_odds, row.away_odds, row.home_prob, row.away_prob, row.home_elo_clay_games)
         if surface == "clay":
             if row.home_elo_clay_games == None or row.away_elo_clay_games == None or row.home_elo_clay_games < 6 or row.away_elo_clay_games < 6:
                 continue
@@ -44,9 +45,9 @@ def bet_bet():
         if bankroll <= 0.1:
             print("Bankroll is zero", bet_counter, total)
             break
-        #elo_prob = row.home_prob
-        #elo_prob = row.stats_win
-        elo_prob = row.stats_win_hard
+        elo_prob = row.home_prob
+        elo_prob = row.stats_win  # profit on WTA clay
+        elo_prob = row.stats_win_clay  # profit on WTA clay
         if elo_prob is None:
             continue
         if row.home_odds is None or row.away_odds is None:
@@ -73,7 +74,6 @@ def bet_bet():
             )
         if winner_code is None:
             continue
-        print("Winner code", winner_code)
         if home_yield > 1:
             bet_counter += 1
             bet_amount = (home_yield - 1) / (row.home_odds - 1) * bankroll
@@ -84,11 +84,14 @@ def bet_bet():
                 round(bankroll, 0),
                 row.away_odds,
                 row.home_odds,
+                row.start_at
             )
             if winner_code == 1:
                 bankroll += bet_amount * (row.home_odds - 1)
+                stakes += bet_amount
             elif winner_code == 2:
                 bankroll -= bet_amount
+                stakes += bet_amount
             else:
                 continue
         if away_yield > 1:
@@ -101,12 +104,20 @@ def bet_bet():
                 round(bankroll, 0),
                 row.away_odds,
                 row.home_odds,
+                row.start_at
             )
             if winner_code == 2:
                 bankroll += bet_amount * (row.away_odds - 1)
+                stakes += bet_amount
             elif winner_code == 1:
                 bankroll -= bet_amount
+                stakes += bet_amount
             else:
                 continue
         total += 1
-    print(f"BetCounter: {bet_counter} Total: {total} Bankroll: {bankroll}")
+    print(f"BetCounter: {bet_counter} Total: {total} Bankroll: {bankroll} Stakes: {stakes}")
+
+    # calc return of investemt using bankroll and total stakes
+    roi = (bankroll - 2000) / stakes * 100
+    print(f"ROI: {roi:.2f}%")
+

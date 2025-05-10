@@ -16,6 +16,8 @@ import logging
 from tabulate import tabulate
 from datetime import datetime, timedelta
 from .match_statistics import MatchStatisticsFetcher
+from .football_data import Command as FootballCommand
+from .tennis_data import Command as TennisCommand
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,28 +40,26 @@ class Command(BaseCommand):
         list_sports_cmd = subparsers.add_parser("sports")
         list_sports_cmd.set_defaults(subcommand=self.list_sports)
 
+        # Football commands
+        football_cmd = subparsers.add_parser("football")
+        football_cmd.set_defaults(subcommand=self.football_command)
+
+        # Tennis commands
+        tennis_cmd = subparsers.add_parser("tennis")
+        tennis_cmd.set_defaults(subcommand=self.tennis_command)
+
+        # Legacy commands
         list_sections_cmd = subparsers.add_parser("sections") # Find section like spain
         list_sections_cmd.set_defaults(subcommand=self.list_sections)
 
         list_league_by_section_cmd = subparsers.add_parser("leagues-by-section") # then find the league like fa cup
         list_league_by_section_cmd.set_defaults(subcommand=self.list_leagues_by_section_id)
 
-        list_tennis_tournaments_cmd = subparsers.add_parser("tennis-tournaments")
-        list_tennis_tournaments_cmd.set_defaults(subcommand=self.list_tennis_tournaments)
-
         list_leagues_cmd = subparsers.add_parser("leagues")
         list_leagues_cmd.set_defaults(subcommand=self.list_leagues)
 
         events_by_leagues_cmd = subparsers.add_parser("events-by-leagues")
         events_by_leagues_cmd.set_defaults(subcommand=self.events_by_leagues)
-
-        football_events_by_leagues_cmd = subparsers.add_parser("football-events-by-leagues")
-        football_events_by_leagues_cmd.set_defaults(subcommand=self.football_events_by_leagues)
-
-        tennis_events_by_sections_cmd = subparsers.add_parser(
-            "tennis-events-by-sections")
-        tennis_events_by_sections_cmd.set_defaults(
-            subcommand=self.tennis_events_by_sections)
 
         hockey_events_by_leagues_cmd = subparsers.add_parser(
             "ice-hockey-events-by-leagues")
@@ -86,6 +86,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         options["subcommand"](options)
+        
+    def football_command(self, options):
+        """Delegate to the football command handler"""
+        football_cmd = FootballCommand()
+        football_cmd.run_from_argv(['manage.py', 'football_data'])
+        
+    def tennis_command(self, options):
+        """Delegate to the tennis command handler"""
+        tennis_cmd = TennisCommand()
+        tennis_cmd.run_from_argv(['manage.py', 'tennis_data'])
 
     # NO NEED
     def list_sports(self, options):
@@ -295,75 +305,11 @@ class Command(BaseCommand):
                     m.save()
                     pbar.update(1)
 
-    # Update database
+    # Deprecated - use football_data.py instead
     def football_events_by_leagues(self, options):
-        football_leagues = [
-            ['317', 'Premier League'],
-            ['326', 'Championship'],
-            ['318', 'FA Cup'],
-            ['320', 'EFL Cup'],
-            ['251', 'La Liga'],
-            ['252', 'Cop Del Rey'],
-            ['512', 'Bundesliga'],
-            ['498', 'Ligue 1'],
-            ['592', 'Serie A'],
-            ['593', 'Coppa Italia'],
-        ]
-
-        for league_id in football_leagues:
-            logging.info(f"League: {league_id[1]}")
-            events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id[0] + "/events"
-
-            headers = {
-                "X-RapidAPI-Key": sport_score_key,
-                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
-            }
-
-            querystring = {"page": "1"}
-
-            response = requests.request(
-                "GET", events_by_league_id, headers=headers, params=querystring
-            )
-
-            data = response.text
-
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                continue
-            try:
-                data_df = data['data']
-            except:
-                continue
-            meta_from = data['meta']["from"]
-            current_page = data['meta']["current_page"]
-            per_page = data['meta']["per_page"]
-            meta_to = data['meta']["to"]
-
-            if meta_to is not None:
-                while meta_to >= per_page:
-                    current_page += 1
-                    querystring = {"page": str(current_page)}
-                    response = requests.request(
-                        "GET", events_by_league_id, headers=headers, params=querystring
-                    )
-                    data = response.text
-                    data = json.loads(data)
-                    try:
-                        data_df.extend(data["data"])
-                    except json.JSONDecodeError as e:
-                        logging.error(data)
-                        continue
-                    per_page += data['meta']["per_page"]
-                    meta_to = data['meta']["to"]
-                    if meta_to is None:
-                        break
-
-            with tqdm(total=len(data_df)) as pbar:
-                for item in data_df:
-                    m = FootballEvents(**item)
-                    m.save()
-                    pbar.update(1)
+        logging.warning("This method is deprecated. Use 'python manage.py football_data events' instead.")
+        football_cmd = FootballCommand()
+        football_cmd.run_from_argv(['manage.py', 'football_data', 'events'])
 
     def ice_hockey_events_by_leagues(self, options):
         ice_hockey_leagues = ['7622', '7623'] # mestis 7623
@@ -422,69 +368,11 @@ class Command(BaseCommand):
                     pbar.update(1)
 
 
+    # Deprecated - use tennis_data.py instead
     def tennis_events_by_sections(self, options):
-        tennis_sections = [
-            '145', # ATP
-            '144', # WTA
-            #'143', # Challenger
-            #'142', # Challenger-women
-            #'141', # ITF
-            #'139', # Davis Cup
-            #'138', # Fed Cup
-        ]
-
-        for section_id in tennis_sections:
-            events_by_league_id = "https://sportscore1.p.rapidapi.com/sections/" + section_id + "/events"
-
-            headers = {
-                "X-RapidAPI-Key": sport_score_key,
-                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
-            }
-
-            querystring = {"page": "1"}
-
-            response = requests.request(
-                "GET", events_by_league_id, headers=headers, params=querystring
-            )
-
-            data = response.text
-
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                continue
-            try:
-                data_df = data['data']
-            except:
-                continue
-            meta_from = data['meta']["from"]
-            current_page = data['meta']["current_page"]
-            per_page = data['meta']["per_page"]
-            meta_to = data['meta']["to"]
-
-            if meta_to is not None:
-                while meta_to >= per_page:
-                    current_page += 1
-                    querystring = {"page": str(current_page)}
-                    response = requests.request(
-                        "GET", events_by_league_id, headers=headers, params=querystring
-                    )
-                    data = response.text
-                    data = json.loads(data)
-                    try:
-                        data_df.extend(data["data"])
-                    except (json.JSONDecodeError, KeyError) as e:
-                        continue
-                    per_page += data['meta']["per_page"]
-                    meta_to = data['meta']["to"]
-                    if meta_to is None:
-                        break
-
-            with tqdm(total=len(data_df)) as pbar:
-                for item in data_df:
-                    m = TennisEvents(**item)
-                    m.save()
-                    pbar.update(1)
+        logging.warning("This method is deprecated. Use 'python manage.py tennis_data events' instead.")
+        tennis_cmd = TennisCommand()
+        tennis_cmd.run_from_argv(['manage.py', 'tennis_data', 'events'])
 
     # FIX TO PAGE
     def list_events(self, options):
@@ -710,59 +598,12 @@ class Command(BaseCommand):
 
 
     def tennis_api_match_statistics(self, options):
-        fetcher = MatchStatisticsFetcher(settings.SPORT_SCORE_KEY)
-        fetcher.match_statistics({})
+        logging.warning("This method is deprecated. Use 'python manage.py tennis_data stats' instead.")
+        tennis_cmd = TennisCommand()
+        tennis_cmd.run_from_argv(['manage.py', 'tennis_data', 'stats'])
 
-    # Tennis tournaments by section id
+    # Deprecated - use tennis_data.py instead
     def list_tennis_tournaments(self, options):
-        section_ids =  [
-            '145', # ATP
-            #'143', # Challenger
-            #'137', # Grand Slam
-            #'139', # Davis Cup
-            #'142', # Challenger women
-            #'141', # Itf Women
-            '144', # WTA
-            #'138', # Federation Cup women
-            ]
-        for section_id in section_ids:
-            url = f"https://sportscore1.p.rapidapi.com/sections/{section_id}/leagues"
-            headers = {
-                "X-RapidAPI-Key": sport_score_key,
-                "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"
-            }
-
-            response = requests.request(
-                "GET", url, headers=headers)
-
-            data = response.text
-            data = json.loads(data)
-            data_df = data['data']
-            #logging.info(data_df[0])
-
-            last_page = data['meta']["last_page"]
-
-            with tqdm(total=last_page) as pbar:
-                for page in range(2, last_page + 1):
-                    querystring = {"page": str(page)}
-                    response = requests.request(
-                        "GET", url, headers=headers, params=querystring
-                    )
-                    data = response.text
-                    data = json.loads(data)
-                    try:
-                        data_df.extend(data["data"])
-                    except KeyError:
-                        print(data)
-                        pass
-                    pbar.update(1)
-                    time.sleep(1)
-
-            with tqdm(total=len(data_df)) as pbar:
-                for item in data_df:
-                    m = TennisTournaments(**item)
-                    try:
-                        m.save()
-                    except ValidationError:
-                        exit()
-                    pbar.update(1)
+        logging.warning("This method is deprecated. Use 'python manage.py tennis_data tournaments' instead.")
+        tennis_cmd = TennisCommand()
+        tennis_cmd.run_from_argv(['manage.py', 'tennis_data', 'tournaments'])

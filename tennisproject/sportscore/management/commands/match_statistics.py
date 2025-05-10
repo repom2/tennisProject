@@ -5,6 +5,7 @@ import time
 from typing import Any, Dict, List
 
 import requests
+from django.conf import settings
 from django.db.models import Q
 from sportscore.models import Stats
 from tennisapi.models import AtpMatches, WtaMatches

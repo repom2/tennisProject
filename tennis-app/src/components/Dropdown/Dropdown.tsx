@@ -241,16 +241,16 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
 
                 {openIndex === index && (
                     <tr>
-                        <td colSpan={13}>
-                            <div>
+                        <td colSpan={21} style={{ overflowX: "auto", minWidth: "100%" }}>
+                            <div style={{ width: "100%", overflowX: "auto" }}>
                                 <h3>{matchData.homeName}</h3>
-                            </div>
-                            <div>
-                                {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading...</p>}
-                            </div>
-                            <h2>{matchData.awayName}</h2>
-                            <div>
-                                {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading...</p>}
+                                <div>
+                                    {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading...</p>}
+                                </div>
+                                <h2>{matchData.awayName}</h2>
+                                <div>
+                                    {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading...</p>}
+                                </div>
                             </div>
                         </td>
                     </tr>

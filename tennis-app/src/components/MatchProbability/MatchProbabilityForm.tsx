@@ -168,27 +168,27 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
                         </div>
                         <div className={styles.resultItem}>
                             <span>Games Over 21.5:</span>
-                            <span>{data.data.games_over_21_5}</span>
+                            <span>{data.data.gamesOver21_5}</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Games Over 22.5:</span>
-                            <span>{data.data.games_over_22_5}</span>
+                            <span>{data.data.gamesOver22_5}</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Games Over 23.5:</span>
-                            <span>{data.data.games_over_23_5}</span>
+                            <span>{data.data.gamesOver23_5}</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Home AH 2.5:</span>
-                            <span>{data.data.home_ah_2_5}</span>
+                            <span>{data.data.homeAH2_5}</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Home AH 3.5:</span>
-                            <span>{data.data.home_ah_3_5}</span>
+                            <span>{data.data.homeAH3_5}</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Home AH 4.5:</span>
-                            <span>{data.data.home_ah_4_5}</span>
+                            <span>{data.data.homeAH4_5}</span>
                         </div>
                     </div>
                 </div>

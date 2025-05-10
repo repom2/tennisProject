@@ -23,24 +23,29 @@ export async function getMatchProbabilities({
     level,
 }: MatchProbabilitiesProps): Promise<{data: MatchProbabilities}> {
     try {
-        const response = await axios.get<MatchProbabilities>("http://localhost:8000/tennisapi/match-probs/", {
-            params: {
-                tourName,
-                surface,
-                homeSPW,
-                awaySPW,
-                homeRPW,
-                awayRPW,
-                level,
-            },
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await axios.get<MatchProbabilities>(
+            "http://localhost:8000/tennisapi/match-probs/",
+            {
+                params: {
+                    tourName,
+                    surface,
+                    homeSPW,
+                    awaySPW,
+                    homeRPW,
+                    awayRPW,
+                    level,
+                },
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         return response;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            throw new Error(`HTTP Error: ${error.response?.status || 'unknown'} - ${error.message}`);
+            throw new Error(
+                `HTTP Error: ${error.response?.status || "unknown"} - ${error.message}`
+            );
         }
         throw error;
     }

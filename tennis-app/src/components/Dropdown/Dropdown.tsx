@@ -243,34 +243,14 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                     <tr>
                         <td colSpan={13}>
                             <div>
-                                {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading...</p>}
+                                <h3>{matchData.homeName}</h3>
                             </div>
                             <div>
+                                {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading...</p>}
+                            </div>
+                            <h2>{matchData.awayName}</h2>
+                            <div>
                                 {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading...</p>}
-                            </div>
-                            <div className={styles.Preview}>
-                                <div>
-                                    <h2>{matchData.homeName}</h2>
-                                </div>
-                                <div className={styles.Preview}>
-                                    {matchData.homePlayerInfo}
-                                    {matchData.homePlays}
-                                </div>
-                                <RenderText text={matchData.homeShortPreview} />
-                                <div className={styles.PreviewTable}>
-                                    <RenderText text={matchData.homeTable} />
-                                </div>
-                            </div>
-                            <div className={styles.Preview}>
-                                <h2>{matchData.awayName}</h2>
-                                <div className={styles.Preview}>
-                                    {matchData.awayPlayerInfo}
-                                    {matchData.awayPlays}
-                                </div>
-                                <RenderText text={matchData.awayShortPreview} />
-                                <div className={styles.PreviewTable}>
-                                    <RenderText text={matchData.awayTable} />
-                                </div>
                             </div>
                         </td>
                     </tr>

@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 
 
 class AtpEloList(generics.ListAPIView):
-    queryset = AtpHardElo.objects.all()
+    queryset = AtpClayElo.objects.all()
     serializer_class = AtpEloSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     # permission_classes = [IsAdminUser]
@@ -165,7 +165,6 @@ class MatchProbability(generics.ListAPIView):
             sets = 3
         else:
             sets = 3
-        player_id = request.GET.get("playerId", "63bb0df01198c882a8c730abba4160d4")
         if level == "atp":
             matches_table = "tennisapi_atpmatches"
             hard_elo = "tennisapi_atphardelo"

@@ -35,11 +35,12 @@ class AtpEloList(generics.ListAPIView):
 
     def list(self, request):
         now = timezone.now()
-        year_ago = now - relativedelta(days=180)
+        one_year_ago = now - relativedelta(days=365)  # Changed from 180 days to 365 days
 
+        # Get players with records in the last year
         players = (
             self.get_queryset()
-            .filter(date__range=(year_ago, now))
+            .filter(date__range=(one_year_ago, now))
             .values(
                 "player_id",
                 "elo",
@@ -48,22 +49,31 @@ class AtpEloList(generics.ListAPIView):
                 "player__first_name",
                 "date",
             )
-            .order_by("-elo")
         )
 
-        max_date_elo_by_player = {}
-        data = []
+        # Group by player and get the latest ELO rating
+        latest_elo_by_player = {}
         for player in players:
-            if player["player_id"] not in max_date_elo_by_player:
-                max_date_elo_by_player[player["player_id"]] = player["elo"]
-                player_data = {
-                    "id": player["player_id"],
-                    "first_name": player["player__first_name"],
-                    "last_name": player["player__last_name"],
-                    "latest_date": player["date"],
-                    "elo": player["elo"],
-                }
-                data.append(player_data)
+            player_id = player["player_id"]
+            date = player["date"]
+            
+            # If player not in dict or this record is newer, update
+            if player_id not in latest_elo_by_player or date > latest_elo_by_player[player_id]["date"]:
+                latest_elo_by_player[player_id] = player
+
+        # Convert to list and sort by ELO rating
+        data = []
+        for player_data in latest_elo_by_player.values():
+            data.append({
+                "id": player_data["player_id"],
+                "first_name": player_data["player__first_name"],
+                "last_name": player_data["player__last_name"],
+                "latest_date": player_data["date"],
+                "elo": player_data["elo"],
+            })
+        
+        # Sort by ELO rating in descending order
+        data = sorted(data, key=lambda x: x["elo"], reverse=True)
 
         return Response(data)
 

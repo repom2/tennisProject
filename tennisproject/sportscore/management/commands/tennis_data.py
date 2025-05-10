@@ -10,6 +10,8 @@ from tqdm import tqdm
 from sportscore.models import TennisTournaments, TennisEvents, Teams, Stats
 from .match_statistics import MatchStatisticsFetcher
 
+logger = logging.getLogger(__name__)
+
 class Command(BaseCommand):
     """Tennis Data Fetcher"""
 
@@ -48,7 +50,7 @@ class Command(BaseCommand):
         data = json.loads(response.text)
         data_df = data['data']
         df = pd.DataFrame(data_df)
-        logging.info(f"Tennis Sections:\n{df[['id', 'name', 'priority']]}")
+        logger.info(f"Tennis Sections:\n{df[['id', 'name', 'priority']]}")
 
     def list_tennis_tournaments(self, options):
         section_ids = [
@@ -76,7 +78,7 @@ class Command(BaseCommand):
                     try:
                         data_df.extend(data["data"])
                     except KeyError:
-                        logging.error(f"Error in page {page}")
+                        logger.error(f"Error in page {page}")
                         pass
                     pbar.update(1)
                     time.sleep(1)
@@ -87,7 +89,7 @@ class Command(BaseCommand):
                     try:
                         m.save()
                     except ValidationError:
-                        logging.error(f"Validation error for tournament {item.get('id')}")
+                        logger.error(f"Validation error for tournament {item.get('id')}")
                     pbar.update(1)
 
     def tennis_events_by_sections(self, options):
@@ -161,7 +163,7 @@ class Command(BaseCommand):
                 try:
                     data_df.extend(data["data"])
                 except KeyError:
-                    logging.error("No data in response")
+                    logger.error("No data in response")
                     continue
                 per_page += data['meta']["per_page"]
                 meta_to = data['meta']["to"]

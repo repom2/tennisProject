@@ -124,6 +124,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         () => {
             // Only fetch if we have both player stats
             if (homeStats && awayStats) {
+                // Access the nested data structure correctly
                 const homePlayerStats = homeStats.data;
                 const awayPlayerStats = awayStats.data;
                 

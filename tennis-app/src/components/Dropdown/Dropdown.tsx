@@ -124,8 +124,8 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         () => {
             // Only fetch if we have both player stats
             if (homeStats && awayStats) {
-                const homePlayerStats = homeStats.data.data;
-                const awayPlayerStats = awayStats.data.data;
+                const homePlayerStats = homeStats.data;
+                const awayPlayerStats = awayStats.data;
                 
                 return getMatchProbabilities({
                     level: level,

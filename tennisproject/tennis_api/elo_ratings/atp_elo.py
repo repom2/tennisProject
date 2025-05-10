@@ -32,7 +32,7 @@ def atp_elorate(surface):
     ).filter(
         ~Q(round_name__icontains='qualific')
     ).filter(Q(home_score=2) | Q(away_score=2)).order_by('start_at').distinct()
-
+    print("matches", len(matches))
     if surface == 'clay':
         matches = matches.filter(
             ~Exists(AtpEloClay.objects.filter(id=OuterRef('elo_clay'))))

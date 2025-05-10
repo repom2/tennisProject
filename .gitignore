@@ -25,3 +25,4 @@ node_modules/
 
 # models
 tennisproject/tennisapi/ml/trained_models/
+.aider*

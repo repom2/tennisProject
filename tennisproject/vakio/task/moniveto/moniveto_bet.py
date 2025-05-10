@@ -183,7 +183,7 @@ def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
     if len(data) == 0:
         logging.info("No data to bet")
         exit(0)
-    yield_limit = 1.8
+    yield_limit = 1.7
     df = data[data['yield'] > yield_limit]
     df = df[columns]
 

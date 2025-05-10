@@ -150,7 +150,7 @@ class MatchProbability(generics.ListAPIView):
         # Get the level parameter from the URL query string
         now = timezone.now()
         start_at = now - relativedelta(days=365)
-        level = request.GET.get("level", "wta")
+        level = request.GET.get("level", "atp")
         if level == "atp":
             sets = 3
         else:
@@ -172,13 +172,13 @@ class MatchProbability(generics.ListAPIView):
         tour = request.GET.get(
             "tour",
             level +
-            "-madrid"
+            "-rome"
         )
 
-        home_spw = request.GET.get("homeSPW", 0.6)
-        home_rpw = request.GET.get("homeRPW", 0.47)
-        away_spw = request.GET.get("awaySPW", 0.6)
-        away_rpw = request.GET.get("awayRPW", 0.49)
+        home_spw = request.GET.get("homeSPW", 0.617)
+        home_rpw = request.GET.get("homeRPW", 0.416)
+        away_spw = request.GET.get("awaySPW", 0.675)
+        away_rpw = request.GET.get("awayRPW", 0.364)
         end_at = now + relativedelta(days=3)
         params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
             level, tour, now, end_at

@@ -22,15 +22,32 @@ class MatchStatisticsFetcher:
     def get_match_ids(self) -> List[int]:
         """Fetch ATP and WTA match IDs."""
         atp_ids = list(
-            AtpMatches.objects.filter(Q(date__gt="2025-4-1")).values_list(
-                "event_id", flat=True
+            AtpMatches.objects.filter(Q(date__gt="2020-4-1"))
+            .filter(
+                Q(round_name__icontains="Final")
+                | Q(round_name__icontains="Semifinal")
+                | Q(round_name__icontains="Quarterfinal")
+                | Q(round_name__icontains="Quarterfinals")
+                | Q(round_name__icontains="16")
+                | Q(round_name__icontains="32")
+                | Q(round_name__icontains="64")
+                | Q(round_name__icontains="128")
             )
+            .values_list("event_id", flat=True)
         )
 
         wta_ids = list(
-            WtaMatches.objects.filter(Q(date__gt="2025-4-1")).values_list(
-                "event_id", flat=True
+            WtaMatches.objects.filter(Q(date__gt="2020-4-1"))
+            .filter(
+                Q(round_name__icontains="Final")
+                | Q(round_name__icontains="Semifinal")
+                | Q(round_name__icontains="Quarterfinal")
+                | Q(round_name__icontains="16")
+                | Q(round_name__icontains="32")
+                | Q(round_name__icontains="64")
+                | Q(round_name__icontains="128")
             )
+            .values_list("event_id", flat=True)
         )
 
         return atp_ids + wta_ids
@@ -39,7 +56,7 @@ class MatchStatisticsFetcher:
         """Fetch statistics for a single match with retry logic."""
         url = f"https://sportscore1.p.rapidapi.com/events/{match_id}/statistics"
         max_retries = 4
-        retry_delay = 2
+        retry_delay = 3
 
         for attempt in range(max_retries):
             try:
@@ -64,7 +81,7 @@ class MatchStatisticsFetcher:
             try:
                 # Update or create the match statistics
                 Stats.objects.update_or_create(id=match_id, defaults={"data": data})
-                #Stats.objects.create(id=match_id, data=data)
+                # Stats.objects.create(id=match_id, data=data)
             except Exception as e:
                 logging.error(f"Error saving stats for match {match_id}: {str(e)}")
 

@@ -192,5 +192,11 @@ from (
         ) stats
         ) end_stats group by event
     ) s_stats on event=a.id::text
-    where sport_id='2' and section_id='145' and status !='canceled'
+    where sport_id='2'
+    and (
+    a.section ->> 'id'='145'
+    or a.section ->> 'id'='139'
+    or a.league ->> 'section_id'='145'
+    or a.league ->> 'section_id'='139'
+    )
 ) s

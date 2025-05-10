@@ -318,7 +318,7 @@ def insert_data_to_match(level, tour):
                 "away_name": row.loser_name,
                 "home_odds": row['odds1'],
                 "away_odds": row['odds2'],
-                "elo_prob": row['prob'],
+                "elo_prob_clay": row['prob'],
                 "year_elo_prob": row['prob_y'],
                 "home_spw": row['spw1'],
                 "home_rpw": row['rpw1'],

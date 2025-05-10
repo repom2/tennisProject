@@ -137,7 +137,7 @@ def label_round(data, mapping):
 
 
 def predict(level, tour):
-    surface = 'hard'
+    surface = 'clay'
     now = timezone.now().date()
     end_at = now + timedelta(days=5)
     from_at = now - timedelta(days=1)

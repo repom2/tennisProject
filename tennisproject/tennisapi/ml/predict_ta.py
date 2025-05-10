@@ -620,13 +620,13 @@ def predict_ta(level, tour):
         # data = data.where(pd.notnull(data), None)
         data = data.replace(np.nan, None, regex=True)
         for index, row in data.iterrows():
-            # try:
-            home_prob, away_prob, home_yield, away_yield = train_ml_model(
-                row, level, params, surface, stats_win_field, elo_prob_field
-            )
-            # except Exception as e:
-            #   log.error(e)
-            #  continue
+            try:
+                home_prob, away_prob, home_yield, away_yield = train_ml_model(
+                    row, level, params, surface, stats_win_field, elo_prob_field
+                )
+            except Exception as e:
+                log.error(e)
+                home_prob, away_prob, home_yield, away_yield = None, None, None, None
             """home_preview, home_short_preview = match_analysis(
                 row.winner_name,
                 row.loser_name,

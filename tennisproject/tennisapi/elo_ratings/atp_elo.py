@@ -42,6 +42,7 @@ def atp_elorate(surface):
         matches = matches.filter(
             ~Exists(AtpClayElo.objects.filter(id=OuterRef('match'))))
         elo_table = AtpClayElo
+        print("Clay")
     elif surface == 'hard':
         matches = matches.filter(
             ~Exists(AtpHardElo.objects.filter(id=OuterRef('hardmatch'))))

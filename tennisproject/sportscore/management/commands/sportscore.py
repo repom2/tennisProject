@@ -583,8 +583,8 @@ class Command(BaseCommand):
 
         result = qs + list(in_second_but_not_in_first)
         sport_score_key = settings.SPORT_SCORE_KEY
-        with tqdm(total=len(qs)) as pbar:
-            for id in result[0:1]:
+        with tqdm(total=len(result)) as pbar:
+            for id in result:
                 url = "https://sportscore1.p.rapidapi.com/players/" + str(id)
 
                 headers = {
@@ -596,11 +596,24 @@ class Command(BaseCommand):
 
                 data = response.text
                 data = json.loads(data)
-                m = Players(**data["data"])
+                try:
+                    m = Players(**data["data"])
+                except KeyError:
+                    time.sleep(1)
+                    response = requests.request("GET", url, headers=headers)
+
+                    data = response.text
+                    data = json.loads(data)
+                    try:
+                        m = Players(**data["data"])
+                    except KeyError:
+                        print(data)
+                        continue
                 m.save()
+                pbar.update(1)
 
     def list_teams(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/2/teams"
+        url = "https://sportscore1.p.rapidapi.com/sports/1/teams"
         sport_score_key = settings.SPORT_SCORE_KEY
         headers = {
             "X-RapidAPI-Key": sport_score_key,

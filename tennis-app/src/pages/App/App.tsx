@@ -7,6 +7,7 @@ import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import {FootballTips} from "/app/src/components/FootballTips/FootballTips";
 import {PlayerList} from "/app/src/components/Player/PlayerList";
 import {Tips} from "/app/src/components/Tips/Tips";
+import MatchProbabilityForm from "/app/src/components/MatchProbability/MatchProbabilityForm";
 import queryClient from "/app/src/data/queryClient";
 
 import {Header} from "./Header/Header";
@@ -27,6 +28,7 @@ function App() {
                                 <Route path="/tips-wta" element={<Tips level="wta" />} />
                                 <Route path="/tips-atp" element={<Tips level="atp" />} />
                                 <Route path="/footballtips" element={<FootballTips />} />
+                                <Route path="/match-probability" element={<MatchProbabilityForm />} />
                                 {/* ... Add as many routes as needed */}
                             </Routes>
                         </div>

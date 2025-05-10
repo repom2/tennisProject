@@ -2,13 +2,14 @@ import axios from "axios";
 import {MatchProbabilities} from "data/openapi";
 
 interface MatchProbabilitiesProps {
-    tourName: string;
-    matchId: string;
-    homeSPW: number | null;
-    awaySPW: number | null;
-    homeRPW: number | null;
-    awayRPW: number | null;
-    surface: string | null;
+    tourName?: string;
+    matchId?: string;
+    homeSPW?: number | null;
+    awaySPW?: number | null;
+    homeRPW?: number | null;
+    awayRPW?: number | null;
+    surface?: string | null;
+    level?: string;
 }
 
 export async function getMatchProbabilities({
@@ -19,26 +20,27 @@ export async function getMatchProbabilities({
     awaySPW,
     homeRPW,
     awayRPW,
-}: MatchProbabilitiesProps): Promise<{data: MatchProbabilities[]}> {
+    level,
+}: MatchProbabilitiesProps): Promise<{data: MatchProbabilities}> {
     try {
-        const response = await axios.get("http://localhost:8000/tennisapi/match-probs/", {
+        const response = await axios.get<MatchProbabilities>("http://localhost:8000/tennisapi/match-probs/", {
             params: {
-                tourName: tourName,
-                surface: surface,
-                homeSPW: homeSPW,
-                awaySPW: awaySPW,
-                homeRPW: homeRPW,
-                awayRPW: awayRPW,
+                tourName,
+                surface,
+                homeSPW,
+                awaySPW,
+                homeRPW,
+                awayRPW,
+                level,
             },
-            method: "get",
             headers: {
                 "Content-Type": "application/json",
             },
         });
         return response;
     } catch (error) {
-        if (error instanceof axios.AxiosError) {
-            throw new Error(`HTTP ${error}`);
+        if (axios.isAxiosError(error)) {
+            throw new Error(`HTTP Error: ${error.response?.status || 'unknown'} - ${error.message}`);
         }
         throw error;
     }

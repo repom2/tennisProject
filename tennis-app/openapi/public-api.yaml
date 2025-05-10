@@ -254,6 +254,30 @@ components:
           type: number
           example: 0.6
           description: "Match Probability"
+        gamesOver21_5:
+          type: number
+          example: 0.7
+          description: "Probability of games over 21.5"
+        gamesOver22_5:
+          type: number
+          example: 0.65
+          description: "Probability of games over 22.5"
+        gamesOver23_5:
+          type: number
+          example: 0.6
+          description: "Probability of games over 23.5"
+        homeAH2_5:
+          type: number
+          example: 0.55
+          description: "Home Asian Handicap 2.5"
+        homeAH3_5:
+          type: number
+          example: 0.6
+          description: "Home Asian Handicap 3.5"
+        homeAH4_5:
+          type: number
+          example: 0.65
+          description: "Home Asian Handicap 4.5"
     PlayerStatistics:
       type: object
       properties:

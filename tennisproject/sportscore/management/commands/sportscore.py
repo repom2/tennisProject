@@ -117,7 +117,7 @@ class Command(BaseCommand):
 
     # SECTION ID
     def list_sections(self, options):
-        url = "https://sportscore1.p.rapidapi.com/sports/4/sections"
+        url = "https://sportscore1.p.rapidapi.com/sports/1/sections"
         headers = {
             "X-RapidAPI-Key": sport_score_key,
             "X-RapidAPI-Host": "sportscore1.p.rapidapi.com"

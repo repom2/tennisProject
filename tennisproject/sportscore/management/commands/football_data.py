@@ -10,6 +10,7 @@ from sportscore.models import FootballEvents, Teams, Players
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
     """Football Data Fetcher"""
 
@@ -135,7 +136,7 @@ class Command(BaseCommand):
         current_page = data['meta']["current_page"]
         per_page = data['meta']["per_page"]
         meta_to = data['meta']["to"]
-        
+
         if meta_to is not None:
             while meta_to >= per_page:
                 current_page += 1

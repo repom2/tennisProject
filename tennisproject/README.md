@@ -217,6 +217,9 @@ poetry run python manage.py elo_rate wta 'grass'
 # Calculate Elo ratings for football teams in all leagues
 poetry run python manage.py football_elo all
 
-# Make predictions
+# Make predictions for tennis
 poetry run python manage.py predict pred 'atp' 'austral'
+
+# Make predictions for football leagues (e.g., Premier League)
+poetry run python manage.py football pred 'premier'
 ```

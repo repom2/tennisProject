@@ -27,6 +27,7 @@ export async function getMatchProbabilities({
             "http://localhost:8000/tennisapi/match-probs/",
             {
                 params: {
+                    matchId,
                     tourName,
                     surface,
                     homeSPW,

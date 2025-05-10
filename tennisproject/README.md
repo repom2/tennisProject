@@ -205,7 +205,6 @@ dbt run --select tennisapi_atpmatches
 dbt run --select tennisapi_wtamatches
 dbt run --select tennisapi_match
 dbt run --select tennisapi_wtamatch
-dbt run --select tennisapi_chmatch
 ```
 
 ## Elo Rating and Predictions

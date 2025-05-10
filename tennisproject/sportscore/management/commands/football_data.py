@@ -8,6 +8,8 @@ from django.core.management.base import BaseCommand
 from tqdm import tqdm
 from sportscore.models import FootballEvents, Teams, Players
 
+logging = logging.getLogger(__name__)
+
 class Command(BaseCommand):
     """Football Data Fetcher"""
 

@@ -1,6 +1,8 @@
 # SportScore API Data Fetcher
 
-This project provides tools to fetch and manage sports data from the SportScore API, with a focus on football (soccer) and tennis data.
+This project provides tools to fetch and manage sports data from the SportScore API, with a focus on football (soccer) and tennis data. It offers a modular, well-structured approach to retrieving, storing, and analyzing sports data for various applications including match predictions, statistical analysis, and historical data tracking.
+
+The system is built on Django and uses a PostgreSQL database to store comprehensive information about teams, players, matches, tournaments, and statistics. It includes specialized modules for different sports with clean separation of concerns.
 
 ## Setup
 

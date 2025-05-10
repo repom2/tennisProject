@@ -210,9 +210,12 @@ dbt run --select tennisapi_wtamatch
 ## Elo Rating and Predictions
 
 ```bash
-# Calculate Elo ratings
+# Calculate Elo ratings for tennis
 poetry run python manage.py elo_rate atp 'hard'
 poetry run python manage.py elo_rate wta 'grass'
+
+# Calculate Elo ratings for football teams in all leagues
+poetry run python manage.py football_elo all
 
 # Make predictions
 poetry run python manage.py predict pred 'atp' 'austral'

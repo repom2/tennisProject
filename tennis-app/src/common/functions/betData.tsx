@@ -7,19 +7,18 @@ interface BetsProps {
 
 export async function getData({level}: BetsProps): Promise<{data: Bets[]}> {
     try {
-        const response = await axios.get("http://localhost:8000/tennisapi/bet-list/", {
+        const response = await axios.get<Bets[]>("http://localhost:8000/tennisapi/bet-list/", {
             params: {
-                level: level,
+                level,
             },
-            method: "get",
             headers: {
                 "Content-Type": "application/json",
             },
         });
         return response;
     } catch (error) {
-        if (error instanceof axios.AxiosError) {
-            throw new Error(`HTTP ${error}`);
+        if (axios.isAxiosError(error)) {
+            throw new Error(`HTTP Error: ${error.response?.status || 'unknown'} - ${error.message}`);
         }
         throw error;
     }

@@ -178,10 +178,27 @@ class MatchProbability(generics.ListAPIView):
         else:
             raise Http404
 
-        tour = request.GET.get(
-            "tourName",
-            level + "-tour"
-        )
+        match_id = request.GET.get("matchId", None)
+        
+        # If matchId is provided, fetch the tournament name from the appropriate table
+        if match_id:
+            if level == "atp":
+                try:
+                    match = Bet.objects.get(id=match_id)
+                    tour = match.tourney_name if hasattr(match, 'tourney_name') else level + "-tour"
+                except Bet.DoesNotExist:
+                    tour = level + "-tour"
+            elif level == "wta":
+                try:
+                    match = BetWta.objects.get(id=match_id)
+                    tour = match.tourney_name if hasattr(match, 'tourney_name') else level + "-tour"
+                except BetWta.DoesNotExist:
+                    tour = level + "-tour"
+        else:
+            tour = request.GET.get(
+                "tourName",
+                level + "-tour"
+            )
 
         home_spw = float(request.GET.get("homeSPW", 0.6))
         home_rpw = float(request.GET.get("homeRPW", 0.4))

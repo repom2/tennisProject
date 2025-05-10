@@ -2,7 +2,7 @@ import React, {useState, useEffect} from "react";
 import {useQuery} from "react-query";
 //import styles from './YourStyles.module.css';
 import {getPlayerStatistics} from "common/functions/playerStatistics";
-//import {getMatchProbabilities} from "common/functions/matchProbabilities";
+import {getMatchProbabilities} from "common/functions/matchProbabilities";
 import PlayerStats from "components/PlayerStatistics/PlayerStatistics";
 import styles from "components/Tips/Tips.module.css";
 import {Bets} from "data/openapi";
@@ -119,6 +119,32 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         }
     );
 
+    const {data: probabilities, refetch: refetchProbs} = useQuery(
+        ["matchProbabilities", level, homeId, awayId],
+        () => {
+            // Only fetch if we have both player stats
+            if (homeStats && awayStats) {
+                const homePlayerStats = homeStats.data.data;
+                const awayPlayerStats = awayStats.data.data;
+                
+                return getMatchProbabilities({
+                    level: level,
+                    tourName: level + "-tour",
+                    homeSPW: homePlayerStats.playerSPW,
+                    homeRPW: homePlayerStats.playerRPW,
+                    awaySPW: awayPlayerStats.playerSPW,
+                    awayRPW: awayPlayerStats.playerRPW,
+                    surface: surface
+                });
+            }
+            return null;
+        },
+        {
+            enabled: false, // disable automatic query
+            refetchOnWindowFocus: false
+        }
+    );
+
     console.log(matchData);
 
     useEffect(() => {
@@ -132,6 +158,13 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
             reFetchAway();
         }
     }, [openIndex, index, awayId, reFetchAway]);
+
+    // Add effect to trigger probability calculation when both player stats are loaded
+    useEffect(() => {
+        if (homeStats && awayStats) {
+            refetchProbs();
+        }
+    }, [homeStats, awayStats, refetchProbs]);
 
     const handleRowClickWithPlayerId = (homeId: any, awayId: any, surface: any) => {
         setHomeId(homeId);
@@ -251,6 +284,36 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                 <div>
                                     {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading...</p>}
                                 </div>
+                                
+                                {/* Add this section to display match probabilities */}
+                                {probabilities && (
+                                    <div className={styles.probabilities}>
+                                        <h3>Match Probabilities (Based on Recent Form)</h3>
+                                        <div className={styles.probabilityGrid}>
+                                            <div>
+                                                <strong>Match Win Probability:</strong> {probabilities.data.matchProb}
+                                            </div>
+                                            <div>
+                                                <strong>Games Over 21.5:</strong> {probabilities.data.gamesOver21_5}
+                                            </div>
+                                            <div>
+                                                <strong>Games Over 22.5:</strong> {probabilities.data.gamesOver22_5}
+                                            </div>
+                                            <div>
+                                                <strong>Games Over 23.5:</strong> {probabilities.data.gamesOver23_5}
+                                            </div>
+                                            <div>
+                                                <strong>Home AH 2.5:</strong> {probabilities.data.homeAH2_5}
+                                            </div>
+                                            <div>
+                                                <strong>Home AH 3.5:</strong> {probabilities.data.homeAH3_5}
+                                            </div>
+                                            <div>
+                                                <strong>Home AH 4.5:</strong> {probabilities.data.homeAH4_5}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </td>
                     </tr>

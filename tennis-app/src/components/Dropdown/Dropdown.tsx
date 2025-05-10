@@ -129,7 +129,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                 
                 return getMatchProbabilities({
                     level: level,
-                    tourName: level + "-tour",
+                    matchId: matchData.matchId,
                     homeSPW: homePlayerStats.playerSPW,
                     homeRPW: homePlayerStats.playerRPW,
                     awaySPW: awayPlayerStats.playerSPW,

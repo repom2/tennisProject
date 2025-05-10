@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from tqdm import tqdm
 from sportscore.models import FootballEvents, Teams, Players
 
-logging = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     """Football Data Fetcher"""
@@ -45,7 +45,7 @@ class Command(BaseCommand):
         data = json.loads(response.text)
         data_df = data['data']
         df = pd.DataFrame(data_df)
-        logging.info(f"Football Sections:\n{df[['id', 'name', 'priority']]}")
+        logger.info(f"Football Sections:\n{df[['id', 'name', 'priority']]}")
 
     def list_leagues_by_section_id(self, options):
         url = 'https://sportscore1.p.rapidapi.com/sections/40/leagues'
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         data_df = data['data']
         columns = ['id', 'slug', 'start_date', 'priority', 'facts']
         df = pd.DataFrame(data_df)
-        logging.info(f"Football Leagues:\n{df[columns]}")
+        logger.info(f"Football Leagues:\n{df[columns]}")
 
     def football_events_by_leagues(self, options):
         football_leagues = [
@@ -76,7 +76,7 @@ class Command(BaseCommand):
         ]
 
         for league_id in football_leagues:
-            logging.info(f"League: {league_id[1]}")
+            logger.info(f"League: {league_id[1]}")
             events_by_league_id = "https://sportscore1.p.rapidapi.com/leagues/" + league_id[0] + "/events"
 
             headers = {
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                         try:
                             data_df.extend(data["data"])
                         except json.JSONDecodeError as e:
-                            logging.error(data)
+                            logger.error(data)
                             continue
                         per_page += data['meta']["per_page"]
                         meta_to = data['meta']["to"]
@@ -145,7 +145,7 @@ class Command(BaseCommand):
                 try:
                     data_df.extend(data["data"])
                 except KeyError:
-                    logging.error("No data in response")
+                    logger.error("No data in response")
                     continue
                 per_page += data['meta']["per_page"]
                 meta_to = data['meta']["to"]

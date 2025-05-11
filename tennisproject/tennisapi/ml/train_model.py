@@ -31,6 +31,7 @@ warnings.filterwarnings("ignore")
 
 
 def get_data_atp_data(params):
+    surface = params.get('surface', 'hard')
     query = \
         """
         select m.tour_id, m.home_name, m.away_name,
@@ -62,16 +63,17 @@ def get_data_atp_data(params):
         --and (walkover_away is null or walkover_home is false)
         --and home_inj_score > 20.00
         --and away_inj_score < 20.00
-        and m.surface ilike '%%' || %(surface)s || '%%'
+        and m.surface ilike '%%""" + surface + """%%'
         --and (round_name ilike '%%ifinal%%' or round_name ilike '%%quarterfi%%' or round_name ilike '%%r16%%')
         """
     # --( m.tour_id like '%-580' or m.tour_id like '%-7117' );
-    df = pd.read_sql(query, connection, params=params)
+    df = pd.read_sql(query, connection)
 
     return df
 
 
 def get_data_wta_data(params):
+    surface = params.get('surface', 'hard')
     query = \
         """
         select m.tour_id, m.home_name, m.away_name,
@@ -102,10 +104,10 @@ def get_data_wta_data(params):
         inner join tennisapi_wtamatch m on b.match_id=m.id
         where 
         (winner_code=1 or winner_code=2)
-        and m.surface ilike '%' || %(surface)s || '%'
+        and m.surface ilike '%""" + surface + """%'
         order by b.start_at desc;
         """
-    df = pd.read_sql(query, connection, params=params)
+    df = pd.read_sql(query, connection)
 
     return df
 
@@ -155,6 +157,11 @@ def classifier(
 
 
 def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field):
+    # Ensure params has the surface key
+    if isinstance(params, dict):
+        params['surface'] = surface
+    else:
+        params = {'surface': surface}
     logging.info("-" * 50)
     # logging.info(f"Training model for {row['winner_name']} vs {row['loser_name']}")
     home_name = row['winner_fullname']

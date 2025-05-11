@@ -149,9 +149,13 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                 console.log("homeStats:", homeStats);
                 console.log("awayStats:", awayStats);
                 
-                // Access the nested data structure correctly
-                const homePlayerStats = homeStats.data[0] as PlayerStats;
-                const awayPlayerStats = awayStats.data[0] as PlayerStats;
+                // Add detailed logging to understand the data structure
+                console.log("homeStats.data structure:", JSON.stringify(homeStats.data));
+                console.log("awayStats.data structure:", JSON.stringify(awayStats.data));
+                
+                // Access the data based on its actual structure
+                const homePlayerStats = homeStats.data as PlayerStats;
+                const awayPlayerStats = awayStats.data as PlayerStats;
                 
                 console.log("Home player stats:", homePlayerStats);
                 

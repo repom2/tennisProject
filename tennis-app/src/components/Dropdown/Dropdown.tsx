@@ -160,6 +160,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         }
     );
 
+    // Query for player stats-based probabilities
     const {data: probabilities, refetch: refetchProbs} = useQuery(
         ["matchProbabilities", level, homeId, awayId],
         () => {
@@ -194,6 +195,31 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         },
         {
             enabled: false, // disable automatic query
+            refetchOnWindowFocus: false
+        }
+    );
+    
+    // Query for season stats-based probabilities
+    const {data: seasonProbs, isLoading: seasonProbsLoading} = useQuery(
+        ["seasonMatchProbabilities", matchData.matchId],
+        () => {
+            const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
+            const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
+            const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
+            const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
+            
+            return getMatchProbabilities({
+                level: level,
+                matchId: matchData.matchId,
+                homeSPW: homeSPW,
+                homeRPW: homeRPW,
+                awaySPW: awaySPW,
+                awayRPW: awayRPW,
+                surface: matchData.surface
+            });
+        },
+        {
+            enabled: !!matchData.matchId,
             refetchOnWindowFocus: false
         }
     );
@@ -331,35 +357,28 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                         <td colSpan={21} style={{ overflowX: "auto", minWidth: "100%" }}>
                             <div style={{ width: "100%", overflowX: "auto" }}>
                                 {/* Match probabilities from matchData */}
+                                {/* Determine which stats to use based on surface */}
                                 {(() => {
-                                    // Determine which stats to use based on surface
                                     const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
                                     const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
                                     const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
                                     const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
-                                    
-                                    // Use React Query to fetch probabilities
-                                    const { data: seasonProbs, isLoading } = useQuery(
-                                        ["seasonMatchProbabilities", matchData.matchId],
-                                        () => getMatchProbabilities({
-                                            level: level,
-                                            matchId: matchData.matchId,
-                                            homeSPW: homeSPW,
-                                            homeRPW: homeRPW,
-                                            awaySPW: awaySPW,
-                                            awayRPW: awayRPW,
-                                            surface: matchData.surface
-                                        }),
-                                        {
-                                            enabled: !!matchData.matchId,
-                                            refetchOnWindowFocus: false
-                                        }
-                                    );
+                                    return { homeSPW, homeRPW, awaySPW, awayRPW };
+                                })()}
+                                
+                                {/* Move useQuery hook to component level */}
+                                {(() => {
+                                    const surfaceStats = {
+                                        homeSPW: matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw,
+                                        homeRPW: matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw,
+                                        awaySPW: matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw,
+                                        awayRPW: matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw
+                                    };
                                     
                                     return (
                                         <div className={styles.probabilities}>
                                             <h3>Match Probabilities (Based on Season Stats)</h3>
-                                            {isLoading ? (
+                                            {seasonProbsLoading ? (
                                                 <div>Loading season probabilities...</div>
                                             ) : seasonProbs ? (
                                                 <>
@@ -424,8 +443,6 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                                 <div>No season probabilities available</div>
                                             )}
                                         </div>
-                                    );
-                                })()}
                                 
                                 {/* Match probabilities section */}
                                 {probabilities && (

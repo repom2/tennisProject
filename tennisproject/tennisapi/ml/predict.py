@@ -113,7 +113,7 @@ def predict(level, tour):
 
     event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
 
-    for i in range(0, 1):
+    for i in range(0, 50):
         time.sleep(4)
         data = data_copy.iloc[i : i + 1]
 

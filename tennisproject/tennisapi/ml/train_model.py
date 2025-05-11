@@ -30,8 +30,7 @@ warnings.filterwarnings("ignore")
 
 def get_data_atp_data(params):
     surface = params.get("surface", "hard")
-    query = (
-        """
+    query = """
         select m.tour_id, m.home_name, m.away_name,
             case when winner_code = 1 then 0 else 1 end as winner_code, 
             b.start_at,
@@ -57,20 +56,16 @@ def get_data_atp_data(params):
         from tennisapi_bet b
         inner join tennisapi_match m on b.match_id=m.id
         where (winner_code=1 or winner_code=2) 
-        and m.surface ilike '%%"""
-        + surface
-        + """%%'
+        and m.surface = %s
         """
-    )
-    df = pd.read_sql(query, connection)
+    df = pd.read_sql(query, connection, params=[surface])
 
     return df
 
 
 def get_data_wta_data(params):
     surface = params.get("surface", "hard")
-    query = (
-        """
+    query = """
         select m.tour_id, m.home_name, m.away_name,
             case when winner_code = 1 then 0 else 1 end as winner_code, 
             b.start_at,
@@ -99,13 +94,10 @@ def get_data_wta_data(params):
         inner join tennisapi_wtamatch m on b.match_id=m.id
         where 
         (winner_code=1 or winner_code=2)
-        and m.surface ilike '%"""
-        + surface
-        + """%'
+        and m.surface = %s
         order by b.start_at desc;
         """
-    )
-    df = pd.read_sql(query, connection)
+    df = pd.read_sql(query, connection, params=[surface])
 
     return df
 

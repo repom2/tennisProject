@@ -20,7 +20,6 @@ statistical models.
 ### Frontend
 - React.js
 - TypeScript
-- Axios
 
 ### DevOps
 - Docker

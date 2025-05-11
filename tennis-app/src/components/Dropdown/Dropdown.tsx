@@ -356,96 +356,86 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                     <tr>
                         <td colSpan={21} style={{ overflowX: "auto", minWidth: "100%" }}>
                             <div style={{ width: "100%", overflowX: "auto" }}>
-                                <React.Fragment>
-                                    {/* Match probabilities from matchData */}
-                                    {/* Determine which stats to use based on surface */}
-                                    {(() => {
-                                        const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
-                                        const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
-                                        const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
-                                        const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
-                                        return { homeSPW, homeRPW, awaySPW, awayRPW };
-                                    })()}
-                                
-                                {/* Move useQuery hook to component level */}
+                                {/* Match probabilities from matchData */}
+                                {/* Surface stats calculation - not rendered */}
                                 {(() => {
-                                    const surfaceStats = {
-                                        homeSPW: matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw,
-                                        homeRPW: matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw,
-                                        awaySPW: matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw,
-                                        awayRPW: matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw
-                                    };
-                                    
-                                    return (
-                                        <div className={styles.probabilities}>
-                                            <h3>Match Probabilities (Based on Season Stats)</h3>
-                                            {seasonProbsLoading ? (
-                                                <div>Loading season probabilities...</div>
-                                            ) : seasonProbs ? (
-                                                <>
-                                                    <div style={{ marginBottom: '15px' }}>
-                                                        <strong>Match Win Probability:</strong> {seasonProbs?.data?.matchProb} 
-                                                        {seasonProbs?.data?.matchProb && ' (Odds: ' + (1 / seasonProbs.data.matchProb).toFixed(2) + ')'}
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '20px' }}>
-                                                        {/* Over/Under column */}
-                                                        <div>
-                                                            <h4>Over/Under</h4>
-                                                            <div>
-                                                                <strong>Games Over 21.5:</strong> {seasonProbs?.data?.gamesOver21_5}
-                                                                {seasonProbs?.data?.gamesOver21_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver21_5).toFixed(2) + ')'}
-                                                            </div>
-                                                            <div>
-                                                                <strong>Games Over 22.5:</strong> {seasonProbs?.data?.gamesOver22_5}
-                                                                {seasonProbs?.data?.gamesOver22_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver22_5).toFixed(2) + ')'}
-                                                            </div>
-                                                            <div>
-                                                                <strong>Games Over 23.5:</strong> {seasonProbs?.data?.gamesOver23_5}
-                                                                {seasonProbs?.data?.gamesOver23_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver23_5).toFixed(2) + ')'}
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {/* Home AH column */}
-                                                        <div>
-                                                            <h4>Home Asian Handicap</h4>
-                                                            <div>
-                                                                <strong>Home AH 2.5:</strong> {seasonProbs?.data?.homeAH2_5}
-                                                                {seasonProbs?.data?.homeAH2_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH2_5).toFixed(2) + ')'}
-                                                            </div>
-                                                            <div style={{ display: 'block' }}>
-                                                                <strong>Home AH 3.5:</strong> {seasonProbs?.data?.homeAH3_5}
-                                                                {seasonProbs?.data?.homeAH3_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH3_5).toFixed(2) + ')'}
-                                                            </div>
-                                                            <div>
-                                                                <strong>Home AH 4.5:</strong> {seasonProbs?.data?.homeAH4_5}
-                                                                {seasonProbs?.data?.homeAH4_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH4_5).toFixed(2) + ')'}
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {/* Away AH column */}
-                                                        <div>
-                                                            <h4>Away Asian Handicap</h4>
-                                                            <div>
-                                                                <strong>Away AH 2.5:</strong> {seasonProbs?.data?.awayAH2_5}
-                                                                {seasonProbs?.data?.awayAH2_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH2_5).toFixed(2) + ')'}
-                                                            </div>
-                                                            <div style={{ display: 'block' }}>
-                                                                <strong>Away AH 3.5:</strong> {seasonProbs?.data?.awayAH3_5}
-                                                                {seasonProbs?.data?.awayAH3_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH3_5).toFixed(2) + ')'}
-                                                            </div>
-                                                            <div>
-                                                                <strong>Away AH 4.5:</strong> {seasonProbs?.data?.awayAH4_5}
-                                                                {seasonProbs?.data?.awayAH4_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH4_5).toFixed(2) + ')'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div>No season probabilities available</div>
-                                            )}
-                                        </div>
-                                    );
+                                    // This IIFE just calculates values but doesn't render anything
+                                    const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
+                                    const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
+                                    const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
+                                    const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
+                                    // Store in component state or variable if needed
+                                    return null;
                                 })()}
+                                
+                                {/* Season probabilities section */}
+                                <div className={styles.probabilities}>
+                                    <h3>Match Probabilities (Based on Season Stats)</h3>
+                                    {seasonProbsLoading ? (
+                                        <div>Loading season probabilities...</div>
+                                    ) : seasonProbs ? (
+                                        <>
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <strong>Match Win Probability:</strong> {seasonProbs?.data?.matchProb} 
+                                                {seasonProbs?.data?.matchProb && ' (Odds: ' + (1 / seasonProbs.data.matchProb).toFixed(2) + ')'}
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '20px' }}>
+                                                {/* Over/Under column */}
+                                                <div>
+                                                    <h4>Over/Under</h4>
+                                                    <div>
+                                                        <strong>Games Over 21.5:</strong> {seasonProbs?.data?.gamesOver21_5}
+                                                        {seasonProbs?.data?.gamesOver21_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver21_5).toFixed(2) + ')'}
+                                                    </div>
+                                                    <div>
+                                                        <strong>Games Over 22.5:</strong> {seasonProbs?.data?.gamesOver22_5}
+                                                        {seasonProbs?.data?.gamesOver22_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver22_5).toFixed(2) + ')'}
+                                                    </div>
+                                                    <div>
+                                                        <strong>Games Over 23.5:</strong> {seasonProbs?.data?.gamesOver23_5}
+                                                        {seasonProbs?.data?.gamesOver23_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver23_5).toFixed(2) + ')'}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Home AH column */}
+                                                <div>
+                                                    <h4>Home Asian Handicap</h4>
+                                                    <div>
+                                                        <strong>Home AH 2.5:</strong> {seasonProbs?.data?.homeAH2_5}
+                                                        {seasonProbs?.data?.homeAH2_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH2_5).toFixed(2) + ')'}
+                                                    </div>
+                                                    <div style={{ display: 'block' }}>
+                                                        <strong>Home AH 3.5:</strong> {seasonProbs?.data?.homeAH3_5}
+                                                        {seasonProbs?.data?.homeAH3_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH3_5).toFixed(2) + ')'}
+                                                    </div>
+                                                    <div>
+                                                        <strong>Home AH 4.5:</strong> {seasonProbs?.data?.homeAH4_5}
+                                                        {seasonProbs?.data?.homeAH4_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH4_5).toFixed(2) + ')'}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Away AH column */}
+                                                <div>
+                                                    <h4>Away Asian Handicap</h4>
+                                                    <div>
+                                                        <strong>Away AH 2.5:</strong> {seasonProbs?.data?.awayAH2_5}
+                                                        {seasonProbs?.data?.awayAH2_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH2_5).toFixed(2) + ')'}
+                                                    </div>
+                                                    <div style={{ display: 'block' }}>
+                                                        <strong>Away AH 3.5:</strong> {seasonProbs?.data?.awayAH3_5}
+                                                        {seasonProbs?.data?.awayAH3_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH3_5).toFixed(2) + ')'}
+                                                    </div>
+                                                    <div>
+                                                        <strong>Away AH 4.5:</strong> {seasonProbs?.data?.awayAH4_5}
+                                                        {seasonProbs?.data?.awayAH4_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH4_5).toFixed(2) + ')'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div>No season probabilities available</div>
+                                    )}
+                                </div>
                                 
                                 {/* Match probabilities section */}
                                 {probabilities && (
@@ -545,7 +535,6 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                         {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading player statistics...</p>}
                                     </div>
                                 </div>
-                                </React.Fragment>
                             </div>
                         </td>
                     </tr>

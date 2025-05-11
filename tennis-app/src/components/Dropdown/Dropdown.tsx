@@ -346,9 +346,9 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                         <div style={{ marginBottom: '15px' }}>
                                             <strong>Match Win Probability:</strong> {probabilities.data.matchProb}
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '20px' }}>
                                             {/* Over/Under column */}
-                                            <div style={{ flex: 1 }}>
+                                            <div>
                                                 <h4>Over/Under</h4>
                                                 <div>
                                                     <strong>Games Over 21.5:</strong> {probabilities.data.gamesOver21_5}
@@ -362,7 +362,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                             </div>
                                             
                                             {/* Home AH column */}
-                                            <div style={{ flex: 1 }}>
+                                            <div>
                                                 <h4>Home Asian Handicap</h4>
                                                 <div>
                                                     <strong>Home AH 2.5:</strong> {probabilities.data.homeAH2_5}
@@ -376,7 +376,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                             </div>
                                             
                                             {/* Away AH column */}
-                                            <div style={{ flex: 1 }}>
+                                            <div>
                                                 <h4>Away Asian Handicap</h4>
                                                 <div>
                                                     <strong>Away AH 2.5:</strong> {probabilities.data.awayAH2_5}

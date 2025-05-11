@@ -6,19 +6,18 @@ The system is built on Django and uses a PostgreSQL database to store comprehens
 
 ## Setup
 
-1. Make sure you have the required dependencies installed:
-   ```bash
-   pip install django requests pandas tqdm tabulate
+This project uses Docker for containerization, which automatically installs all necessary dependencies during the build process.
+
+1. Make sure you have Docker and Docker Compose installed on your system.
+
+2. Set your SportScore API key in your environment variables or in the `.env` file:
    ```
-   
-   Or if using Poetry:
-   ```bash
-   poetry add django requests pandas tqdm tabulate
+   SPORT_SCORE_KEY=your-api-key-here
    ```
 
-2. Set your SportScore API key in your Django settings:
-   ```python
-   SPORT_SCORE_KEY = "your-api-key-here"
+3. Build and start the containers:
+   ```bash
+   docker-compose up -d
    ```
 
 ## Available Commands

@@ -331,26 +331,101 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                         <td colSpan={21} style={{ overflowX: "auto", minWidth: "100%" }}>
                             <div style={{ width: "100%", overflowX: "auto" }}>
                                 {/* Match probabilities from matchData */}
-                                <div className={styles.probabilities}>
-                                    <h3>Match Probabilities (Based on Season Stats)</h3>
-                                    {(() => {
-                                        // Determine which stats to use based on surface
-                                        const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
-                                        const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
-                                        const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
-                                        const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
-                                        
-                                        // Calculate match probability
-                                        const matchProb = homeSPW * (1 - awayRPW) / (homeSPW * (1 - awayRPW) + awaySPW * (1 - homeRPW));
-                                        
-                                        return (
-                                            <div style={{ marginBottom: '15px' }}>
-                                                <strong>Match Win Probability:</strong> {matchProb?.toFixed(3)} 
-                                                {matchProb && ' (Odds: ' + (1 / matchProb).toFixed(2) + ')'}
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
+                                {(() => {
+                                    // Determine which stats to use based on surface
+                                    const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
+                                    const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
+                                    const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
+                                    const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
+                                    
+                                    // Use React Query to fetch probabilities
+                                    const { data: seasonProbs, isLoading } = useQuery(
+                                        ["seasonMatchProbabilities", matchData.matchId],
+                                        () => getMatchProbabilities({
+                                            level: level,
+                                            matchId: matchData.matchId,
+                                            homeSPW: homeSPW,
+                                            homeRPW: homeRPW,
+                                            awaySPW: awaySPW,
+                                            awayRPW: awayRPW,
+                                            surface: matchData.surface
+                                        }),
+                                        {
+                                            enabled: !!matchData.matchId,
+                                            refetchOnWindowFocus: false
+                                        }
+                                    );
+                                    
+                                    return (
+                                        <div className={styles.probabilities}>
+                                            <h3>Match Probabilities (Based on Season Stats)</h3>
+                                            {isLoading ? (
+                                                <div>Loading season probabilities...</div>
+                                            ) : seasonProbs ? (
+                                                <>
+                                                    <div style={{ marginBottom: '15px' }}>
+                                                        <strong>Match Win Probability:</strong> {seasonProbs?.data?.matchProb} 
+                                                        {seasonProbs?.data?.matchProb && ' (Odds: ' + (1 / seasonProbs.data.matchProb).toFixed(2) + ')'}
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '20px' }}>
+                                                        {/* Over/Under column */}
+                                                        <div>
+                                                            <h4>Over/Under</h4>
+                                                            <div>
+                                                                <strong>Games Over 21.5:</strong> {seasonProbs?.data?.gamesOver21_5}
+                                                                {seasonProbs?.data?.gamesOver21_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver21_5).toFixed(2) + ')'}
+                                                            </div>
+                                                            <div>
+                                                                <strong>Games Over 22.5:</strong> {seasonProbs?.data?.gamesOver22_5}
+                                                                {seasonProbs?.data?.gamesOver22_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver22_5).toFixed(2) + ')'}
+                                                            </div>
+                                                            <div>
+                                                                <strong>Games Over 23.5:</strong> {seasonProbs?.data?.gamesOver23_5}
+                                                                {seasonProbs?.data?.gamesOver23_5 && ' (Odds: ' + (1 / seasonProbs.data.gamesOver23_5).toFixed(2) + ')'}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Home AH column */}
+                                                        <div>
+                                                            <h4>Home Asian Handicap</h4>
+                                                            <div>
+                                                                <strong>Home AH 2.5:</strong> {seasonProbs?.data?.homeAH2_5}
+                                                                {seasonProbs?.data?.homeAH2_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH2_5).toFixed(2) + ')'}
+                                                            </div>
+                                                            <div style={{ display: 'block' }}>
+                                                                <strong>Home AH 3.5:</strong> {seasonProbs?.data?.homeAH3_5}
+                                                                {seasonProbs?.data?.homeAH3_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH3_5).toFixed(2) + ')'}
+                                                            </div>
+                                                            <div>
+                                                                <strong>Home AH 4.5:</strong> {seasonProbs?.data?.homeAH4_5}
+                                                                {seasonProbs?.data?.homeAH4_5 && ' (Odds: ' + (1 / seasonProbs.data.homeAH4_5).toFixed(2) + ')'}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Away AH column */}
+                                                        <div>
+                                                            <h4>Away Asian Handicap</h4>
+                                                            <div>
+                                                                <strong>Away AH 2.5:</strong> {seasonProbs?.data?.awayAH2_5}
+                                                                {seasonProbs?.data?.awayAH2_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH2_5).toFixed(2) + ')'}
+                                                            </div>
+                                                            <div style={{ display: 'block' }}>
+                                                                <strong>Away AH 3.5:</strong> {seasonProbs?.data?.awayAH3_5}
+                                                                {seasonProbs?.data?.awayAH3_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH3_5).toFixed(2) + ')'}
+                                                            </div>
+                                                            <div>
+                                                                <strong>Away AH 4.5:</strong> {seasonProbs?.data?.awayAH4_5}
+                                                                {seasonProbs?.data?.awayAH4_5 && ' (Odds: ' + (1 / seasonProbs.data.awayAH4_5).toFixed(2) + ')'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div>No season probabilities available</div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                                 
                                 {/* Match probabilities section */}
                                 {probabilities && (

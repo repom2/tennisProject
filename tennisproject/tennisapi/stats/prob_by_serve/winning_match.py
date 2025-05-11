@@ -115,6 +115,50 @@ def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     ## v's are serving player; w's are returning player
     ## sets: "best of", so default is best of 3
 
+    # Get away handicaps by calling the function with reversed parameters
+    away_probs = match_prob_internal(t, s, gw, gv, sw, sv, mw, mv, sets)
+
+    # Call the main function for home probabilities
+    home_probs = match_prob_internal(s, t, gv, gw, sv, sw, mv, mw, sets)
+    
+    # Create a combined result with both home and away handicaps
+    result = pd.Series({
+        "stats_win": home_probs["stats_win"],
+        "home_wins_single_game": home_probs["home_wins_single_game"],
+        "home_wins_single_set": home_probs["home_wins_single_set"],
+        "home_wins_1_set": home_probs["home_wins_1_set"],
+        "home_wins_2_set": home_probs["home_wins_2_set"],
+        "home_ah_7_5": home_probs["home_ah_7_5"],
+        "home_ah_6_5": home_probs["home_ah_6_5"],
+        "home_ah_5_5": home_probs["home_ah_5_5"],
+        "home_ah_4_5": home_probs["home_ah_4_5"],
+        "home_ah_3_5": home_probs["home_ah_3_5"],
+        "home_ah_2_5": home_probs["home_ah_2_5"],
+        "away_ah_7_5": away_probs["home_ah_7_5"],
+        "away_ah_6_5": away_probs["home_ah_6_5"],
+        "away_ah_5_5": away_probs["home_ah_5_5"],
+        "away_ah_4_5": away_probs["home_ah_4_5"],
+        "away_ah_3_5": away_probs["home_ah_3_5"],
+        "away_ah_2_5": away_probs["home_ah_2_5"],
+        "games_over_21_5": home_probs["games_over_21_5"],
+        "games_over_22_5": home_probs["games_over_22_5"],
+        "games_over_23_5": home_probs["games_over_23_5"],
+        "games_over_24_5": home_probs["games_over_24_5"],
+        "games_over_25_5": home_probs["games_over_25_5"],
+    })
+    
+    return result
+
+def match_prob_internal(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
+    ## calculates probability of winning a match from any given score,
+    ## given:
+    ## s, t: p(server wins a service point), p(server wins return point)
+    ## gv, gw: current score within the game. e.g. 30-15 is 2, 1
+    ## sv, sw: current score within the set. e.g. 5, 4
+    ## mv, mw: current score within the match (number of sets for each player)
+    ## v's are serving player; w's are returning player
+    ## sets: "best of", so default is best of 3
+
     index_columns = [
         "stats_win",
         "home_wins_single_game",

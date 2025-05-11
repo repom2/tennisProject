@@ -56,27 +56,47 @@ const Tooltip = ({children, content}: TooltipProps) => {
                 {content.gamesOver23_5 ? (1 / content.gamesOver23_5).toFixed(2) : "N/A"}
             </p>
             <p className={styles.NoWrap}>
-                AH 6.5: {content.homeAH6_5}{" "}
+                Home AH 6.5: {content.homeAH6_5}{" "}
                 {content.homeAH6_5 ? (1 / content.homeAH6_5).toFixed(2) : "N/A"}{" "}
                 {content.homeAH6_5 ? (1 / (1 - content.homeAH6_5)).toFixed(2) : "N/A"}
             </p>
             <p className={styles.NoWrap}>
-                AH 5.5: {content.homeAH5_5}{" "}
+                Home AH 5.5: {content.homeAH5_5}{" "}
                 {content.homeAH5_5 ? (1 / content.homeAH5_5).toFixed(2) : "N/A"}{" "}
                 {content.homeAH5_5 ? (1 / (1 - content.homeAH5_5)).toFixed(2) : "N/A"}
             </p>
             <p className={styles.NoWrap}>
-                AH 4.5: {content.homeAH4_5}{" "}
+                Home AH 4.5: {content.homeAH4_5}{" "}
                 {content.homeAH4_5 ? (1 / content.homeAH4_5).toFixed(2) : "N/A"}{" "}
                 {content.homeAH4_5 ? (1 / (1 - content.homeAH4_5)).toFixed(2) : "N/A"}
             </p>
             <p className={styles.NoWrap}>
-                AH 3.5: {content.homeAH3_5}{" "}
+                Home AH 3.5: {content.homeAH3_5}{" "}
                 {content.homeAH3_5 ? (1 / content.homeAH3_5).toFixed(2) : "N/A"}
             </p>
             <p className={styles.NoWrap}>
-                AH 2.5: {content.homeAH2_5}{" "}
+                Home AH 2.5: {content.homeAH2_5}{" "}
                 {content.homeAH2_5 ? (1 / content.homeAH2_5).toFixed(2) : "N/A"}
+            </p>
+            <p className={styles.NoWrap}>
+                Away AH 6.5: {content.awayAH6_5}{" "}
+                {content.awayAH6_5 ? (1 / content.awayAH6_5).toFixed(2) : "N/A"}
+            </p>
+            <p className={styles.NoWrap}>
+                Away AH 5.5: {content.awayAH5_5}{" "}
+                {content.awayAH5_5 ? (1 / content.awayAH5_5).toFixed(2) : "N/A"}
+            </p>
+            <p className={styles.NoWrap}>
+                Away AH 4.5: {content.awayAH4_5}{" "}
+                {content.awayAH4_5 ? (1 / content.awayAH4_5).toFixed(2) : "N/A"}
+            </p>
+            <p className={styles.NoWrap}>
+                Away AH 3.5: {content.awayAH3_5}{" "}
+                {content.awayAH3_5 ? (1 / content.awayAH3_5).toFixed(2) : "N/A"}
+            </p>
+            <p className={styles.NoWrap}>
+                Away AH 2.5: {content.awayAH2_5}{" "}
+                {content.awayAH2_5 ? (1 / content.awayAH2_5).toFixed(2) : "N/A"}
             </p>
             <p className={styles.NoWrap}>
                 AH 1.5 Set: {content.homeWin1Set}{" "}
@@ -344,6 +364,15 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                             </div>
                                             <div>
                                                 <strong>Home AH 4.5:</strong> {probabilities.data.homeAH4_5}
+                                            </div>
+                                            <div>
+                                                <strong>Away AH 2.5:</strong> {probabilities.data.awayAH2_5}
+                                            </div>
+                                            <div>
+                                                <strong>Away AH 3.5:</strong> {probabilities.data.awayAH3_5}
+                                            </div>
+                                            <div>
+                                                <strong>Away AH 4.5:</strong> {probabilities.data.awayAH4_5}
                                             </div>
                                         </div>
                                     </div>

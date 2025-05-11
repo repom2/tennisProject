@@ -344,7 +344,8 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                     <div className={styles.probabilities}>
                                         <h3>Match Probabilities (Based on Recent Form)</h3>
                                         <div style={{ marginBottom: '15px' }}>
-                                            <strong>Match Win Probability:</strong> {probabilities.data.matchProb}
+                                            <strong>Match Win Probability:</strong> {probabilities.data.matchProb} 
+                                            {' '}(Odds: {(1 / probabilities.data.matchProb).toFixed(2)})
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '20px' }}>
                                             {/* Over/Under column */}
@@ -352,12 +353,15 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                                 <h4>Over/Under</h4>
                                                 <div>
                                                     <strong>Games Over 21.5:</strong> {probabilities.data.gamesOver21_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.gamesOver21_5).toFixed(2)})
                                                 </div>
                                                 <div>
                                                     <strong>Games Over 22.5:</strong> {probabilities.data.gamesOver22_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.gamesOver22_5).toFixed(2)})
                                                 </div>
                                                 <div>
                                                     <strong>Games Over 23.5:</strong> {probabilities.data.gamesOver23_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.gamesOver23_5).toFixed(2)})
                                                 </div>
                                             </div>
                                             
@@ -366,12 +370,15 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                                 <h4>Home Asian Handicap</h4>
                                                 <div>
                                                     <strong>Home AH 2.5:</strong> {probabilities.data.homeAH2_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.homeAH2_5).toFixed(2)})
                                                 </div>
                                                 <div style={{ display: 'block' }}>
                                                     <strong>Home AH 3.5:</strong> {probabilities.data.homeAH3_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.homeAH3_5).toFixed(2)})
                                                 </div>
                                                 <div>
                                                     <strong>Home AH 4.5:</strong> {probabilities.data.homeAH4_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.homeAH4_5).toFixed(2)})
                                                 </div>
                                             </div>
                                             
@@ -380,12 +387,15 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                                 <h4>Away Asian Handicap</h4>
                                                 <div>
                                                     <strong>Away AH 2.5:</strong> {probabilities.data.awayAH2_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.awayAH2_5).toFixed(2)})
                                                 </div>
                                                 <div style={{ display: 'block' }}>
                                                     <strong>Away AH 3.5:</strong> {probabilities.data.awayAH3_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.awayAH3_5).toFixed(2)})
                                                 </div>
                                                 <div>
                                                     <strong>Away AH 4.5:</strong> {probabilities.data.awayAH4_5}
+                                                    {' '}(Odds: {(1 / probabilities.data.awayAH4_5).toFixed(2)})
                                                 </div>
                                             </div>
                                         </div>

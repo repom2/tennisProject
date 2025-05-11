@@ -140,10 +140,10 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                 return getMatchProbabilities({
                     level: level,
                     matchId: matchData.matchId,
-                    homeSPW: homePlayerStats.playerSPW,
-                    homeRPW: homePlayerStats.playerRPW,
-                    awaySPW: awayPlayerStats.playerSPW,
-                    awayRPW: awayPlayerStats.playerRPW,
+                    homeSPW: homePlayerStats.homeSPW,
+                    homeRPW: homePlayerStats.homeRPW,
+                    awaySPW: awayPlayerStats.awaySPW,
+                    awayRPW: awayPlayerStats.awayRPW,
                     surface: surface
                 });
             }

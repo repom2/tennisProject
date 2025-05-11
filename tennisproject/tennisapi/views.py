@@ -200,6 +200,7 @@ class MatchProbability(generics.ListAPIView):
                 level + "-tour"
             )
 
+        # Get SPW and RPW values from request
         home_spw = float(request.GET.get("homeSPW", 0.6))
         home_rpw = float(request.GET.get("homeRPW", 0.4))
         away_spw = float(request.GET.get("awaySPW", 0.6))

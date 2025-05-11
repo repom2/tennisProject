@@ -330,6 +330,28 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                     <tr>
                         <td colSpan={21} style={{ overflowX: "auto", minWidth: "100%" }}>
                             <div style={{ width: "100%", overflowX: "auto" }}>
+                                {/* Match probabilities from matchData */}
+                                <div className={styles.probabilities}>
+                                    <h3>Match Probabilities (Based on Season Stats)</h3>
+                                    {(() => {
+                                        // Determine which stats to use based on surface
+                                        const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
+                                        const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
+                                        const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
+                                        const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
+                                        
+                                        // Calculate match probability
+                                        const matchProb = homeSPW * (1 - awayRPW) / (homeSPW * (1 - awayRPW) + awaySPW * (1 - homeRPW));
+                                        
+                                        return (
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <strong>Match Win Probability:</strong> {matchProb?.toFixed(3)} 
+                                                {matchProb && ' (Odds: ' + (1 / matchProb).toFixed(2) + ')'}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                                
                                 {/* Match probabilities section */}
                                 {probabilities && (
                                     <div className={styles.probabilities}>

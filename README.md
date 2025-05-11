@@ -52,8 +52,8 @@ The application consists of:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/tennis-analytics-platform.git
-cd tennis-analytics-platform
+git clone https://github.com/repom2/tennisProject.git
+cd tennisproject
 ```
 
 2. Create a `.env` file with the required environment variables (see `.env.example`)

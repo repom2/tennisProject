@@ -7,8 +7,9 @@ import numpy as np
 from django.utils import timezone
 from psycopg2.extensions import AsIs
 from tabulate import tabulate
-from tennisapi.models import Bet, BetWta, Match, Players, WtaMatch, WTAPlayers
 from tennisapi.ml.utils import probability_of_winning
+from tennisapi.models import Bet, BetWta, Match, Players, WtaMatch, WTAPlayers
+
 from .get_data import get_data
 
 log = logging.getLogger(__name__)
@@ -109,10 +110,14 @@ def history_bet():
     data["away_odds"] = data["away_odds"].astype(float)
 
     data["elo_prob_hard"] = data["winner_hardelo"] - data["loser_hardelo"]
-    data["elo_prob_hard"] = data["elo_prob_hard"].apply(probability_of_winning).round(2)  # noqa E501
+    data["elo_prob_hard"] = (
+        data["elo_prob_hard"].apply(probability_of_winning).round(2)
+    )  # noqa E501
 
     data["elo_prob_clay"] = data["winner_clayelo"] - data["loser_clayelo"]
-    data["elo_prob_clay"] = data["elo_prob_clay"].apply(probability_of_winning).round(2)  # noqa E501
+    data["elo_prob_clay"] = (
+        data["elo_prob_clay"].apply(probability_of_winning).round(2)
+    )  # noqa E501
 
     data["elo_prob_grass"] = data["winner_grasselo"] - data["loser_grasselo"]
     data["elo_prob_grass"] = (
@@ -124,7 +129,7 @@ def history_bet():
     data = data.replace(np.nan, None, regex=True)
 
     for index, row in data.iterrows():
-        #time.sleep(0.1)
+        # time.sleep(0.1)
         """print(
             row["date"],
             row["winner_name"],

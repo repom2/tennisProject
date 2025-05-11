@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from tennisapi.elo_ratings.atp_elo import atp_elorate
-from tennisapi.elo_ratings.wta_elo import wta_elorate
 from tennisapi.elo_ratings.ch_elo import ch_elorate
+from tennisapi.elo_ratings.wta_elo import wta_elorate
 
 
 class Command(BaseCommand):

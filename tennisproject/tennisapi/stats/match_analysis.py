@@ -1,9 +1,9 @@
-from django.conf import settings
 import logging
 import os
+
+from django.conf import settings
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from django.conf import settings
 
 
 def match_analysis(
@@ -64,10 +64,12 @@ def match_analysis(
     print(ai_message.content)
     messages.append(ai_message)
 
-    user_msg = HumanMessage(content=f"""Explain this shortly better constructed way.
+    user_msg = HumanMessage(
+        content=f"""Explain this shortly better constructed way.
                             Leave out things which are not important. Like the player's 
                             retirements or walkovers
-                            if there is none.""")
+                            if there is none."""
+    )
     messages.append(user_msg)
     ai_message = chatgpt(messages)
 

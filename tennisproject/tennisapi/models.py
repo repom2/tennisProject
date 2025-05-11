@@ -60,7 +60,7 @@ class WtaTour(models.Model):
 
 class AtpClayElo(models.Model):
     match = models.ForeignKey(
-        'AtpMatches',
+        "AtpMatches",
         on_delete=models.DO_NOTHING,
         related_name="match",
     )
@@ -77,7 +77,7 @@ class AtpClayElo(models.Model):
 
 class AtpHardElo(models.Model):
     match = models.ForeignKey(
-        'AtpMatches',
+        "AtpMatches",
         on_delete=models.DO_NOTHING,
         related_name="hardmatch",
     )
@@ -94,7 +94,7 @@ class AtpHardElo(models.Model):
 
 class AtpGrassElo(models.Model):
     match = models.ForeignKey(
-        'AtpMatches',
+        "AtpMatches",
         on_delete=models.DO_NOTHING,
         related_name="grassmatch",
     )
@@ -111,7 +111,7 @@ class AtpGrassElo(models.Model):
 
 class ChClayElo(models.Model):
     match = models.ForeignKey(
-        'ChMatches',
+        "ChMatches",
         on_delete=models.DO_NOTHING,
         related_name="chmatch",
     )
@@ -128,7 +128,7 @@ class ChClayElo(models.Model):
 
 class WtaClayElo(models.Model):
     match = models.ForeignKey(
-        'WtaMatches',
+        "WtaMatches",
         on_delete=models.DO_NOTHING,
         related_name="wtamatch",
     )
@@ -145,7 +145,7 @@ class WtaClayElo(models.Model):
 
 class WtaHardElo(models.Model):
     match = models.ForeignKey(
-        'WtaMatches',
+        "WtaMatches",
         on_delete=models.DO_NOTHING,
         related_name="wtahardmatch",
     )
@@ -162,7 +162,7 @@ class WtaHardElo(models.Model):
 
 class WtaGrassElo(models.Model):
     match = models.ForeignKey(
-        'WtaMatches',
+        "WtaMatches",
         on_delete=models.DO_NOTHING,
         related_name="wtagrassmatch",
     )
@@ -407,9 +407,7 @@ class WtaMatch(models.Model):
 
 
 class Bet(models.Model):
-    match = models.OneToOneField(
-        Match, on_delete=models.CASCADE
-    )
+    match = models.OneToOneField(Match, on_delete=models.CASCADE)
     home = models.ForeignKey(
         to=Players,
         on_delete=models.DO_NOTHING,
@@ -532,9 +530,7 @@ class Bet(models.Model):
 
 
 class BetWta(models.Model):
-    match = models.OneToOneField(
-        WtaMatch, on_delete=models.CASCADE
-    )
+    match = models.OneToOneField(WtaMatch, on_delete=models.CASCADE)
     home = models.ForeignKey(
         to=WTAPlayers,
         on_delete=models.DO_NOTHING,
@@ -654,4 +650,3 @@ class BetWta(models.Model):
     away_elo_clay_games = models.FloatField(null=True)
     home_elo_grass_games = models.FloatField(null=True)
     away_elo_grass_games = models.FloatField(null=True)
-

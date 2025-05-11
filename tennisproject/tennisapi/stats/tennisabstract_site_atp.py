@@ -1,11 +1,10 @@
 # import beautifulsoup4
 import logging
-from datetime import datetime
 import time
-
-from bs4 import BeautifulSoup
+from datetime import datetime
 
 import pandas as pd
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
@@ -32,7 +31,7 @@ def tennisabstract_scrape_atp(row, home, surface):
             "home_spw_grass",
             "home_rpw_grass",
             "home_dr_grass",
-            "home_matches_grass"
+            "home_matches_grass",
         ]
         player_name = row["atp_home_fullname"]
         # if row['home_peak_rank']:
@@ -55,7 +54,7 @@ def tennisabstract_scrape_atp(row, home, surface):
             "away_spw_grass",
             "away_rpw_grass",
             "away_dr_grass",
-            "away_matches_grass"
+            "away_matches_grass",
         ]
         player_name = row["atp_away_fullname"]
         # if row['away_peak_rank']:
@@ -71,9 +70,7 @@ def tennisabstract_scrape_atp(row, home, surface):
     else:
         player_name = player_name.strip().replace(" ", "")
     # Specify the URL where the Selenium Hub is running
-    hub_url = (
-        "http://selenium-hub:4444/wd/hub"
-    )  # Use hostname/IP of your selenium_hub service if running remotely
+    hub_url = "http://selenium-hub:4444/wd/hub"  # Use hostname/IP of your selenium_hub service if running remotely
 
     # Define options for the Chrome browser
     chrome_options = ChromeOptions()
@@ -171,7 +168,10 @@ def tennisabstract_scrape_atp(row, home, surface):
         age = (
             current_date.year
             - birthdate.year
-            - ((current_date.month, current_date.day) < (birthdate.month, birthdate.day))
+            - (
+                (current_date.month, current_date.day)
+                < (birthdate.month, birthdate.day)
+            )
         )
     except TypeError:
         birthdate = None
@@ -318,7 +318,7 @@ def tennisabstract_scrape_atp(row, home, surface):
     driver.quit()
     logging.info("Driver closed")
 
-    player_data =  pd.Series(
+    player_data = pd.Series(
         [
             spw,
             rpw,
@@ -336,7 +336,7 @@ def tennisabstract_scrape_atp(row, home, surface):
             spw_grass,
             rpw_grass,
             dr_grass,
-            matches_grass
+            matches_grass,
         ],
         index=index_columns,
     )

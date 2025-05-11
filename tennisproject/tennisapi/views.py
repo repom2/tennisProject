@@ -1,6 +1,6 @@
 import logging
-import pandas as pd
 
+import pandas as pd
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User
 from django.db.models import F, Max, OuterRef, Subquery
@@ -15,14 +15,14 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from tennisapi.ml.utils import define_query_parameters
 from tennisapi.models import Bet, BetWta, Match, WtaMatch
-from tennisapi.stats.player_stats import player_stats, match_stats
+from tennisapi.stats.avg_swp_rpw_by_event import event_stats
+from tennisapi.stats.player_stats import match_stats, player_stats
+from tennisapi.stats.prob_by_serve.winning_match import match_prob, matchProb
 
 from .models import AtpClayElo, AtpHardElo, AtpTour, Bet, BetWta
 from .serializers import AtpEloSerializer, BetSerializer
-from tennisapi.stats.avg_swp_rpw_by_event import event_stats
-from tennisapi.stats.prob_by_serve.winning_match import match_prob, matchProb
-from tennisapi.ml.utils import define_query_parameters
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +35,9 @@ class AtpEloList(generics.ListAPIView):
 
     def list(self, request):
         now = timezone.now()
-        one_year_ago = now - relativedelta(days=365)  # Changed from 180 days to 365 days
+        one_year_ago = now - relativedelta(
+            days=365
+        )  # Changed from 180 days to 365 days
 
         # Get players with records in the last year
         players = (
@@ -56,22 +58,27 @@ class AtpEloList(generics.ListAPIView):
         for player in players:
             player_id = player["player_id"]
             date = player["date"]
-            
+
             # If player not in dict or this record is newer, update
-            if player_id not in latest_elo_by_player or date > latest_elo_by_player[player_id]["date"]:
+            if (
+                player_id not in latest_elo_by_player
+                or date > latest_elo_by_player[player_id]["date"]
+            ):
                 latest_elo_by_player[player_id] = player
 
         # Convert to list and sort by ELO rating
         data = []
         for player_data in latest_elo_by_player.values():
-            data.append({
-                "id": player_data["player_id"],
-                "first_name": player_data["player__first_name"],
-                "last_name": player_data["player__last_name"],
-                "latest_date": player_data["date"],
-                "elo": player_data["elo"],
-            })
-        
+            data.append(
+                {
+                    "id": player_data["player_id"],
+                    "first_name": player_data["player__first_name"],
+                    "last_name": player_data["player__last_name"],
+                    "latest_date": player_data["date"],
+                    "elo": player_data["elo"],
+                }
+            )
+
         # Sort by ELO rating in descending order
         data = sorted(data, key=lambda x: x["elo"], reverse=True)
 
@@ -179,26 +186,31 @@ class MatchProbability(generics.ListAPIView):
             raise Http404
 
         match_id = request.GET.get("matchId", None)
-        
+
         # If matchId is provided, fetch the tournament name from the appropriate table
         if match_id:
             if level == "atp":
                 try:
                     match = Match.objects.get(id=match_id)
-                    tour = match.tourney_name if hasattr(match, 'tourney_name') else level + "-tour"
+                    tour = (
+                        match.tourney_name
+                        if hasattr(match, "tourney_name")
+                        else level + "-tour"
+                    )
                 except Match.DoesNotExist:
                     tour = level + tour
             elif level == "wta":
                 try:
                     match = WtaMatch.objects.get(id=match_id)
-                    tour = match.tourney_name if hasattr(match, 'tourney_name') else level + "-tour"
+                    tour = (
+                        match.tourney_name
+                        if hasattr(match, "tourney_name")
+                        else level + "-tour"
+                    )
                 except WtaMatch.DoesNotExist:
                     tour = level + tour
         else:
-            tour = request.GET.get(
-                "tourName",
-                level + "-tour"
-            )
+            tour = request.GET.get("tourName", level + "-tour")
 
         # Get SPW and RPW values from request
         home_spw = float(request.GET.get("homeSPW", 0.6))

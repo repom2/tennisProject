@@ -1,7 +1,8 @@
-import pandas as pd
-import numpy as np
-from django.db import connection
 import logging
+
+import numpy as np
+import pandas as pd
+from django.db import connection
 
 log = logging.getLogger(__name__)
 
@@ -85,6 +86,7 @@ def opponent_hard_elo(opponent_id, params):
         return pd.DataFrame({"opponent_hard": [1500]})
 
     return df
+
 
 def opponent_clay_elo(opponent_id, params):
     params["player_id"] = opponent_id
@@ -194,17 +196,13 @@ def match_stats(player_id, start_at, params):
 
     df[["opponent_hard"]] = pd.DataFrame(
         np.row_stack(
-            np.vectorize(opponent_hard_elo, otypes=["O"])(
-                df["opponent_id"], params
-            )
+            np.vectorize(opponent_hard_elo, otypes=["O"])(df["opponent_id"], params)
         ),
         index=df.index,
     )
     df[["opponent_clay"]] = pd.DataFrame(
         np.row_stack(
-            np.vectorize(opponent_clay_elo, otypes=["O"])(
-                df["opponent_id"], params
-            )
+            np.vectorize(opponent_clay_elo, otypes=["O"])(df["opponent_id"], params)
         ),
         index=df.index,
     )

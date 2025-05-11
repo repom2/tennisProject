@@ -15,7 +15,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from tennisapi.models import Bet, BetWta
+from tennisapi.models import Bet, BetWta, Match, WtaMatch
 from tennisapi.stats.player_stats import player_stats, match_stats
 
 from .models import AtpClayElo, AtpHardElo, AtpTour, Bet, BetWta
@@ -184,16 +184,16 @@ class MatchProbability(generics.ListAPIView):
         if match_id:
             if level == "atp":
                 try:
-                    match = Bet.objects.get(id=match_id)
+                    match = Match.objects.get(id=match_id)
                     tour = match.tourney_name if hasattr(match, 'tourney_name') else level + "-tour"
-                except Bet.DoesNotExist:
-                    tour = level + "-tour"
+                except Match.DoesNotExist:
+                    tour = level + tour
             elif level == "wta":
                 try:
-                    match = BetWta.objects.get(id=match_id)
+                    match = WtaMatch.objects.get(id=match_id)
                     tour = match.tourney_name if hasattr(match, 'tourney_name') else level + "-tour"
-                except BetWta.DoesNotExist:
-                    tour = level + "-tour"
+                except WtaMatch.DoesNotExist:
+                    tour = level + tour
         else:
             tour = request.GET.get(
                 "tourName",
@@ -214,7 +214,6 @@ class MatchProbability(generics.ListAPIView):
         home_spw = tour_spw + (home_spw - tour_spw) - (away_rpw - tour_rpw)
         away_spw = tour_spw + (away_spw - tour_spw) - (home_rpw - tour_rpw)
 
-        data = pd.DataFrame()
         data = match_prob(
             home_spw, 1 - away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=sets
         )

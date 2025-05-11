@@ -154,8 +154,9 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                 console.log("awayStats.data structure:", JSON.stringify(awayStats.data));
                 
                 // Access the data based on its actual structure
-                const homePlayerStats = homeStats.data as PlayerStats;
-                const awayPlayerStats = awayStats.data as PlayerStats;
+                // Use type assertion with unknown first to avoid TypeScript error
+                const homePlayerStats = (homeStats.data as unknown) as PlayerStats;
+                const awayPlayerStats = (awayStats.data as unknown) as PlayerStats;
                 
                 console.log("Home player stats:", homePlayerStats);
                 

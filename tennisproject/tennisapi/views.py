@@ -215,7 +215,7 @@ class MatchProbability(generics.ListAPIView):
         away_spw = tour_spw + (away_spw - tour_spw) - (home_rpw - tour_rpw)
 
         data = match_prob(
-            home_spw, 1 - away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=sets
+            home_spw, away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=sets
         )
 
         log.info(data)

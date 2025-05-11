@@ -18,7 +18,9 @@ export async function getData({level}: BetsProps): Promise<{data: Bets[]}> {
         return response;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            throw new Error(`HTTP Error: ${error.response?.status || 'unknown'} - ${error.message}`);
+            throw new Error(
+                `HTTP Error: ${error.response?.status || "unknown"} - ${error.message}`
+            );
         }
         throw error;
     }

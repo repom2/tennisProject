@@ -44,6 +44,7 @@ def predict_ta(level, tour):
     params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
         level, tour, from_at, end_at
     )
+    print(params)
     data = get_data(params)
 
     columns = [

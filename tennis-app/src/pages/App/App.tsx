@@ -28,7 +28,10 @@ function App() {
                                 <Route path="/tips-wta" element={<Tips level="wta" />} />
                                 <Route path="/tips-atp" element={<Tips level="atp" />} />
                                 <Route path="/footballtips" element={<FootballTips />} />
-                                <Route path="/match-probability" element={<MatchProbabilityForm />} />
+                                <Route
+                                    path="/match-probability"
+                                    element={<MatchProbabilityForm />}
+                                />
                                 {/* ... Add as many routes as needed */}
                             </Routes>
                         </div>

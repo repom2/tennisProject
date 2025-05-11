@@ -105,7 +105,7 @@ def matchProb(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     return mWin
 
 
-def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
+def match_prob(home_spw, away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     ## calculates probability of winning a match from any given score,
     ## given:
     ## s, t: p(server wins a service point), p(server wins return point)
@@ -116,10 +116,10 @@ def match_prob(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     ## sets: "best of", so default is best of 3
 
     # Get away handicaps by calling the function with reversed parameters
-    away_probs = match_prob_internal(t, s, gw, gv, sw, sv, mw, mv, sets)
+    away_probs = match_prob_internal(away_spw, 1 - home_spw, gw, gv, sw, sv, mw, mv, sets)
 
     # Call the main function for home probabilities
-    home_probs = match_prob_internal(s, t, gv, gw, sv, sw, mv, mw, sets)
+    home_probs = match_prob_internal(home_spw, 1 - away_spw, gv, gw, sv, sw, mv, mw, sets)
     
     # Create a combined result with both home and away handicaps
     result = pd.Series({

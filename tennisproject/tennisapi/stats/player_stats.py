@@ -58,7 +58,7 @@ def player_stats(player_id, start_at, params):
                else loser_receiver_points_won end as player_receiver_points_won
             from %(matches_table)s t 
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
-               and surface ilike '%%%(surface)s%%'
+               and surface = %(surface)s
                and round_name not ilike 'qualification%%'
                --and t.date >= date(%(start_at)s)
                ) a order by date desc limit %(limit)s
@@ -172,7 +172,7 @@ def match_stats(player_id, start_at, params):
                else loser_receiver_points_won end as player_receiver_points_won
             from %(matches_table)s t
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
-               and surface ilike '%%%(surface)s%%'
+               and surface = %(surface)s
                and round_name not ilike 'qualification%%'
                --and t.date >= date(%(start_at)s)
                ) a order by date desc limit %(limit)s

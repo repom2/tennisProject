@@ -359,7 +359,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                             <div>
                                                 <strong>Home AH 2.5:</strong> {probabilities.data.homeAH2_5}
                                             </div>
-                                            <div>
+                                            <div style={{ display: 'block' }}>
                                                 <strong>Home AH 3.5:</strong> {probabilities.data.homeAH3_5}
                                             </div>
                                             <div>
@@ -368,7 +368,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                             <div>
                                                 <strong>Away AH 2.5:</strong> {probabilities.data.awayAH2_5}
                                             </div>
-                                            <div>
+                                            <div style={{ display: 'block' }}>
                                                 <strong>Away AH 3.5:</strong> {probabilities.data.awayAH3_5}
                                             </div>
                                             <div>

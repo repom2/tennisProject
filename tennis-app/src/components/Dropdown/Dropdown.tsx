@@ -132,6 +132,8 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                 const homePlayerStats = homeStats.data;
                 const awayPlayerStats = awayStats.data;
                 
+                console.log("Home player stats:", homePlayerStats);
+                
                 return getMatchProbabilities({
                     level: level,
                     matchId: matchData.matchId,

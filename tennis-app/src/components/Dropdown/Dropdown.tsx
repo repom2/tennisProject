@@ -544,6 +544,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                     }}>
                                         {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading player statistics...</p>}
                                     </div>
+                                </div>
                                 </React.Fragment>
                             </div>
                         </td>

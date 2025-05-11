@@ -291,11 +291,6 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                     <td>{matchData.statsWinHard}</td>
                     <td>{matchData.statsWinClay}</td>
                     <td>
-                        <Tooltip content={matchData}>
-                            <span>Show</span>
-                        </Tooltip>
-                    </td>
-                    <td>
                         <div>
                             {matchData.homeSpw}/{matchData.homeRpw}
                         </div>

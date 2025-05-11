@@ -62,7 +62,7 @@ def get_data_atp_data(params):
         --and (walkover_away is null or walkover_home is false)
         --and home_inj_score > 20.00
         --and away_inj_score < 20.00
-        and m.surface ilike '%%hard%%'
+        and m.surface ilike '%%' || %(surface)s || '%%'
         --and (round_name ilike '%%ifinal%%' or round_name ilike '%%quarterfi%%' or round_name ilike '%%r16%%')
         """
     # --( m.tour_id like '%-580' or m.tour_id like '%-7117' );
@@ -71,7 +71,7 @@ def get_data_atp_data(params):
     return df
 
 
-def get_data_wta_data():
+def get_data_wta_data(params):
     query = \
         """
         select m.tour_id, m.home_name, m.away_name,
@@ -102,10 +102,10 @@ def get_data_wta_data():
         inner join tennisapi_wtamatch m on b.match_id=m.id
         where 
         (winner_code=1 or winner_code=2)
-        and m.surface ilike '%hard%'
+        and m.surface ilike '%' || %(surface)s || '%'
         order by b.start_at desc;
         """
-    df = pd.read_sql(query, connection)#, params=params)
+    df = pd.read_sql(query, connection, params=params)
 
     return df
 
@@ -234,7 +234,7 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     if level == 'atp':
         data = get_data_atp_data(params)
     else:
-        data = get_data_wta_data()
+        data = get_data_wta_data(params)
 
     if surface == 'clay':
         # Replace column name 'elo_prob_clay' with 'elo_prob'

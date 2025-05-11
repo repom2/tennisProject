@@ -98,6 +98,8 @@ interface DropdownProps {
     handleRowClick: (index: number) => void;
 }
 
+
+
 const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: DropdownProps) => {
     const [homeId, setHomeId] = useState(null);
     const [awayId, setAwayId] = useState(null);
@@ -129,8 +131,8 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                 console.log("awayStats:", awayStats);
                 
                 // Access the nested data structure correctly
-                const homePlayerStats = homeStats.data;
-                const awayPlayerStats = awayStats.data;
+                const homePlayerStats: PlayerStats = homeStats.data;
+                const awayPlayerStats: PlayerStats = awayStats.data;
                 
                 console.log("Home player stats:", homePlayerStats);
                 

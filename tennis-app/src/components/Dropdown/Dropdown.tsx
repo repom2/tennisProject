@@ -343,36 +343,50 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                 {probabilities && (
                                     <div className={styles.probabilities}>
                                         <h3>Match Probabilities (Based on Recent Form)</h3>
-                                        <div className={styles.probabilityGrid}>
-                                            <div>
-                                                <strong>Match Win Probability:</strong> {probabilities.data.matchProb}
+                                        <div style={{ marginBottom: '15px' }}>
+                                            <strong>Match Win Probability:</strong> {probabilities.data.matchProb}
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            {/* Over/Under column */}
+                                            <div style={{ flex: 1 }}>
+                                                <h4>Over/Under</h4>
+                                                <div>
+                                                    <strong>Games Over 21.5:</strong> {probabilities.data.gamesOver21_5}
+                                                </div>
+                                                <div>
+                                                    <strong>Games Over 22.5:</strong> {probabilities.data.gamesOver22_5}
+                                                </div>
+                                                <div>
+                                                    <strong>Games Over 23.5:</strong> {probabilities.data.gamesOver23_5}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <strong>Games Over 21.5:</strong> {probabilities.data.gamesOver21_5}
+                                            
+                                            {/* Home AH column */}
+                                            <div style={{ flex: 1 }}>
+                                                <h4>Home Asian Handicap</h4>
+                                                <div>
+                                                    <strong>Home AH 2.5:</strong> {probabilities.data.homeAH2_5}
+                                                </div>
+                                                <div style={{ display: 'block' }}>
+                                                    <strong>Home AH 3.5:</strong> {probabilities.data.homeAH3_5}
+                                                </div>
+                                                <div>
+                                                    <strong>Home AH 4.5:</strong> {probabilities.data.homeAH4_5}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <strong>Games Over 22.5:</strong> {probabilities.data.gamesOver22_5}
-                                            </div>
-                                            <div>
-                                                <strong>Games Over 23.5:</strong> {probabilities.data.gamesOver23_5}
-                                            </div>
-                                            <div>
-                                                <strong>Home AH 2.5:</strong> {probabilities.data.homeAH2_5}
-                                            </div>
-                                            <div style={{ display: 'block' }}>
-                                                <strong>Home AH 3.5:</strong> {probabilities.data.homeAH3_5}
-                                            </div>
-                                            <div>
-                                                <strong>Home AH 4.5:</strong> {probabilities.data.homeAH4_5}
-                                            </div>
-                                            <div>
-                                                <strong>Away AH 2.5:</strong> {probabilities.data.awayAH2_5}
-                                            </div>
-                                            <div style={{ display: 'block' }}>
-                                                <strong>Away AH 3.5:</strong> {probabilities.data.awayAH3_5}
-                                            </div>
-                                            <div>
-                                                <strong>Away AH 4.5:</strong> {probabilities.data.awayAH4_5}
+                                            
+                                            {/* Away AH column */}
+                                            <div style={{ flex: 1 }}>
+                                                <h4>Away Asian Handicap</h4>
+                                                <div>
+                                                    <strong>Away AH 2.5:</strong> {probabilities.data.awayAH2_5}
+                                                </div>
+                                                <div style={{ display: 'block' }}>
+                                                    <strong>Away AH 3.5:</strong> {probabilities.data.awayAH3_5}
+                                                </div>
+                                                <div>
+                                                    <strong>Away AH 4.5:</strong> {probabilities.data.awayAH4_5}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

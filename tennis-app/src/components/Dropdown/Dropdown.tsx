@@ -393,13 +393,40 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                     </div>
                                 )}
                                 
-                                <h3>{matchData.homeName}</h3>
-                                <div>
-                                    {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading...</p>}
+                                <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <h3 style={{ 
+                                        borderBottom: '2px solid #4a90e2', 
+                                        paddingBottom: '8px',
+                                        color: '#2c3e50'
+                                    }}>
+                                        {matchData.homeName} - Player Statistics
+                                    </h3>
+                                    <div style={{ 
+                                        padding: '15px', 
+                                        backgroundColor: '#f8f9fa', 
+                                        borderRadius: '8px',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }}>
+                                        {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading player statistics...</p>}
+                                    </div>
                                 </div>
-                                <h2>{matchData.awayName}</h2>
-                                <div>
-                                    {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading...</p>}
+                                
+                                <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                                    <h3 style={{ 
+                                        borderBottom: '2px solid #e74c3c', 
+                                        paddingBottom: '8px',
+                                        color: '#2c3e50'
+                                    }}>
+                                        {matchData.awayName} - Player Statistics
+                                    </h3>
+                                    <div style={{ 
+                                        padding: '15px', 
+                                        backgroundColor: '#f8f9fa', 
+                                        borderRadius: '8px',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    }}>
+                                        {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading player statistics...</p>}
+                                    </div>
                                 </div>
                             </div>
                         </td>

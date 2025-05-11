@@ -56,7 +56,7 @@ def get_data_atp_data(params):
         from tennisapi_bet b
         inner join tennisapi_match m on b.match_id=m.id
         where (winner_code=1 or winner_code=2) 
-        and m.surface = %s
+        and m.surface = '%s'
         """
     df = pd.read_sql(query, connection, params=[surface])
 
@@ -94,7 +94,7 @@ def get_data_wta_data(params):
         inner join tennisapi_wtamatch m on b.match_id=m.id
         where 
         (winner_code=1 or winner_code=2)
-        and m.surface = %s
+        and m.surface = '%s'
         order by b.start_at desc;
         """
     df = pd.read_sql(query, connection, params=[surface])

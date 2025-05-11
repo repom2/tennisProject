@@ -356,15 +356,16 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                     <tr>
                         <td colSpan={21} style={{ overflowX: "auto", minWidth: "100%" }}>
                             <div style={{ width: "100%", overflowX: "auto" }}>
-                                {/* Match probabilities from matchData */}
-                                {/* Determine which stats to use based on surface */}
-                                {(() => {
-                                    const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
-                                    const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
-                                    const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
-                                    const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
-                                    return { homeSPW, homeRPW, awaySPW, awayRPW };
-                                })()}
+                                <React.Fragment>
+                                    {/* Match probabilities from matchData */}
+                                    {/* Determine which stats to use based on surface */}
+                                    {(() => {
+                                        const homeSPW = matchData.surface === 'clay' ? matchData.homeSpwClay : matchData.homeSpw;
+                                        const homeRPW = matchData.surface === 'clay' ? matchData.homeRpwClay : matchData.homeRpw;
+                                        const awaySPW = matchData.surface === 'clay' ? matchData.awaySpwClay : matchData.awaySpw;
+                                        const awayRPW = matchData.surface === 'clay' ? matchData.awayRpwClay : matchData.awayRpw;
+                                        return { homeSPW, homeRPW, awaySPW, awayRPW };
+                                    })()}
                                 
                                 {/* Move useQuery hook to component level */}
                                 {(() => {
@@ -543,7 +544,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                     }}>
                                         {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading player statistics...</p>}
                                     </div>
-                                </div>
+                                </React.Fragment>
                             </div>
                         </td>
                     </tr>

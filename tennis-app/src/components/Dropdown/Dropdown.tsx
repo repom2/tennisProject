@@ -190,9 +190,10 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
     // Add effect to trigger probability calculation when both player stats are loaded
     useEffect(() => {
         if (homeStats && awayStats) {
+            console.log("Both player stats loaded, fetching probabilities");
             refetchProbs();
         }
-    }, [homeStats, awayStats, refetchProbs]);
+    }, [homeStats?.data, awayStats?.data, refetchProbs]);
 
     const handleRowClickWithPlayerId = (homeId: any, awayId: any, surface: any) => {
         setHomeId(homeId);

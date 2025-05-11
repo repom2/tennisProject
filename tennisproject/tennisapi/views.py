@@ -222,7 +222,7 @@ class MatchProbability(generics.ListAPIView):
         win_prob = data["stats_win"]
         # replace nan with 0
         data = data.fillna(0)
-
+        print(data)
         content = {
             "sets": sets,
             "eventSPW": event_spw,

@@ -443,6 +443,8 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                                 <div>No season probabilities available</div>
                                             )}
                                         </div>
+                                    );
+                                })()}
                                 
                                 {/* Match probabilities section */}
                                 {probabilities && (

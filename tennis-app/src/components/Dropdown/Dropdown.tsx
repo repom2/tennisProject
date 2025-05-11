@@ -7,6 +7,25 @@ import PlayerStats from "components/PlayerStatistics/PlayerStatistics";
 import styles from "components/Tips/Tips.module.css";
 import {Bets} from "data/openapi";
 
+interface PlayerStats {
+  playerSPW: number;
+  playerRPW: number;
+  playerMatches: number;
+  matches: {
+    date: string[];
+    surface: string[];
+    round_name: string[];
+    tourney_name: string[];
+    spw: number[];
+    rpw: number[];
+    opponent_name: string[];
+    dr: number[];
+    opponent_id: string[];
+    opponent_hard: number[];
+    opponent_clay: number[];
+  };
+}
+
 interface TooltipProps {
     children: React.ReactNode;
     content: Bets;

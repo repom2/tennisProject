@@ -330,16 +330,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                     <tr>
                         <td colSpan={21} style={{ overflowX: "auto", minWidth: "100%" }}>
                             <div style={{ width: "100%", overflowX: "auto" }}>
-                                <h3>{matchData.homeName}</h3>
-                                <div>
-                                    {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading...</p>}
-                                </div>
-                                <h2>{matchData.awayName}</h2>
-                                <div>
-                                    {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading...</p>}
-                                </div>
-                                
-                                {/* Add this section to display match probabilities */}
+                                {/* Match probabilities section */}
                                 {probabilities && (
                                     <div className={styles.probabilities}>
                                         <h3>Match Probabilities (Based on Recent Form)</h3>
@@ -401,6 +392,15 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                         </div>
                                     </div>
                                 )}
+                                
+                                <h3>{matchData.homeName}</h3>
+                                <div>
+                                    {homeStats ? <PlayerStats data={homeStats} /> : <p>Loading...</p>}
+                                </div>
+                                <h2>{matchData.awayName}</h2>
+                                <div>
+                                    {awayStats ? <PlayerStats data={awayStats} /> : <p>Loading...</p>}
+                                </div>
                             </div>
                         </td>
                     </tr>

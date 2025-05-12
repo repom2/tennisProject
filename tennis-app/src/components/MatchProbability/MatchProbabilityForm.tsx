@@ -9,12 +9,13 @@ interface MatchProbabilityFormProps {
 
 const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp"}) => {
     const [formData, setFormData] = useState({
-        tourName: level + "-rome",
+        tourName: "rome",
         homeSPW: 0.617,
         homeRPW: 0.416,
         awaySPW: 0.675,
         awayRPW: 0.364,
         surface: "hard",
+        level: level,
     });
 
     const [shouldFetch, setShouldFetch] = useState(false);
@@ -23,7 +24,7 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
         ["matchProbabilities", formData],
         () =>
             getMatchProbabilities({
-                level,
+                level: formData.level,
                 tourName: formData.tourName,
                 homeSPW: formData.homeSPW,
                 homeRPW: formData.homeRPW,
@@ -55,6 +56,19 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
             <h2>Match Probability Calculator</h2>
 
             <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.formGroup}>
+                    <label htmlFor="level">Level:</label>
+                    <select
+                        id="level"
+                        name="level"
+                        value={formData.level}
+                        onChange={handleChange}
+                    >
+                        <option value="atp">ATP</option>
+                        <option value="wta">WTA</option>
+                    </select>
+                </div>
+
                 <div className={styles.formGroup}>
                     <label htmlFor="tourName">Tournament:</label>
                     <input

@@ -168,7 +168,7 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
                     <div className={styles.resultGrid}>
                         <div className={styles.resultItem}>
                             <span>Match Probability:</span>
-                            <span>{data.data.matchProb}</span>
+                            <span>{data.data.matchProb} (Odds: {(1 / data.data.matchProb).toFixed(2)})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Event SPW:</span>

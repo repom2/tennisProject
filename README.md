@@ -8,6 +8,8 @@ This platform combines sports data analytics with machine learning to provide pr
 matches. It's designed to analyze player statistics, calculate match probabilities, and provide betting recommendations based on
 statistical models.
 
+---
+
 ## Technologies Used
 
 ### Backend
@@ -25,12 +27,16 @@ statistical models.
 - Docker
 - Docker Compose
 
+---
+
 ## Screenshots
 ![Screenshot 2025-05-12 160006](https://github.com/user-attachments/assets/282a1e7d-85d1-4de5-aa6a-1ade6815d7bd)
 *Homepage: Instantly see latest match predictions and player statistics.*
 
 ![Screenshot 2025-05-12 at 15-50-34 Tennis AI](https://github.com/user-attachments/assets/1d839282-5ec6-4bda-8868-9fcc038ca58a)
 *Match Calculator: Calculate match probabilities*
+
+---
 
 ## Architecture
 
@@ -39,6 +45,8 @@ The application consists of:
 - **React Frontend**: Provides user interface for viewing match predictions and statistics
 - **PostgreSQL Database**: Stores player data, match results, and betting information
 - **Docker**: Containerizes the application for consistent development and deployment
+
+---
 
 ## Features
 
@@ -50,11 +58,15 @@ The application consists of:
 - Surface-specific performance metrics (clay, grass, hard court)
 - Football match predictions
 
+---
+
 ## Setup Instructions
 
 ### Prerequisites
 - Docker and Docker Compose
 - Git
+
+---
 
 ### Installation
 
@@ -102,5 +114,3 @@ The platform uses several ML models for predictions:
 ---
 
 ### Contact
-
-For questions or feedback, please open an issue on GitHub.

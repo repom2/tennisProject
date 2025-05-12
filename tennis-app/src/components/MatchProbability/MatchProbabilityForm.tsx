@@ -168,7 +168,7 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
                     <div className={styles.resultGrid}>
                         <div className={styles.resultItem}>
                             <span>Match Probability:</span>
-                            <span>{data.data.matchProb} (Odds: {(1 / data.data.matchProb).toFixed(2)})</span>
+                            <span>{data.data.matchProb} ({data.data.matchProb ? (1 / data.data.matchProb).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Event SPW:</span>
@@ -180,39 +180,39 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
                         </div>
                         <div className={styles.resultItem}>
                             <span>Games Over 21.5:</span>
-                            <span>{data.data.gamesOver21_5}</span>
+                            <span>{data.data.gamesOver21_5} ({data.data.gamesOver21_5 ? (1 / data.data.gamesOver21_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Games Over 22.5:</span>
-                            <span>{data.data.gamesOver22_5}</span>
+                            <span>{data.data.gamesOver22_5} ({data.data.gamesOver22_5 ? (1 / data.data.gamesOver22_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Games Over 23.5:</span>
-                            <span>{data.data.gamesOver23_5}</span>
+                            <span>{data.data.gamesOver23_5} ({data.data.gamesOver23_5 ? (1 / data.data.gamesOver23_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Home AH 2.5:</span>
-                            <span>{data.data.homeAH2_5}</span>
+                            <span>{data.data.homeAH2_5} ({data.data.homeAH2_5 ? (1 / data.data.homeAH2_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Home AH 3.5:</span>
-                            <span>{data.data.homeAH3_5}</span>
+                            <span>{data.data.homeAH3_5} ({data.data.homeAH3_5 ? (1 / data.data.homeAH3_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Home AH 4.5:</span>
-                            <span>{data.data.homeAH4_5}</span>
+                            <span>{data.data.homeAH4_5} ({data.data.homeAH4_5 ? (1 / data.data.homeAH4_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Away AH 2.5:</span>
-                            <span>{data.data.awayAH2_5}</span>
+                            <span>{data.data.awayAH2_5} ({data.data.awayAH2_5 ? (1 / data.data.awayAH2_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Away AH 3.5:</span>
-                            <span>{data.data.awayAH3_5}</span>
+                            <span>{data.data.awayAH3_5} ({data.data.awayAH3_5 ? (1 / data.data.awayAH3_5).toFixed(2) : '-'})</span>
                         </div>
                         <div className={styles.resultItem}>
                             <span>Away AH 4.5:</span>
-                            <span>{data.data.awayAH4_5}</span>
+                            <span>{data.data.awayAH4_5} ({data.data.awayAH4_5 ? (1 / data.data.awayAH4_5).toFixed(2) : '-'})</span>
                         </div>
                     </div>
                 </div>

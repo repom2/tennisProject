@@ -54,8 +54,9 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
     return (
         <div className={styles.container}>
             <h2>Match Probability Calculator</h2>
-
-            <form onSubmit={handleSubmit} className={styles.form}>
+            
+            <div className={styles.formResultsWrapper}>
+                <form onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.formGroup}>
                     <label htmlFor="level">Level:</label>
                     <select
@@ -156,16 +157,13 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
                     </div>
                 </div>
 
-                <button type="submit" className={styles.submitButton}>
-                    Calculate Probabilities
-                </button>
-            </form>
+                    <button type="submit" className={styles.submitButton}>
+                        Calculate Probabilities
+                    </button>
+                </form>
 
-            {isLoading && <p>Loading...</p>}
-            {isError && <p>Error fetching data</p>}
-
-            {data && (
-                <div className={styles.results}>
+                {data && (
+                    <div className={styles.results}>
                     <h3>Results</h3>
                     <div className={styles.resultGrid}>
                         <div className={styles.resultItem}>
@@ -206,7 +204,11 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
                         </div>
                     </div>
                 </div>
-            )}
+                )}
+            </div>
+            
+            {isLoading && <p className={styles.statusMessage}>Loading...</p>}
+            {isError && <p className={styles.statusMessage}>Error fetching data</p>}
         </div>
     );
 };

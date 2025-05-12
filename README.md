@@ -62,10 +62,10 @@ The application consists of:
 ```bash
 git clone https://github.com/yourusername/tennis-analytics-platform.git
 cd tennis-analytics-platform
+'''
 
-
- 2 Create a .env file with the required environment variables (see .env.example)
- 3 Build and start the containers:
+ Create a .env file with the required environment variables (see .env.example)
+ Build and start the containers:
 
 
 docker-compose up -d

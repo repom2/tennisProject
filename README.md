@@ -58,47 +58,49 @@ The application consists of:
 
 ### Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/tennis-analytics-platform.git
-cd tennis-analytics-platform
-'''
+1. **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/tennis-analytics-platform.git
+    cd tennis-analytics-platform
+    ```
 
- Create a .env file with the required environment variables (see .env.example)
- Build and start the containers:
+2. **Create a `.env` file** with the required environment variables (see `.env.example`).
 
+3. **Build and start the containers:**
+    ```bash
+    docker-compose up -d
+    ```
 
-docker-compose up -d
+4. **Access the application:**
+    - **Frontend:** [http://localhost:3000](http://localhost:3000)
+    - **Backend API:** [http://localhost:8000/tennisapi/](http://localhost:8000/tennisapi/)
+    - **Admin interface:** [http://localhost:8000/admin/](http://localhost:8000/admin/)
 
+---
 
- 4 Access the application:
-    • Frontend: http://localhost:3000
-    • Backend API: http://localhost:8000/tennisapi/
-    • Admin interface: http://localhost:8000/admin/
+### API Documentation
 
+The API is documented using the OpenAPI specification.  
+You can view the API documentation at: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
-API Documentation
+---
 
-The API is documented using OpenAPI specification. You can view the API documentation at:
-
- • http://localhost:3000/api-docs
-
-
-Machine Learning Models
+### Machine Learning Models
 
 The platform uses several ML models for predictions:
+- Player performance prediction based on historical data
+- Surface-specific performance models
+- Head-to-head outcome predictions
+- Fatigue modeling
 
- • Player performance prediction based on historical data
- • Surface-specific performance models
- • Head-to-head outcome predictions
- • Fatigue modeling
+---
 
+### License
 
-License
+[MIT License](LICENSE)
 
-MIT License
+---
 
-
-Contact
+### Contact
 
 For questions or feedback, please open an issue on GitHub.

@@ -202,6 +202,18 @@ const MatchProbabilityForm: React.FC<MatchProbabilityFormProps> = ({level = "atp
                             <span>Home AH 4.5:</span>
                             <span>{data.data.homeAH4_5}</span>
                         </div>
+                        <div className={styles.resultItem}>
+                            <span>Away AH 2.5:</span>
+                            <span>{data.data.awayAH2_5}</span>
+                        </div>
+                        <div className={styles.resultItem}>
+                            <span>Away AH 3.5:</span>
+                            <span>{data.data.awayAH3_5}</span>
+                        </div>
+                        <div className={styles.resultItem}>
+                            <span>Away AH 4.5:</span>
+                            <span>{data.data.awayAH4_5}</span>
+                        </div>
                     </div>
                 </div>
                 )}

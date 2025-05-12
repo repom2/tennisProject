@@ -25,6 +25,11 @@ statistical models.
 - Docker
 - Docker Compose
 
+## Screenshots
+![Screenshot 2025-05-12 at 15-50-34 Tennis AI](https://github.com/user-attachments/assets/1d839282-5ec6-4bda-8868-9fcc038ca58a)
+
+*Homepage: Instantly see latest match predictions and player statistics.*
+
 ## Architecture
 
 The application consists of:

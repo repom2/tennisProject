@@ -1,13 +1,14 @@
+import warnings
+
 import pandas as pd
 from django.db import connection
-import warnings
 from psycopg2.extensions import AsIs
+
 warnings.filterwarnings("ignore")
 
 
 def standard_deviation(params):
-    query = \
-        """
+    query = """
         select
             surface,
             ROUND(STDDEV(win_percentage), 3) as  stddev,
@@ -63,8 +64,7 @@ def standard_deviation(params):
 
 def surface_correlation(params):
 
-    query = \
-        """
+    query = """
         select sum(surface_a*surface_b) / (( %(number_of_players)s-1)* %(std_matches_won_surface_a)s *%(std_matches_won_surface_b)s) as correlation from (
             select player_id, sum(surface_a) as surface_a, sum(surface_b) as surface_b from (
             select
@@ -124,36 +124,36 @@ def surface_correlation(params):
 
 
 def surface_weighting():
-    surface_a = 'Clay'
-    surface_b = 'Grass'
+    surface_a = "Clay"
+    surface_b = "Grass"
     params = {
-        'surface_a': surface_a,
-        'surface_b': surface_b,
-        'tour_table': AsIs('tennisapi_wtatour'),
-        'matches_table': AsIs('tennisapi_wtamatches'),
-        'date': '1995-1-1',
-        'std_matches_won_surface_a': None,
-        'std_matches_won_surface_b': None,
-        'number_of_players': None,
+        "surface_a": surface_a,
+        "surface_b": surface_b,
+        "tour_table": AsIs("tennisapi_wtatour"),
+        "matches_table": AsIs("tennisapi_wtamatches"),
+        "date": "1995-1-1",
+        "std_matches_won_surface_a": None,
+        "std_matches_won_surface_b": None,
+        "number_of_players": None,
     }
     std = standard_deviation(params)
 
-    surface_a_std = std[std['surface'] == surface_a]
-    std_matches_won_surface_a = surface_a_std['stddev'].iloc[0]
-    number_of_players_surface_a = surface_a_std['number_of_players'].iloc[0]
+    surface_a_std = std[std["surface"] == surface_a]
+    std_matches_won_surface_a = surface_a_std["stddev"].iloc[0]
+    number_of_players_surface_a = surface_a_std["number_of_players"].iloc[0]
 
-    surface_b_std = std[std['surface'] == surface_b]
-    std_matches_won_surface_b = surface_b_std['stddev'].iloc[0]
-    number_of_players_surface_b = surface_b_std['number_of_players'].iloc[0]
+    surface_b_std = std[std["surface"] == surface_b]
+    std_matches_won_surface_b = surface_b_std["stddev"].iloc[0]
+    number_of_players_surface_b = surface_b_std["number_of_players"].iloc[0]
 
     print(std_matches_won_surface_a, number_of_players_surface_a)
     print(std_matches_won_surface_b, number_of_players_surface_b)
 
-    params['std_matches_won_surface_a'] = std_matches_won_surface_a
-    params['std_matches_won_surface_b'] = std_matches_won_surface_b
+    params["std_matches_won_surface_a"] = std_matches_won_surface_a
+    params["std_matches_won_surface_b"] = std_matches_won_surface_b
     if number_of_players_surface_a != number_of_players_surface_b:
         print("Number of players doesn't match on surfaces")
         return
-    params['number_of_players'] = int(number_of_players_surface_b)
+    params["number_of_players"] = int(number_of_players_surface_b)
 
     corr = surface_correlation(params)

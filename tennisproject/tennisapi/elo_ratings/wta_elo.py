@@ -1,10 +1,17 @@
-from tennisapi.models import WtaHardElo, WtaGrassElo, WtaClayElo, WtaMatches, WTAPlayers, WtaTour
-from django.db.models import Q, Exists, OuterRef
-
+from django.db.models import Exists, OuterRef, Q
+from tennisapi.models import (
+    WtaClayElo,
+    WtaGrassElo,
+    WtaHardElo,
+    WtaMatches,
+    WTAPlayers,
+    WtaTour,
+)
 
 c = 250
 o = 5
 s = 0.4
+
 
 def probability_of_winning(opponent, player):
     l = (opponent - player) / 400
@@ -24,30 +31,38 @@ def calculate_k_factor(matches, o, c, s):
 
 
 def wta_elorate(surface):
-    matches = WtaMatches.objects.filter(
-        surface__icontains=surface,
-        round_name__isnull=False,
-    ).filter(
-        Q(round_name__icontains='Final') |
-        Q(round_name__icontains='Semifinal') |
-        Q(round_name__icontains='Quarterfinal') |
-        Q(round_name__icontains='16') |
-        Q(round_name__icontains='32') |
-        Q(round_name__icontains='64') |
-        Q(round_name__icontains='128')
-    ).order_by('date', 'match_num').distinct()
+    matches = (
+        WtaMatches.objects.filter(
+            surface__icontains=surface,
+            round_name__isnull=False,
+        )
+        .filter(
+            Q(round_name__icontains="Final")
+            | Q(round_name__icontains="Semifinal")
+            | Q(round_name__icontains="Quarterfinal")
+            | Q(round_name__icontains="16")
+            | Q(round_name__icontains="32")
+            | Q(round_name__icontains="64")
+            | Q(round_name__icontains="128")
+        )
+        .order_by("date", "match_num")
+        .distinct()
+    )
 
-    if surface == 'clay':
+    if surface == "clay":
         matches = matches.filter(
-            ~Exists(WtaClayElo.objects.filter(id=OuterRef('wtamatch'))))
+            ~Exists(WtaClayElo.objects.filter(id=OuterRef("wtamatch")))
+        )
         elo_table = WtaClayElo
-    elif surface == 'hard':
+    elif surface == "hard":
         matches = matches.filter(
-            ~Exists(WtaHardElo.objects.filter(id=OuterRef('wtahardmatch'))))
+            ~Exists(WtaHardElo.objects.filter(id=OuterRef("wtahardmatch")))
+        )
         elo_table = WtaHardElo
-    elif surface == 'grass':
+    elif surface == "grass":
         matches = matches.filter(
-            ~Exists(WtaGrassElo.objects.filter(id=OuterRef('wtagrassmatch'))))
+            ~Exists(WtaGrassElo.objects.filter(id=OuterRef("wtagrassmatch")))
+        )
         elo_table = WtaGrassElo
     else:
         return
@@ -61,8 +76,8 @@ def wta_elorate(surface):
             loser_id = WTAPlayers.objects.filter(id=match.loser_id)[0]
         except:
             continue
-        winner = elo_table.objects.filter(player__id=match.winner_id).order_by('-games')
-        loser = elo_table.objects.filter(player__id=match.loser_id).order_by('-games')
+        winner = elo_table.objects.filter(player__id=match.winner_id).order_by("-games")
+        loser = elo_table.objects.filter(player__id=match.loser_id).order_by("-games")
 
         if not winner:
             winner_elo = 1500

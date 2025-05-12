@@ -1,10 +1,17 @@
-from tennisapi.models import AtpHardElo, AtpClayElo, AtpGrassElo, AtpTour, AtpMatches, Players
-from django.db.models import Q, Exists, OuterRef
-
+from django.db.models import Exists, OuterRef, Q
+from tennisapi.models import (
+    AtpClayElo,
+    AtpGrassElo,
+    AtpHardElo,
+    AtpMatches,
+    AtpTour,
+    Players,
+)
 
 c = 250
 o = 5
 s = 0.4
+
 
 def probability_of_winning(opponent, player):
     l = (opponent - player) / 400
@@ -24,32 +31,40 @@ def calculate_k_factor(matches, o, c, s):
 
 
 def atp_elorate(surface):
-    matches = AtpMatches.objects.filter(
-        surface__icontains=surface,
-        round_name__isnull=False,
-    ).filter(
-        Q(round_name__icontains='Final') |
-        Q(round_name__icontains='Semifinal') |
-        Q(round_name__icontains='Quarterfinal') |
-        Q(round_name__icontains='Quarterfinals') |
-        Q(round_name__icontains='16') |
-        Q(round_name__icontains='32') |
-        Q(round_name__icontains='64') |
-        Q(round_name__icontains='128')
-    ).order_by('date', 'match_num').distinct()
+    matches = (
+        AtpMatches.objects.filter(
+            surface__icontains=surface,
+            round_name__isnull=False,
+        )
+        .filter(
+            Q(round_name__icontains="Final")
+            | Q(round_name__icontains="Semifinal")
+            | Q(round_name__icontains="Quarterfinal")
+            | Q(round_name__icontains="Quarterfinals")
+            | Q(round_name__icontains="16")
+            | Q(round_name__icontains="32")
+            | Q(round_name__icontains="64")
+            | Q(round_name__icontains="128")
+        )
+        .order_by("date", "match_num")
+        .distinct()
+    )
 
-    if surface == 'clay':
+    if surface == "clay":
         matches = matches.filter(
-            ~Exists(AtpClayElo.objects.filter(id=OuterRef('match'))))
+            ~Exists(AtpClayElo.objects.filter(id=OuterRef("match")))
+        )
         elo_table = AtpClayElo
         print("Clay")
-    elif surface == 'hard':
+    elif surface == "hard":
         matches = matches.filter(
-            ~Exists(AtpHardElo.objects.filter(id=OuterRef('hardmatch'))))
+            ~Exists(AtpHardElo.objects.filter(id=OuterRef("hardmatch")))
+        )
         elo_table = AtpHardElo
-    elif surface == 'grass':
+    elif surface == "grass":
         matches = matches.filter(
-            ~Exists(AtpGrassElo.objects.filter(id=OuterRef('grassmatch'))))
+            ~Exists(AtpGrassElo.objects.filter(id=OuterRef("grassmatch")))
+        )
         elo_table = AtpGrassElo
     else:
         return
@@ -60,8 +75,8 @@ def atp_elorate(surface):
             loser_id = Players.objects.filter(id=match.loser_id)[0]
         except:
             continue
-        winner = elo_table.objects.filter(player__id=match.winner_id).order_by('-games')
-        loser = elo_table.objects.filter(player__id=match.loser_id).order_by('-games')
+        winner = elo_table.objects.filter(player__id=match.winner_id).order_by("-games")
+        loser = elo_table.objects.filter(player__id=match.loser_id).order_by("-games")
         if not winner:
             winner_elo = 1500
             winner_games = 0

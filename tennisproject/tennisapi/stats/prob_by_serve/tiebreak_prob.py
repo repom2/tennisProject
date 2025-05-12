@@ -3,10 +3,13 @@
 ## some results shown here:
 ## http://summerofjeff.wordpress.com/2010/12/04/7-point-tiebreak-win-expectancy-tables/
 
+
 def fact(x):
-    if x in [0, 1]:  return 1
+    if x in [0, 1]:
+        return 1
     r = 1
-    for a in range(1, (x + 1)):  r = r * a
+    for a in range(1, (x + 1)):
+        r = r * a
     return r
 
 
@@ -95,9 +98,15 @@ def tiebreakProb(s, t, v=0, w=0, p=7):
                 if (j + k) == (p - 1 - v):
                     m = svc - j
                     n = ret - k
-                    pr = (s ** j) * (t ** k) * ((1 - s) ** m) * ((1 - t) ** n) * ch(svc,
-                                                                                    j) * ch(
-                        ret, k) * final
+                    pr = (
+                        (s**j)
+                        * (t**k)
+                        * ((1 - s) ** m)
+                        * ((1 - t) ** n)
+                        * ch(svc, j)
+                        * ch(ret, k)
+                        * final
+                    )
                     pOutcome += pr
                 else:
                     continue
@@ -138,13 +147,19 @@ def tiebreakProb(s, t, v=0, w=0, p=7):
             if (j + k) == (p - 1 - v):
                 m = svc - j
                 n = ret - k
-                pr = (s ** j) * (t ** k) * ((1 - s) ** m) * ((1 - t) ** n) * ch(svc,
-                                                                                j) * ch(
-                    ret, k) * final
+                pr = (
+                    (s**j)
+                    * (t**k)
+                    * ((1 - s) ** m)
+                    * ((1 - t) ** n)
+                    * ch(svc, j)
+                    * ch(ret, k)
+                    * final
+                )
                 x += pr
             else:
                 continue
-    outcomes['+'] = (x * s * t) / ((s * t) + (1 - s) * (1 - t))
+    outcomes["+"] = (x * s * t) / ((s * t) + (1 - s) * (1 - t))
     ## add up all positive outcomes
     wtb = 0
     for z in outcomes:

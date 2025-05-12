@@ -1,10 +1,10 @@
 # import beautifulsoup4
 import logging
-from datetime import datetime
 import time
-from bs4 import BeautifulSoup
+from datetime import datetime
 
 import pandas as pd
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
@@ -63,9 +63,7 @@ def tennisabstract_scrape(row, home, surface):
         # strip the player name
         player_name = player_name.strip().replace(" ", "")
         # Specify the URL where the Selenium Hub is running
-        hub_url = (
-            "http://selenium-hub:4444/wd/hub"
-        )  # Use hostname/IP of your selenium_hub service if running remotely
+        hub_url = "http://selenium-hub:4444/wd/hub"  # Use hostname/IP of your selenium_hub service if running remotely
 
         # Define options for the Chrome browser
         chrome_options = ChromeOptions()

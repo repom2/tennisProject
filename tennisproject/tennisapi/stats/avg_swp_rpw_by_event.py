@@ -1,12 +1,13 @@
+import logging
+
 import pandas as pd
 from django.db import connection
-import logging
 
 log = logging.getLogger(__name__)
 
+
 def event_stats(params, level):
-    query = \
-        """
+    query = """
             select 
                 *, 
                 (SPW + loser_SPW) / 2 as avg_SPW,
@@ -63,8 +64,8 @@ def event_stats(params, level):
     """
 
     df = pd.read_sql(query, connection, params=params)
-    avg_spw = df.iloc[0]['avg_spw']
-    avg_rpw = df.iloc[0]['avg_rpw']
+    avg_spw = df.iloc[0]["avg_spw"]
+    avg_rpw = df.iloc[0]["avg_rpw"]
 
     if level == "atp":
         tour_spw, tour_rpw = 0.645, 0.355
@@ -73,7 +74,7 @@ def event_stats(params, level):
 
     if avg_spw is None or avg_rpw is None:
         log.info(f"Event SPW: {avg_spw}, Event RPW: {avg_rpw}")
-        #exit()
+        # exit()
         if level == "atp":
             avg_spw, tour_spw, tour_rpw = 0.645, 0.645, 0.355
         else:

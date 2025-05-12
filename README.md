@@ -60,45 +60,39 @@ The application consists of:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/tennis-analytics-platform.git
-cd tennis-analytics-platform
+git clone https://github.com/repom2/tennisProject.git
+cd tennisproject
+```
 
+2. Create a `.env` file with the required environment variables (see `.env.example`)
 
- 2 Create a .env file with the required environment variables (see .env.example)
- 3 Build and start the containers:
-
-
+3. Build and start the containers:
+```bash
 docker-compose up -d
+```
 
+4. Access the application:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000/tennisapi/
+   - Admin interface: http://localhost:8000/admin/
 
- 4 Access the application:
-    • Frontend: http://localhost:3000
-    • Backend API: http://localhost:8000/tennisapi/
-    • Admin interface: http://localhost:8000/admin/
-
-
-API Documentation
+## API Documentation
 
 The API is documented using OpenAPI specification. You can view the API documentation at:
+- http://localhost:3000/api-docs
 
- • http://localhost:3000/api-docs
-
-
-Machine Learning Models
+## Machine Learning Models
 
 The platform uses several ML models for predictions:
+- Player performance prediction based on historical data
+- Surface-specific performance models
+- Head-to-head outcome predictions
+- Fatigue modeling
 
- • Player performance prediction based on historical data
- • Surface-specific performance models
- • Head-to-head outcome predictions
- • Fatigue modeling
+## License
 
+[MIT License](LICENSE)
 
-License
-
-MIT License
-
-
-Contact
+## Contact
 
 For questions or feedback, please open an issue on GitHub.

@@ -1,13 +1,14 @@
+import warnings
+
 import pandas as pd
 from django.db import connection
-import warnings
 from psycopg2.extensions import AsIs
+
 warnings.filterwarnings("ignore")
 
 
 def injury_score(params):
-    query = \
-        """
+    query = """
             select 
                 s.*,
                 case when (
@@ -38,8 +39,8 @@ def injury_score(params):
         walkover = None
         score = None
     else:
-        walkover = df.iloc[0]['walkover']
-        score = df.iloc[0]['injury_score']
+        walkover = df.iloc[0]["walkover"]
+        score = df.iloc[0]["injury_score"]
 
     return [walkover, score]
 
@@ -47,10 +48,10 @@ def injury_score(params):
 def injury_modelling(date, player_id, tour_table, matches_table):
 
     params = {
-        'tour_table': AsIs(tour_table),
-        'matches_table': AsIs(matches_table),
-        'player_id': player_id,
-        'date': date,
+        "tour_table": AsIs(tour_table),
+        "matches_table": AsIs(matches_table),
+        "player_id": player_id,
+        "date": date,
     }
 
     score = injury_score(params)

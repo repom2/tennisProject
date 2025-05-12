@@ -7,8 +7,18 @@ import numpy as np
 from django.utils import timezone
 from psycopg2.extensions import AsIs
 from tabulate import tabulate
-from tennisapi.models import Bet, BetWta, Match, Players, WtaMatch, WTAPlayers, AtpMatches, WtaMatches
 from tennisapi.ml.utils import probability_of_winning
+from tennisapi.models import (
+    AtpMatches,
+    Bet,
+    BetWta,
+    Match,
+    Players,
+    WtaMatch,
+    WtaMatches,
+    WTAPlayers,
+)
+
 from .get_data import get_data
 
 log = logging.getLogger(__name__)
@@ -20,13 +30,9 @@ def bet_bet():
     level = "atp"
     surface = "clay"
     if level == "atp":
-        data = Bet.objects.filter(
-            surface=surface
-        )
+        data = Bet.objects.filter(surface=surface)
     else:
-        data = BetWta.objects.filter(
-            surface=surface
-        )
+        data = BetWta.objects.filter(surface=surface)
 
     bankroll = 2000
     bet_counter = 0
@@ -34,13 +40,23 @@ def bet_bet():
     stakes = 0
 
     for row in data:
-        #time.sleep(0.1)
-        #print(row.start_at, row.stats_win, row.home_odds, row.away_odds, row.home_prob, row.away_prob, row.home_elo_clay_games)
+        # time.sleep(0.1)
+        # print(row.start_at, row.stats_win, row.home_odds, row.away_odds, row.home_prob, row.away_prob, row.home_elo_clay_games)
         if surface == "clay":
-            if row.home_elo_clay_games == None or row.away_elo_clay_games == None or row.home_elo_clay_games < 6 or row.away_elo_clay_games < 6:
+            if (
+                row.home_elo_clay_games == None
+                or row.away_elo_clay_games == None
+                or row.home_elo_clay_games < 6
+                or row.away_elo_clay_games < 6
+            ):
                 continue
         if surface == "hard":
-            if row.home_elo_hard_games == None or row.away_elo_hard_games == None or row.home_elo_hard_games < 6 or row.away_elo_hard_games < 6:
+            if (
+                row.home_elo_hard_games == None
+                or row.away_elo_hard_games == None
+                or row.home_elo_hard_games < 6
+                or row.away_elo_hard_games < 6
+            ):
                 continue
         if bankroll <= 0.1:
             print("Bankroll is zero", bet_counter, total)
@@ -56,21 +72,19 @@ def bet_bet():
         away_yield = row.away_odds * (1 - elo_prob)
         if level == "atp":
             winner_code = (
-                Match.objects.filter(
-                    id=row.match_id
-                )
+                Match.objects.filter(id=row.match_id)
                 .exclude(round_name__icontains="qualif")
-                #.exclude(round_name__icontains="r")
-                .values_list("winner_code", flat=True).first()
+                # .exclude(round_name__icontains="r")
+                .values_list("winner_code", flat=True)
+                .first()
             )
         else:
             winner_code = (
-                WtaMatch.objects.filter(
-                    id=row.match_id
-                )
+                WtaMatch.objects.filter(id=row.match_id)
                 .exclude(round_name__icontains="qualif")
-                #.exclude(round_name__icontains="r")
-                .values_list("winner_code", flat=True).first()
+                # .exclude(round_name__icontains="r")
+                .values_list("winner_code", flat=True)
+                .first()
             )
         if winner_code is None:
             continue
@@ -84,7 +98,7 @@ def bet_bet():
                 round(bankroll, 0),
                 row.away_odds,
                 row.home_odds,
-                row.start_at
+                row.start_at,
             )
             if winner_code == 1:
                 bankroll += bet_amount * (row.home_odds - 1)
@@ -104,7 +118,7 @@ def bet_bet():
                 round(bankroll, 0),
                 row.away_odds,
                 row.home_odds,
-                row.start_at
+                row.start_at,
             )
             if winner_code == 2:
                 bankroll += bet_amount * (row.away_odds - 1)
@@ -115,9 +129,10 @@ def bet_bet():
             else:
                 continue
         total += 1
-    print(f"BetCounter: {bet_counter} Total: {total} Bankroll: {bankroll} Stakes: {stakes}")
+    print(
+        f"BetCounter: {bet_counter} Total: {total} Bankroll: {bankroll} Stakes: {stakes}"
+    )
 
     # calc return of investemt using bankroll and total stakes
     roi = (bankroll - 2000) / stakes * 100
     print(f"ROI: {roi:.2f}%")
-

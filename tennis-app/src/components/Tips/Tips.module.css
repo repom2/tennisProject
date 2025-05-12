@@ -6,6 +6,7 @@
     list-style-type: none;
     font-family: Arial, sans-serif;
     margin-left: 10px;
+    overflow-x: auto; /* Enable horizontal scrolling */
 }
 
 .header {
@@ -73,4 +74,25 @@
 /* Class used to make the tooltip visible */
 .visible {
     visibility: visible;
+}
+
+.probabilities {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f8ff;
+    border: 1px solid #2e8b57;
+    border-radius: 8px;
+}
+
+.probabilityGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.probabilityGrid div {
+    padding: 8px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
 }

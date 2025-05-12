@@ -4,10 +4,13 @@
 ## some results and commentary here:
 ## http://summerofjeff.wordpress.com/2010/12/03/single-game-win-expectancy-tables/
 
+
 def fact(x):
-    if x in [0, 1]:  return 1
+    if x in [0, 1]:
+        return 1
     r = 1
-    for a in range(1, (x + 1)):  r = r * a
+    for a in range(1, (x + 1)):
+        r = r * a
     return r
 
 
@@ -16,7 +19,7 @@ def ch(a, b):
 
 
 def gameOutcome(s, a, b):
-    return ch((a + b), a) * (s ** a) * ((1 - s) ** b) * s
+    return ch((a + b), a) * (s**a) * ((1 - s) ** b) * s
 
 
 def gameProb(s, v=0, w=0):
@@ -62,7 +65,7 @@ def gameProb(s, v=0, w=0):
         wAd, lAd = 0, 0
         a = 3 - v
         b = 3 - w
-        d = ch((a + b), a) * (s ** a) * ((1 - s) ** b)
+        d = ch((a + b), a) * (s**a) * ((1 - s) ** b)
     if v <= 2:
         l30 = gameOutcome((1 - s), 3 - w, 2 - v)
     else:
@@ -77,8 +80,8 @@ def gameProb(s, v=0, w=0):
         l0 = 0
     ## given d = prob of getting to deuce,
     ## math to divide up further outcomes
-    denom = s ** 2 + (1 - s) ** 2
-    wd = (d * (s ** 2)) / denom
+    denom = s**2 + (1 - s) ** 2
+    wd = (d * (s**2)) / denom
     ld = (d * ((1 - s) ** 2)) / denom
     win = w0 + w15 + w30 + wd + wAd
     lose = l0 + l15 + l30 + ld + lAd

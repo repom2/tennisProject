@@ -1,10 +1,10 @@
+from django.db.models import Exists, OuterRef, Q
 from tennisapi.models import ChClayElo, ChMatches, Players
-from django.db.models import Q, Exists, OuterRef
-
 
 c = 250
 o = 5
 s = 0.4
+
 
 def probability_of_winning(opponent, player):
     l = (opponent - player) / 400
@@ -24,17 +24,22 @@ def calculate_k_factor(matches, o, c, s):
 
 
 def ch_elorate(surface):
-    matches = ChMatches.objects.filter(
-        ~Exists(ChElo.objects.filter(id=OuterRef('chmatch')))).filter(
-        tour__surface__icontains=surface,
-        round_name__isnull=False,
-    ).filter(
-        Q(round_name__icontains='Final') |
-        Q(round_name__icontains='16') |
-        Q(round_name__icontains='32') |
-        Q(round_name__icontains='64') |
-        Q(round_name__icontains='128')
-    ).order_by('date', 'match_num').distinct()
+    matches = (
+        ChMatches.objects.filter(~Exists(ChElo.objects.filter(id=OuterRef("chmatch"))))
+        .filter(
+            tour__surface__icontains=surface,
+            round_name__isnull=False,
+        )
+        .filter(
+            Q(round_name__icontains="Final")
+            | Q(round_name__icontains="16")
+            | Q(round_name__icontains="32")
+            | Q(round_name__icontains="64")
+            | Q(round_name__icontains="128")
+        )
+        .order_by("date", "match_num")
+        .distinct()
+    )
 
     for match in matches:
         # Get elo from database
@@ -44,8 +49,8 @@ def ch_elorate(surface):
         winner_id = Players.objects.filter(id=match.winner_id)[0]
         loser_id = Players.objects.filter(id=match.loser_id)[0]
 
-        winner = ChElo.objects.filter(player__id=match.winner_id).order_by('-games')
-        loser = ChElo.objects.filter(player__id=match.loser_id).order_by('-games')
+        winner = ChElo.objects.filter(player__id=match.winner_id).order_by("-games")
+        loser = ChElo.objects.filter(player__id=match.loser_id).order_by("-games")
         if not winner:
             winner_elo = 1500
             winner_games = 0

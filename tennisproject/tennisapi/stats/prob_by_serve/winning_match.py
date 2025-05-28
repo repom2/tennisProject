@@ -277,7 +277,7 @@ def match_prob_internal(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
             prob_over_235,
             prob_over_245,
             prob_over_255,
-        ) = asian_handicap(c[1])
+        ) = asian_handicap_prob_best_of_five(c[1])
 
     if gv == 0 and gw == 0:  ## no point score
         if sv == 0 and sw == 0:  ## no game score

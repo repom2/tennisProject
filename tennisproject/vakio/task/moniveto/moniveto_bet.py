@@ -174,7 +174,7 @@ def moniveto_bet(bet, max_bet_eur, list_index, moniveto_id):
                     inner join vakio_monivetoprob b on b.combination=a.match1 and b.moniveto_id = a.moniveto_id and b.list_index = a.list_index
                     inner join vakio_monivetoprob c on c.combination=a.match2 and c.moniveto_id = a.moniveto_id and c.list_index = a.list_index
                     where bet.bet is null and a.moniveto_id = {params["id"]} and a.list_index = {params["listIndex"]}
-                    order by share desc
+                    order by yield desc
                     """
     data = MonivetoOdds.objects.raw(query)
 

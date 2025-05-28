@@ -12,13 +12,13 @@ logging.basicConfig(
 
 
 def moniveto(list_index, moniveto_id):
-    sport = "footbal"
+    sport = "football"
 
     estimated_avg_goals = [
-        [0, 4.1, 1.3],
-        [1, 1.55, 4.45],
-        #[2, 1.9, 0.95],
-        #[3, 1.55, 4.45],
+        [0, 1.3475, 1.775],
+        [1, 2.3, 0.9],
+        [2, 1.65, 1.3],
+        #[3, 1.0, 2.1],
     ]
 
     for i, item in enumerate(estimated_avg_goals):

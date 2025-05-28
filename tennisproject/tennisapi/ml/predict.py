@@ -168,7 +168,7 @@ def predict(level, tour):
 
         if use_scrape:
             if level == "atp":
-                data[[scrape_data_home]] = data.apply(
+                data[scrape_data_home] = data.apply(
                     lambda row: tennisabstract_scrape_atp(row, "home", surface), axis=1
                 )
                 time.sleep(4)
@@ -243,7 +243,7 @@ def predict(level, tour):
         else:
             stats_win_field = "stats_win_hard"
             elo_prob_field = "elo_prob_hard"
-        # Away player stats win
+
         data[["stats_win_hard"] + stats_win_cols] = data.apply(
             lambda x: match_prob(
                 x.player1 if x.player1 else 0,
@@ -374,13 +374,13 @@ def predict(level, tour):
         # data = data.where(pd.notnull(data), None)
         data = data.replace(np.nan, None, regex=True)
         for index, row in data.iterrows():
-            try:
-                home_prob, away_prob, home_yield, away_yield = train_ml_model(
-                    row, level, params, surface, stats_win_field, elo_prob_field
-                )
-            except Exception as e:
-                log.error(e)
-                home_prob, away_prob, home_yield, away_yield = None, None, None, None
+            #try:
+            home_prob, away_prob, home_yield, away_yield = train_ml_model(
+                row, level, params, surface, stats_win_field, elo_prob_field
+            )
+            #except Exception as e:
+                #log.error(e)
+                #home_prob, away_prob, home_yield, away_yield = None, None, None, None
             home_short_preview = None
             home_preview, away_preview, away_short_preview = None, None, None
             try:

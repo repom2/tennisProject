@@ -28,9 +28,8 @@ logging = logging.getLogger(__name__)
 warnings.filterwarnings("ignore")
 
 
-def get_data_atp_data(params):
-    surface = params.get("surface", "hard")
-    query = """
+def get_data_atp_data(surface):
+    query = f"""
         select m.tour_id, m.home_name, m.away_name,
             case when winner_code = 1 then 0 else 1 end as winner_code, 
             b.start_at,
@@ -56,16 +55,15 @@ def get_data_atp_data(params):
         from tennisapi_bet b
         inner join tennisapi_match m on b.match_id=m.id
         where (winner_code=1 or winner_code=2) 
-        and m.surface = '%s'
+        and m.surface ilike '%%%{surface}%%'
         """
-    df = pd.read_sql(query, connection, params=[surface])
+    df = pd.read_sql(query, connection)#, params=params)
 
     return df
 
 
-def get_data_wta_data(params):
-    surface = params.get("surface", "hard")
-    query = """
+def get_data_wta_data(surface):
+    query = f"""
         select m.tour_id, m.home_name, m.away_name,
             case when winner_code = 1 then 0 else 1 end as winner_code, 
             b.start_at,
@@ -94,10 +92,9 @@ def get_data_wta_data(params):
         inner join tennisapi_wtamatch m on b.match_id=m.id
         where 
         (winner_code=1 or winner_code=2)
-        and m.surface = '%s'
-        order by b.start_at desc;
+        and m.surface ilike '%%%{surface}%%'
         """
-    df = pd.read_sql(query, connection, params=[surface])
+    df = pd.read_sql(query, connection)#, params=params)
 
     return df
 
@@ -159,11 +156,6 @@ def classifier(
 
 
 def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field):
-    # Ensure params has the surface key
-    if isinstance(params, dict):
-        params["surface"] = surface
-    else:
-        params = {"surface": surface}
     logging.info("-" * 50)
     # logging.info(f"Training model for {row['winner_name']} vs {row['loser_name']}")
     home_name = row["winner_fullname"]
@@ -191,11 +183,7 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
     df = row.to_frame().T
     odds_home = df["home_odds"].iloc[0]
     odds_away = df["away_odds"].iloc[0]
-    stats_win_home = df[stats_win_field].iloc[0]
-    stats_win_away = 1 - stats_win_home
     df["home_odds"] = 1 / df["home_odds"]
-    # df['home_fatigue'] = 3
-    # df["away_fatigue"] = 0.1
     df["fatigue"] = df["home_fatigue"] - df["away_fatigue"]
     if "fatigue" in features:
         if df["fatigue"].isnull().values.any():
@@ -249,9 +237,9 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         features = [w.replace("stats_win_hard", "stats_win") for w in features]
 
     if level == "atp":
-        data = get_data_atp_data(params)
+        data = get_data_atp_data(surface)
     else:
-        data = get_data_wta_data(params)
+        data = get_data_wta_data(surface)
 
     if surface == "clay":
         # Replace column name 'elo_prob_clay' with 'elo_prob'
@@ -267,10 +255,12 @@ def train_ml_model(row, level, params, surface, stats_win_field, elo_prob_field)
         logging.error(f"Error: {e}")
         return None, None, None, None
     data_length = len(data)
+    logging.info("Train Data length: %d", data_length)
+
     data = data.dropna()
 
+    logging.info("Train Data length after drop: %d", len(data))
     # data, round_mapping = balance_train_data(data)
-
     x_train = data[features]
     y_train = data[["winner_code"]]
 

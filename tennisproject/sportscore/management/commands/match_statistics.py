@@ -23,7 +23,7 @@ class MatchStatisticsFetcher:
     def get_match_ids(self) -> List[int]:
         """Fetch ATP and WTA match IDs."""
         atp_ids = list(
-            AtpMatches.objects.filter(Q(date__gt="2025-5-1"))
+            AtpMatches.objects.filter(Q(date__gt="2025-5-11"))
             .filter(
                 Q(round_name__icontains="Final")
                 | Q(round_name__icontains="Semifinal")
@@ -38,7 +38,7 @@ class MatchStatisticsFetcher:
         )
 
         wta_ids = list(
-            WtaMatches.objects.filter(Q(date__gt="2025-5-1"))
+            WtaMatches.objects.filter(Q(date__gt="2025-5-11"))
             .filter(
                 Q(round_name__icontains="Final")
                 | Q(round_name__icontains="Semifinal")

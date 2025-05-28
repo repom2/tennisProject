@@ -107,6 +107,31 @@ def matchProb(s, t, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     mWin += sLoss * matchGeneral(c, v=mv, w=(mw + 1), s=sets)
     return mWin
 
+stats_win_cols = [
+    "stats_win",
+    "home_wins_single_game",
+    "home_wins_single_set",
+    "home_wins_1_set",
+    "home_wins_2_set",
+    "home_ah_7_5",
+    "home_ah_6_5",
+    "home_ah_5_5",
+    "home_ah_4_5",
+    "home_ah_3_5",
+    "home_ah_2_5",
+    "away_ah_7_5",
+    "away_ah_6_5",
+    "away_ah_5_5",
+    "away_ah_4_5",
+    "away_ah_3_5",
+    "away_ah_2_5",
+    "games_over_21_5",
+    "games_over_22_5",
+    "games_over_23_5",
+    "games_over_24_5",
+    "games_over_25_5",
+]
+
 
 def match_prob(home_spw, away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     ## calculates probability of winning a match from any given score,
@@ -117,15 +142,17 @@ def match_prob(home_spw, away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=3):
     ## mv, mw: current score within the match (number of sets for each player)
     ## v's are serving player; w's are returning player
     ## sets: "best of", so default is best of 3
-
     # Get away handicaps by calling the function with reversed parameters
+    if home_spw is None or home_spw == 0 or away_spw == 0 or away_spw is None:
+        return pd.Series([None] * 22, index=stats_win_cols)
+
     away_probs = match_prob_internal(
-        away_spw, 1 - home_spw, gw, gv, sw, sv, mw, mv, sets
+        s=away_spw, t=(1 - home_spw), sets=sets
     )
 
     # Call the main function for home probabilities
     home_probs = match_prob_internal(
-        home_spw, 1 - away_spw, gv, gw, sv, sw, mv, mw, sets
+        s=home_spw, t=(1 - away_spw), sets=sets
     )
 
     # Create a combined result with both home and away handicaps

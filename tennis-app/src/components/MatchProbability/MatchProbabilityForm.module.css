@@ -17,12 +17,12 @@
         align-items: flex-start;
         gap: 2rem;
     }
-    
+
     .form {
         flex: 1;
         margin-bottom: 0;
     }
-    
+
     .results {
         flex: 1;
         margin-top: 0;

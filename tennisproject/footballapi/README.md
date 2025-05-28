@@ -20,7 +20,7 @@ poetry run python manage.py hockey_elo liiga-home
 
 docker compose exec tennisproject poetry run python manage.py hockey pred 'liiga'
 
-docker compose exec tennisproject poetry run python manage.py sportscore football-events-by-leagues
+docker compose exec tennisproject poetry run python manage.py football_data events
 docker compose exec tennisproject poetry run python manage.py sportscore ice-hockey-events-by-leagues
 docker compose exec tennisproject poetry run python manage.py sportscore tennis-events-by-sections #ALL
 docker compose exec tennisproject poetry run python manage.py sportscore tennis-tournaments

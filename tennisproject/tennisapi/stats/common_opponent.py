@@ -38,7 +38,7 @@ def player_opponents(params):
                 then l_secondwon
                 else w_secondwon end as opponen_secondwon
             from %(matches_table)s a 
-            where surface ilike '%%%(surface)s%%' and 
+            where surface ilike '%%%(query_surface)s%%' and 
             (winner_id = %(player_id)s or loser_id = %(player_id)s)
             and a.date between (date(%(start_at)s) - interval '2 year') and %(start_at)s
             ) s order by date desc

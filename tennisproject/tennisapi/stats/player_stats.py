@@ -1,8 +1,7 @@
-import logging
-
-import numpy as np
 import pandas as pd
+import numpy as np
 from django.db import connection
+import logging
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +57,7 @@ def player_stats(player_id, start_at, params):
                else loser_receiver_points_won end as player_receiver_points_won
             from %(matches_table)s t 
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
-               and surface = '%(surface)s'
+               and surface ilike '%%%(surface)s%%'
                and round_name not ilike 'qualification%%'
                --and t.date >= date(%(start_at)s)
                ) a order by date desc limit %(limit)s
@@ -86,7 +85,6 @@ def opponent_hard_elo(opponent_id, params):
         return pd.DataFrame({"opponent_hard": [1500]})
 
     return df
-
 
 def opponent_clay_elo(opponent_id, params):
     params["player_id"] = opponent_id
@@ -172,7 +170,7 @@ def match_stats(player_id, start_at, params):
                else loser_receiver_points_won end as player_receiver_points_won
             from %(matches_table)s t
             where (winner_id=%(player_id)s or loser_id=%(player_id)s)
-               and surface = '%(surface)s'
+               and surface ilike '%%%(surface)s%%'
                and round_name not ilike 'qualification%%'
                --and t.date >= date(%(start_at)s)
                ) a order by date desc limit %(limit)s
@@ -196,13 +194,17 @@ def match_stats(player_id, start_at, params):
 
     df[["opponent_hard"]] = pd.DataFrame(
         np.row_stack(
-            np.vectorize(opponent_hard_elo, otypes=["O"])(df["opponent_id"], params)
+            np.vectorize(opponent_hard_elo, otypes=["O"])(
+                df["opponent_id"], params
+            )
         ),
         index=df.index,
     )
     df[["opponent_clay"]] = pd.DataFrame(
         np.row_stack(
-            np.vectorize(opponent_clay_elo, otypes=["O"])(df["opponent_id"], params)
+            np.vectorize(opponent_clay_elo, otypes=["O"])(
+                df["opponent_id"], params
+            )
         ),
         index=df.index,
     )

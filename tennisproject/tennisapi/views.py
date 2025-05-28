@@ -169,7 +169,7 @@ class MatchProbability(generics.ListAPIView):
         start_at = now - relativedelta(days=365)
         level = request.GET.get("level", "atp")
         if level == "atp":
-            sets = 3
+            sets = 5
         else:
             sets = 3
         if level == "atp":
@@ -186,6 +186,7 @@ class MatchProbability(generics.ListAPIView):
             raise Http404
 
         match_id = request.GET.get("matchId", None)
+        log.info(f"match_id: {match_id}")
 
         # If matchId is provided, fetch the tournament name from the appropriate table
         if match_id:
@@ -211,6 +212,9 @@ class MatchProbability(generics.ListAPIView):
                     tour = level + tour
         else:
             tour = request.GET.get("tourName", level + "-tour")
+
+        log.info("tourNAme" + tour)
+        log.info("level" + level)
 
         # Get SPW and RPW values from request
         home_spw = float(request.GET.get("homeSPW", 0.6))

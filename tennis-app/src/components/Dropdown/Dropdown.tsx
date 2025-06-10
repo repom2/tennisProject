@@ -202,13 +202,29 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
         ["seasonMatchProbabilities", matchData.matchId],
         () => {
             const homeSPW =
-                matchData.surface === "clay" ? matchData.homeSpwClay : matchData.homeSpw;
+                matchData.surface === "clay"
+                    ? matchData.homeSpwClay
+                    : matchData.surface === "grass"
+                    ? matchData.homeSpwGrass
+                    : matchData.homeSpw;
             const homeRPW =
-                matchData.surface === "clay" ? matchData.homeRpwClay : matchData.homeRpw;
+                matchData.surface === "clay"
+                    ? matchData.homeRpwClay
+                    : matchData.surface === "grass"
+                    ? matchData.homeRpwGrass
+                    : matchData.homeRpw;
             const awaySPW =
-                matchData.surface === "clay" ? matchData.awaySpwClay : matchData.awaySpw;
+                matchData.surface === "clay"
+                    ? matchData.awaySpwClay
+                    : matchData.surface === "grass"
+                    ? matchData.awaySpwGrass
+                    : matchData.awaySpw;
             const awayRPW =
-                matchData.surface === "clay" ? matchData.awayRpwClay : matchData.awayRpw;
+                matchData.surface === "clay"
+                    ? matchData.awayRpwClay
+                    : matchData.surface === "grass"
+                    ? matchData.awayRpwGrass
+                    : matchData.awayRpw;
 
             return getMatchProbabilities({
                 level: level,
@@ -382,18 +398,26 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                                     const homeSPW =
                                         matchData.surface === "clay"
                                             ? matchData.homeSpwClay
+                                            : matchData.surface === "grass"
+                                            ? matchData.homeSpwGrass
                                             : matchData.homeSpw;
                                     const homeRPW =
                                         matchData.surface === "clay"
                                             ? matchData.homeRpwClay
+                                            : matchData.surface === "grass"
+                                            ? matchData.homeRpwGrass
                                             : matchData.homeRpw;
                                     const awaySPW =
                                         matchData.surface === "clay"
                                             ? matchData.awaySpwClay
+                                            : matchData.surface === "grass"
+                                            ? matchData.awaySpwGrass
                                             : matchData.awaySpw;
                                     const awayRPW =
                                         matchData.surface === "clay"
                                             ? matchData.awayRpwClay
+                                            : matchData.surface === "grass"
+                                            ? matchData.awayRpwGrass
                                             : matchData.awayRpw;
                                     // Store in component state or variable if needed
                                     return null;

@@ -1,0 +1,15 @@
+    elif sets == 5:
+        # ... (other code)
+        (
+            home_plus_75_handicap_prob,
+            home_plus_65_handicap_prob,
+            home_plus_55_handicap_prob,
+            home_plus_45_handicap_prob,
+            home_plus_35_handicap_prob,
+            home_plus_25_handicap_prob,
+            prob_over_215,
+            prob_over_225,
+            prob_over_235,
+            prob_over_245,
+            prob_over_255,
+        ) = asian_handicap_prob_best_of_five(c[1]) # This is the correct function call

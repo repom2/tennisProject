@@ -1,6 +1,7 @@
+import {getMatchProbabilities} from "common/functions/matchProbabilities";
 import React, {useState} from "react";
 import {useQuery} from "react-query";
-import {getMatchProbabilities} from "common/functions/matchProbabilities";
+
 import styles from "./MatchProbabilityForm.module.css";
 
 interface MatchProbabilityFormProps {

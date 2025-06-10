@@ -5,9 +5,9 @@ import {QueryClientProvider} from "react-query";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 
 import {FootballTips} from "/app/src/components/FootballTips/FootballTips";
+import MatchProbabilityForm from "/app/src/components/MatchProbability/MatchProbabilityForm";
 import {PlayerList} from "/app/src/components/Player/PlayerList";
 import {Tips} from "/app/src/components/Tips/Tips";
-import MatchProbabilityForm from "/app/src/components/MatchProbability/MatchProbabilityForm";
 import queryClient from "/app/src/data/queryClient";
 
 import {Header} from "./Header/Header";

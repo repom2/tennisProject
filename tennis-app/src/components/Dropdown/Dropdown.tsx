@@ -1,11 +1,11 @@
-import React, {useState, useEffect} from "react";
-import {useQuery} from "react-query";
+import {getMatchProbabilities} from "common/functions/matchProbabilities";
 //import styles from './YourStyles.module.css';
 import {getPlayerStatistics} from "common/functions/playerStatistics";
-import {getMatchProbabilities} from "common/functions/matchProbabilities";
 import PlayerStats from "components/PlayerStatistics/PlayerStatistics";
 import styles from "components/Tips/Tips.module.css";
 import {Bets} from "data/openapi";
+import React, {useEffect, useState} from "react";
+import {useQuery} from "react-query";
 
 interface PlayerStats {
     playerSPW: number;
@@ -292,6 +292,7 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                     <td>{matchData.statsWin}</td>
                     <td>{matchData.statsWinHard}</td>
                     <td>{matchData.statsWinClay}</td>
+                    <td>{matchData.statsWinGrass}</td>
                     <td>
                         <div>
                             {matchData.homeSpw}/{matchData.homeRpw}
@@ -316,6 +317,18 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                         <div className={styles.NoWrap}>{matchData.homeMatchesClay}</div>
                         <div className={styles.NoWrap}>{matchData.awayMatchesClay}</div>
                     </td>
+                    <td>
+                        <div>
+                            {matchData.homeSpwGrass}/{matchData.homeRpwGrass}
+                        </div>
+                        <div>
+                            {matchData.awaySpwGrass}/{matchData.awayRpwGrass}
+                        </div>
+                    </td>
+                    <td>
+                        <div className={styles.NoWrap}>{matchData.homeMatchesGrass}</div>
+                        <div className={styles.NoWrap}>{matchData.awayMatchesGrass}</div>
+                    </td>
                     <td>{matchData.eloProbHard}</td>
                     <td>
                         <div className={styles.NoWrap}>
@@ -332,6 +345,15 @@ const Dropdown = ({openIndex, index, matchData, level, handleRowClick}: Dropdown
                         </div>
                         <div className={styles.NoWrap}>
                             {matchData.awayEloClay} / {matchData.awayEloClayGames}
+                        </div>
+                    </td>
+                    <td>{matchData.eloProbGrass}</td>
+                    <td>
+                        <div className={styles.NoWrap}>
+                            {matchData.homeEloGrass} / {matchData.homeEloGrassGames}
+                        </div>
+                        <div className={styles.NoWrap}>
+                            {matchData.awayEloGrass} / {matchData.awayEloGrassGames}
                         </div>
                     </td>
                     <td>{matchData.yearEloProb}</td>

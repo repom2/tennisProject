@@ -46,13 +46,8 @@ def define_surface(level, tour, from_at):
         surface = qs["surface"]
         if surface is None:
             logging.info("Surface not found: %s", qs)
-            if "stuttgart" in qs["tourney_name"]:
-                logging.info("Surface not found: %s", qs)
-                surface = "clay"
-                logging.info("Surface is hard")
-            else:
-                logging.info("Surface not found: %s", qs)
-                exit()
+            logging.info("Surface not found: %s", qs)
+            exit()
         tour_id = qs["tour_id"]
         tourney_name = qs["tourney_name"]
 
@@ -85,8 +80,7 @@ def define_surface(level, tour, from_at):
         logging.info("surface: %s", surface)
         if surface is None:
             logging.info("Surface not found: %s", qs)
-            surface = "clay"
-            # exit()
+            exit()
         tour_id = qs["tour_id"]
         tourney_name = qs["tourney_name"]
 

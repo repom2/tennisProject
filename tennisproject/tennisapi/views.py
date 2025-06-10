@@ -116,9 +116,9 @@ class PlayerStatistics(generics.ListAPIView):
         # Get the level parameter from the URL query string
         now = timezone.now()
         start_at = now - relativedelta(days=365)
-        level = request.GET.get("level", "atp")
+        level = request.GET.get("level", None)
         player_id = request.GET.get(
-            "playerId", "63bb0df01198c882a8c730abba4160d4"
+            "playerId", None, #"63bb0df01198c882a8c730abba4160d4"
         )  # noqa: 501
         if level == "atp":
             matches_table = "tennisapi_atpmatches"
@@ -136,7 +136,7 @@ class PlayerStatistics(generics.ListAPIView):
         stats_params = {
             "limit": request.GET.get("limit", 7),
             "start_at": request.GET.get("start_at", start_at),
-            "surface": AsIs(request.GET.get("surface", "Hard")),
+            "surface": AsIs(request.GET.get("surface", None)),
             "matches_table": AsIs(matches_table),
             "hard_elo": AsIs(hard_elo),
             "grass_elo": AsIs(grass_elo),
@@ -174,7 +174,9 @@ class MatchProbability(generics.ListAPIView):
             sets = 3
 
         match_id = request.GET.get("matchId", None)
+        surface = request.GET.get("surface", None)
         log.info(f"match_id: {match_id}")
+        log.info(f"SURFACE: {surface}")
 
         # If matchId is provided, fetch the tournament name
         if match_id:
@@ -211,7 +213,7 @@ class MatchProbability(generics.ListAPIView):
         away_rpw = float(request.GET.get("awayRPW", 0.4))
         end_at = now + relativedelta(days=3)
         params, match_qs, bet_qs, player_qs, surface = define_query_parameters(
-            level, tour, now, end_at
+            level, tour, now, end_at, surface
         )
 
         event_spw, event_rpw, tour_spw, tour_rpw = event_stats(params, level)
@@ -223,11 +225,9 @@ class MatchProbability(generics.ListAPIView):
             home_spw, away_spw, gv=0, gw=0, sv=0, sw=0, mv=0, mw=0, sets=sets
         )
 
-        log.info(data)
         win_prob = data["stats_win"]
         # replace nan with 0
         data = data.fillna(0)
-        print(data)
         content = {
             "sets": sets,
             "eventSPW": event_spw,

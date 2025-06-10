@@ -1,27 +1,24 @@
 import logging
 
-import pandas as pd
 from dateutil.relativedelta import relativedelta
-from django.contrib.auth.models import User
-from django.db.models import F, Max, OuterRef, Subquery
+from django.db.models import F
 from django.db.models.functions import Greatest
 from django.http import Http404
-from django.shortcuts import render
 from django.utils import timezone
 from psycopg2.extensions import AsIs
-from rest_framework import generics, viewsets
-from rest_framework.authentication import BasicAuthentication, SessionAuthentication
-from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAdminUser
+from rest_framework import generics
+from rest_framework.authentication import (
+    BasicAuthentication,  # noqa: 501
+    SessionAuthentication,
+)
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from tennisapi.ml.utils import define_query_parameters
-from tennisapi.models import Bet, BetWta, Match, WtaMatch
+from tennisapi.models import Match, WtaMatch
 from tennisapi.stats.avg_swp_rpw_by_event import event_stats
 from tennisapi.stats.player_stats import match_stats, player_stats
-from tennisapi.stats.prob_by_serve.winning_match import match_prob, matchProb
+from tennisapi.stats.prob_by_serve.winning_match import match_prob
 
-from .models import AtpClayElo, AtpHardElo, AtpTour, Bet, BetWta
+from .models import AtpClayElo, Bet, BetWta
 from .serializers import AtpEloSerializer, BetSerializer
 
 log = logging.getLogger(__name__)
@@ -93,7 +90,7 @@ class BetList(generics.ListAPIView):
         # Get the level parameter from the URL query string
         level = request.GET.get("level", None)
 
-        # Define your default queryset which will be used if 'level' is not 'wta'
+        # Define your default queryset which will be used if 'level' is atp
         queryset = Bet.objects.all()
 
         # Change the queryset if 'level' is 'wta'
@@ -101,7 +98,9 @@ class BetList(generics.ListAPIView):
             queryset = BetWta.objects.all()
         now = timezone.now()
         from_date = now - relativedelta(hours=55)
-        queryset = queryset.filter(start_at__gte=from_date).order_by("start_at")
+        queryset = queryset.filter(start_at__gte=from_date).order_by(
+            "start_at"
+        )  # noqa: E501
         queryset = queryset.annotate(
             max_value=Greatest(F("home_yield"), F("away_yield"))
         ).order_by("-max_value")
@@ -118,7 +117,9 @@ class PlayerStatistics(generics.ListAPIView):
         now = timezone.now()
         start_at = now - relativedelta(days=365)
         level = request.GET.get("level", "atp")
-        player_id = request.GET.get("playerId", "63bb0df01198c882a8c730abba4160d4")
+        player_id = request.GET.get(
+            "playerId", "63bb0df01198c882a8c730abba4160d4"
+        )  # noqa: 501
         if level == "atp":
             matches_table = "tennisapi_atpmatches"
             hard_elo = "tennisapi_atphardelo"
@@ -166,29 +167,16 @@ class MatchProbability(generics.ListAPIView):
     def list(self, request):
         # Get the level parameter from the URL query string
         now = timezone.now()
-        start_at = now - relativedelta(days=365)
         level = request.GET.get("level", "atp")
         if level == "atp":
-            sets = 5
+            sets = 3
         else:
             sets = 3
-        if level == "atp":
-            matches_table = "tennisapi_atpmatches"
-            hard_elo = "tennisapi_atphardelo"
-            grass_elo = "tennisapi_atpgrasselo"
-            clay_elo = "tennisapi_atpclayelo"
-        elif level == "wta":
-            matches_table = "tennisapi_wtamatches"
-            hard_elo = "tennisapi_wtahardelo"
-            grass_elo = "tennisapi_wtagrasselo"
-            clay_elo = "tennisapi_wtaclayelo"
-        else:
-            raise Http404
 
         match_id = request.GET.get("matchId", None)
         log.info(f"match_id: {match_id}")
 
-        # If matchId is provided, fetch the tournament name from the appropriate table
+        # If matchId is provided, fetch the tournament name
         if match_id:
             if level == "atp":
                 try:
@@ -213,7 +201,7 @@ class MatchProbability(generics.ListAPIView):
         else:
             tour = request.GET.get("tourName", level + "-tour")
 
-        log.info("tourNAme" + tour)
+        log.info("tourName" + tour)
         log.info("level" + level)
 
         # Get SPW and RPW values from request

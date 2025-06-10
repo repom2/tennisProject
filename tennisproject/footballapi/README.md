@@ -34,6 +34,6 @@ docker compose exec tennisproject poetry run python manage.py football all
 
 docker compose exec tennisproject poetry run python manage.py elo_rate atp 'clay'
 
-docker compose exec tennisproject poetry run python manage.py predict predict 'at' 'rome'
+docker compose exec tennisproject poetry run python manage.py predict predict 'at' 'roland-garros'
 
 docker compose exec tennisproject poetry run python manage.py football pred 'premier'

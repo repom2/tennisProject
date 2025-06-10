@@ -1,5 +1,5 @@
-import React from "react";
 import {PlayerStatistics} from "data/openapi";
+import React from "react";
 
 const transformMatchesToJSONString = (matches: any) => {
     return JSON.stringify(matches);

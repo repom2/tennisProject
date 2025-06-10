@@ -15,10 +15,10 @@ def moniveto(list_index, moniveto_id):
     sport = "football"
 
     estimated_avg_goals = [
-        [0, 1.3475, 1.775],
-        [1, 2.3, 0.9],
-        [2, 1.65, 1.3],
-        #[3, 1.0, 2.1],
+        [0, 3.2, 0.45],
+        [1, 0.5, 3.0],
+        [2, 2.05, 0.75],
+        [3, 1.5, 1.05],
     ]
 
     for i, item in enumerate(estimated_avg_goals):

@@ -1,17 +1,15 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.db.models import Q
 from psycopg2.extensions import AsIs
 from tabulate import tabulate
 from tennisapi.models import (
-    AtpMatches,
     Bet,
     BetWta,
     Match,
     Players,
     WtaMatch,
-    WtaMatches,
     WTAPlayers,
 )
 
@@ -29,83 +27,154 @@ def label_round(data, mapping):
     return data
 
 
-def define_surface(level, tour, from_at):
-    from_at = from_at - timedelta(days=10)
-    if level == "atp":
-        qs = Match.objects.filter(
-            Q(tourney_name__icontains=tour)
-            & ~Q(tourney_name__icontains="double")
-            & Q(start_at__gte=from_at)
-            # & Q(surface__isnull=False)
-        ).values("surface", "tourney_name", "tour_id")[2]
-        log.info(qs)
-        log.info("level: %s", level)
-        if qs is None:
-            logging.info("qs not found: %s", qs)
-            exit()
-        surface = qs["surface"]
-        if surface is None:
-            logging.info("Surface not found: %s", qs)
-            if "stuttgart" in qs["tourney_name"]:
-                logging.info("Surface not found: %s", qs)
-                surface = "clay"
-                logging.info("Surface is hard")
-            else:
-                logging.info("Surface not found: %s", qs)
-                exit()
-        tour_id = qs["tour_id"]
-        tourney_name = qs["tourney_name"]
-
-        if "clay" in surface or "Clay" in surface:
-            surface = "clay"
-        elif "grass" in surface or "Grass" in surface:
-            surface = "grass"
-        elif "hard" in surface or "Hard" in surface:
-            surface = "hard"
+def _get_surface_from_user_input(tournament_name_hint):
+    valid_surfaces = ["clay", "grass", "hard"]
+    while True:
+        prompt_message = (
+            f"Surface for tournament '{tournament_name_hint}' could not be determined from DB or was invalid. "
+            f"Please enter the surface ({', '.join(valid_surfaces)}): "
+        )
+        user_input = input(prompt_message).strip().lower()
+        if user_input in valid_surfaces:
+            log.info(
+                f"User provided surface: {user_input} for tournament '{tournament_name_hint}'"
+            )
+            return user_input
         else:
-            logging.info("Surface not found: %s", qs)
-            exit()
-        query_surface = surface
-    else:
-        qs = (
-            WtaMatch.objects.filter(
+            print(f"Invalid input. Please enter one of {', '.join(valid_surfaces)}.")
+
+
+def define_surface(level, tour, from_at, input_surface):
+    from_at = from_at - timedelta(days=10)
+    tour_id = None
+    tourney_name_from_db = None
+
+    if level == "atp":
+        qs_item = (
+            Match.objects.filter(
                 Q(tourney_name__icontains=tour)
                 & ~Q(tourney_name__icontains="double")
                 & Q(start_at__gte=from_at)
-                # & Q(surface__isnull=False)
             )
             .values("surface", "tourney_name", "tour_id")
             .first()
         )
+        log.info(f"Queried Match for ATP tournament '{tour}': {qs_item}")
 
-        if qs is None:
-            logging.info("Queryset not found: %s", qs)
-            exit()
-        surface = qs["surface"]
-        logging.info("surface: %s", surface)
-        if surface is None:
-            logging.info("Surface not found: %s", qs)
-            surface = "clay"
-            # exit()
-        tour_id = qs["tour_id"]
-        tourney_name = qs["tourney_name"]
+        db_surface_value = None
+        if qs_item:
+            tour_id = qs_item.get("tour_id")
+            tourney_name_from_db = qs_item.get("tourney_name")
+            db_surface_value = qs_item.get("surface")
 
-        if "clay" in surface or "Clay" in surface:
-            surface = "clay"
-        elif "grass" in surface or "Grass" in surface:
-            surface = "grass"
-        elif "hard" in surface or "Hard" in surface:
-            surface = "hard"
+        if db_surface_value and isinstance(db_surface_value, str):
+            normalized_surface = None
+            if "clay" in db_surface_value.lower():
+                normalized_surface = "clay"
+            elif "grass" in db_surface_value.lower():
+                normalized_surface = "grass"
+            elif "hard" in db_surface_value.lower():
+                normalized_surface = "hard"
+
+            if normalized_surface:
+                surface = normalized_surface
+                log.info(
+                    f"Determined surface from DB: {surface} for {tourney_name_from_db or tour}"
+                )
+            else:
+                log.warning(
+                    f"Unrecognized surface value '{db_surface_value}' in DB for {tourney_name_from_db or tour}. Asking user."
+                )
+                if input_surface:
+                    surface = input_surface
+                else:
+                    surface = _get_surface_from_user_input(tourney_name_from_db or tour)
         else:
-            logging.info("Surface not found: %s", qs)
-            exit()
-        query_surface = surface
+            if db_surface_value is None:
+                log.warning(
+                    f"Surface field is None in DB for ATP tournament '{tourney_name_from_db or tour}'. Asking user."
+                )
+            elif not qs_item:
+                log.warning(
+                    f"No DB record found for ATP tournament '{tour}'. Asking user."
+                )
+            else:  # Should not happen if db_surface_value is not str and not None
+                log.warning(
+                    f"Unexpected surface field type or value in DB for ATP tournament '{tourney_name_from_db or tour}'. Asking user."
+                )
+            if input_surface:
+                surface = input_surface
+            else:
+                surface = _get_surface_from_user_input(tourney_name_from_db or tour)
 
-    return surface, query_surface, tour_id, tourney_name
+    else:  # WTA
+        qs_item = (
+            WtaMatch.objects.filter(
+                Q(tourney_name__icontains=tour)
+                & ~Q(tourney_name__icontains="double")
+                & Q(start_at__gte=from_at)
+            )
+            .values("surface", "tourney_name", "tour_id")
+            .first()
+        )
+        log.info(f"Queried WtaMatch for WTA tournament '{tour}': {qs_item}")
+
+        db_surface_value = None
+        if qs_item:
+            tour_id = qs_item.get("tour_id")
+            tourney_name_from_db = qs_item.get("tourney_name")
+            db_surface_value = qs_item.get("surface")
+
+        if db_surface_value and isinstance(db_surface_value, str):
+            normalized_surface = None
+            if "clay" in db_surface_value.lower():
+                normalized_surface = "clay"
+            elif "grass" in db_surface_value.lower():
+                normalized_surface = "grass"
+            elif "hard" in db_surface_value.lower():
+                normalized_surface = "hard"
+
+            if normalized_surface:
+                surface = normalized_surface
+                log.info(
+                    f"Determined surface from DB: {surface} for {tourney_name_from_db or tour}"
+                )
+            else:
+                log.warning(
+                    f"Unrecognized surface value '{db_surface_value}' in DB for {tourney_name_from_db or tour}. Asking user."
+                )
+                if input_surface:
+                    surface = input_surface
+                else:
+                    surface = _get_surface_from_user_input(tourney_name_from_db or tour)
+        else:
+            if db_surface_value is None:
+                log.warning(
+                    f"Surface field is None in DB for WTA tournament '{tourney_name_from_db or tour}'. Asking user."
+                )
+            elif not qs_item:
+                log.warning(
+                    f"No DB record found for WTA tournament '{tour}'. Asking user."
+                )
+            else:  # Should not happen if db_surface_value is not str and not None
+                log.warning(
+                    f"Unexpected surface field type or value in DB for WTA tournament '{tourney_name_from_db or tour}'. Asking user."
+                )
+            if input_surface:
+                surface = input_surface
+            else:
+                surface = _get_surface_from_user_input(tourney_name_from_db or tour)
+
+    query_surface = surface
+    final_tourney_name = tourney_name_from_db or tour
+
+    return surface, query_surface, tour_id, final_tourney_name
 
 
-def define_query_parameters(level, tour, now, end_at):
-    surface, query_surface, tour_id, tourney_name = define_surface(level, tour, now)
+def define_query_parameters(level, tour, now, end_at, surface=None):
+    surface, query_surface, tour_id, tourney_name = define_surface(
+        level, tour, now, surface
+    )
     if level == "atp":
         bet_qs = Bet.objects.all()
         match_qs = Match.objects.all()
@@ -159,8 +228,8 @@ def print_dataframe(data):
         "start_at",
         "winner_fullname",
         "loser_fullname",
-        #'home_id',
-        #'away_id',
+        # 'home_id',
+        # 'away_id',
         "home_player_id",
         "away_player_id",
         "home_fullname",

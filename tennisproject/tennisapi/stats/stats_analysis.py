@@ -1,9 +1,9 @@
-from django.conf import settings
 import logging
 import os
+
+from django.conf import settings
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from django.conf import settings
 
 
 def stats_analysis(
@@ -84,7 +84,6 @@ def stats_analysis(
 
     # Full preview
     preview = ai_message.content
-
 
     return preview
 

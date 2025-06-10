@@ -1,9 +1,9 @@
-from django.conf import settings
 import logging
 import os
+
+from django.conf import settings
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from django.conf import settings
 
 
 def match_analysis(data):
@@ -11,9 +11,9 @@ def match_analysis(data):
     logging.info(f"OpenAI API key: {open_api_key}")
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+    formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
 
-    file_handler = logging.FileHandler('openai_analysis.log', 'w', 'utf-8')
+    file_handler = logging.FileHandler("openai_analysis.log", "w", "utf-8")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
 
@@ -21,7 +21,7 @@ def match_analysis(data):
 
     chatgpt = ChatOpenAI(
         openai_api_key=open_api_key,
-        model_name='gpt-4',
+        model_name="gpt-4",
         temperature=0,
     )
 
@@ -74,6 +74,5 @@ def match_analysis(data):
     return preview, reasoning
 
 
-#if __name__ == '__main__':
- #   print(OPENAI_API_KEY)
-
+# if __name__ == '__main__':
+#   print(OPENAI_API_KEY)

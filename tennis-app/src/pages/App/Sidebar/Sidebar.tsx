@@ -26,6 +26,11 @@ const Sidebar: React.FC = () => {
                         <div className={styles.button}>Elo Ratings</div>
                     </Link>
                 </li>
+                <li>
+                    <Link to="/match-probability" className={styles.link}>
+                        <div className={styles.button}>Match Calculator</div>
+                    </Link>
+                </li>
             </ul>
         </div>
     );

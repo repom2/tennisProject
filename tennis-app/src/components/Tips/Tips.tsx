@@ -1,10 +1,11 @@
 import {getData} from "common/functions/betData";
 import {getPlayerStatistics} from "common/functions/playerStatistics";
+import Dropdown from "components/Dropdown/Dropdown";
 import {Bets} from "data/openapi";
 import React, {useState} from "react";
 import {useQuery} from "react-query";
+
 import styles from "./Tips.module.css";
-import Dropdown from "components/Dropdown/Dropdown";
 
 interface RenderTextProps {
     text?: string;
@@ -127,15 +128,19 @@ export const Tips: React.FC<TipsProps> = ({level}) => {
                         <th>StatsWin</th>
                         <th>Hard%</th>
                         <th>Clay%</th>
-                        <th>Show</th>
+                        <th>Grass%</th>
                         <th>S/RPW</th>
                         <th>Matches</th>
                         <th>S/RPW(Clay)</th>
                         <th>MClay</th>
+                        <th>S/RPW(Grass)</th>
+                        <th>MGrass</th>
                         <th>EloHard</th>
-                        <th></th>
+                        <th />
                         <th>EloClay</th>
-                        <th></th>
+                        <th />
+                        <th>EloGrass</th>
+                        <th />
                         <th>YElo</th>
                         <th>MLProb</th>
                         <th>H2H%</th>

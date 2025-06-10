@@ -111,6 +111,3 @@ The platform uses several ML models for predictions:
 
 [MIT License](LICENSE)
 
----
-
-### Contact

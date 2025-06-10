@@ -1,13 +1,14 @@
+import warnings
+
 import pandas as pd
 from django.db import connection
-import warnings
 from psycopg2.extensions import AsIs
+
 warnings.filterwarnings("ignore")
 
 
 def head_to_head_win_percentage(params):
-    query = \
-        """
+    query = """
         select 
             round(sum(player_1_won)::numeric / count(*)::numeric, 2) as player_1_won_percentage,
             count(*) as count 
@@ -28,19 +29,19 @@ def head_to_head_win_percentage(params):
 
     df = pd.read_sql(query, connection, params=params)
 
-    won = df.iloc[0]['player_1_won_percentage']
-    count = df.iloc[0]['count']
+    won = df.iloc[0]["player_1_won_percentage"]
+    count = df.iloc[0]["count"]
 
     return [won, count]
 
 
 def head2head(player1, player2, tour_table, matches_table, start_at):
     params = {
-        'tour_table': AsIs(tour_table),
-        'matches_table': AsIs(matches_table),
-        'player1': player1,
-        'player2': player2,
-        'start_at': start_at,
+        "tour_table": AsIs(tour_table),
+        "matches_table": AsIs(matches_table),
+        "player1": player1,
+        "player2": player2,
+        "start_at": start_at,
     }
 
     score = head_to_head_win_percentage(params)

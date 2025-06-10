@@ -1,9 +1,9 @@
 from django.urls import path, register_converter
+from rest_framework.generics import ListAPIView
+
+from . import views
 from .models import Players
 from .serializers import PlayerSerializer
-from rest_framework.generics import ListAPIView
-from . import views
-
 
 urlpatterns = [
     path(
@@ -16,6 +16,8 @@ urlpatterns = [
     ),
     path("atp-elo/", views.AtpEloList.as_view(), name="atp-elo"),
     path("bet-list/", views.BetList.as_view(), name="bet-list"),
-    path("player-statistics/", views.PlayerStatistics.as_view(), name="player-statistics"),
+    path(
+        "player-statistics/", views.PlayerStatistics.as_view(), name="player-statistics"
+    ),
     path("match-probs/", views.MatchProbability.as_view(), name="match-probs"),
 ]

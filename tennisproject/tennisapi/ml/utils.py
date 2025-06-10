@@ -1,11 +1,19 @@
 import logging
-from datetime import timedelta
-
-from psycopg2.extensions import AsIs
-from tennisapi.models import Bet, BetWta, AtpMatches, Match, Players, WtaMatch, WtaMatches, WTAPlayers
-from tabulate import tabulate
-from django.db.models import Q
 from datetime import datetime, timedelta
+
+from django.db.models import Q
+from psycopg2.extensions import AsIs
+from tabulate import tabulate
+from tennisapi.models import (
+    AtpMatches,
+    Bet,
+    BetWta,
+    Match,
+    Players,
+    WtaMatch,
+    WtaMatches,
+    WTAPlayers,
+)
 
 log = logging.getLogger(__name__)
 
@@ -24,17 +32,14 @@ def label_round(data, mapping):
 def define_surface(level, tour, from_at):
     from_at = from_at - timedelta(days=10)
     if level == "atp":
-        qs = (
-            Match.objects.filter(
-                Q(tourney_name__icontains=tour) &
-                ~Q(tourney_name__icontains="double") &
-                Q(start_at__gte=from_at)
-                #& Q(surface__isnull=False)
-            )
-            .values("surface", "tourney_name", "tour_id")[2]
-        )
+        qs = Match.objects.filter(
+            Q(tourney_name__icontains=tour)
+            & ~Q(tourney_name__icontains="double")
+            & Q(start_at__gte=from_at)
+            # & Q(surface__isnull=False)
+        ).values("surface", "tourney_name", "tour_id")[2]
         log.info(qs)
-        log.info('level: %s', level)
+        log.info("level: %s", level)
         if qs is None:
             logging.info("qs not found: %s", qs)
             exit()
@@ -64,10 +69,10 @@ def define_surface(level, tour, from_at):
     else:
         qs = (
             WtaMatch.objects.filter(
-                Q(tourney_name__icontains=tour) &
-                ~Q(tourney_name__icontains="double") &
-                Q(start_at__gte=from_at)
-                #& Q(surface__isnull=False)
+                Q(tourney_name__icontains=tour)
+                & ~Q(tourney_name__icontains="double")
+                & Q(start_at__gte=from_at)
+                # & Q(surface__isnull=False)
             )
             .values("surface", "tourney_name", "tour_id")
             .first()
@@ -77,11 +82,11 @@ def define_surface(level, tour, from_at):
             logging.info("Queryset not found: %s", qs)
             exit()
         surface = qs["surface"]
-        logging.info('surface: %s', surface)
+        logging.info("surface: %s", surface)
         if surface is None:
             logging.info("Surface not found: %s", qs)
             surface = "clay"
-            #exit()
+            # exit()
         tour_id = qs["tour_id"]
         tourney_name = qs["tourney_name"]
 
@@ -147,6 +152,7 @@ def define_query_parameters(level, tour, now, end_at):
     }
     log.info("Surface: %s", surface)
     return params, match_qs, bet_qs, player_qs, surface
+
 
 def print_dataframe(data):
     columns = [

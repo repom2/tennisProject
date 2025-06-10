@@ -20,7 +20,7 @@ poetry run python manage.py hockey_elo liiga-home
 
 docker compose exec tennisproject poetry run python manage.py hockey pred 'liiga'
 
-docker compose exec tennisproject poetry run python manage.py sportscore football-events-by-leagues
+docker compose exec tennisproject poetry run python manage.py football_data events
 docker compose exec tennisproject poetry run python manage.py sportscore ice-hockey-events-by-leagues
 docker compose exec tennisproject poetry run python manage.py sportscore tennis-events-by-sections #ALL
 docker compose exec tennisproject poetry run python manage.py sportscore tennis-tournaments
@@ -34,6 +34,6 @@ docker compose exec tennisproject poetry run python manage.py football all
 
 docker compose exec tennisproject poetry run python manage.py elo_rate atp 'clay'
 
-docker compose exec tennisproject poetry run python manage.py predict predict 'at' 'rome'
+docker compose exec tennisproject poetry run python manage.py predict predict 'at' 'roland-garros'
 
 docker compose exec tennisproject poetry run python manage.py football pred 'premier'

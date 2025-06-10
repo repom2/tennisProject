@@ -1,12 +1,13 @@
+import warnings
+
 import pandas as pd
 from django.db import connection
-import warnings
+
 warnings.filterwarnings("ignore")
 
 
 def player_opponents(params):
-    query = \
-        """
+    query = """
             select
                date,
                opponent,
@@ -37,7 +38,7 @@ def player_opponents(params):
                 then l_secondwon
                 else w_secondwon end as opponen_secondwon
             from %(matches_table)s a 
-            where surface ilike '%%%(surface)s%%' and 
+            where surface ilike '%%%(query_surface)s%%' and 
             (winner_id = %(player_id)s or loser_id = %(player_id)s)
             and a.date between (date(%(start_at)s) - interval '2 year') and %(start_at)s
             ) s order by date desc
@@ -48,26 +49,26 @@ def player_opponents(params):
     return df
 
 
-def common_opponent(params, player1, player2, event_spw,start_at):
+def common_opponent(params, player1, player2, event_spw, start_at):
 
-    params['start_at'] = start_at
-    params['player_id'] = player1
+    params["start_at"] = start_at
+    params["player_id"] = player1
     player1 = player_opponents(params)
-    params['player_id'] = player2
+    params["player_id"] = player2
     player2 = player_opponents(params)
 
     common = list(set(player2.opponent))
-    player1 = player1[player1['opponent'].isin(common)]
+    player1 = player1[player1["opponent"].isin(common)]
     common = list(set(player1.opponent))
-    player2 = player2[player2['opponent'].isin(common)]
+    player2 = player2[player2["opponent"].isin(common)]
 
     count = len(player1)
 
-    player1_spw = player1['spw'].mean()
-    player1_rpw = player1['rpw'].mean()
+    player1_spw = player1["spw"].mean()
+    player1_rpw = player1["rpw"].mean()
 
-    player2_spw = player2['spw'].mean()
-    player2_rpw = player2['rpw'].mean()
+    player2_spw = player2["spw"].mean()
+    player2_rpw = player2["rpw"].mean()
     tour_spw, tour_rpw = 0.565, 0.435
 
     player1 = event_spw + (player1_spw - tour_spw) - (player2_rpw - tour_rpw)

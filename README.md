@@ -4,7 +4,9 @@ A comprehensive sports analytics platform for tennis and football match predicti
 
 ## Project Overview
 
-This platform combines sports data analytics with machine learning to provide predictions and insights for tennis and football matches. It's designed to analyze player statistics, calculate match probabilities, and provide betting recommendations based on statistical models.
+This platform combines sports data analytics with machine learning to provide predictions and insights for tennis and football
+matches. It's designed to analyze player statistics, calculate match probabilities, and provide betting recommendations based on
+statistical models.
 
 ## Technologies Used
 
@@ -18,11 +20,17 @@ This platform combines sports data analytics with machine learning to provide pr
 ### Frontend
 - React.js
 - TypeScript
-- Axios
 
 ### DevOps
 - Docker
 - Docker Compose
+
+## Screenshots
+![Screenshot 2025-05-12 160006](https://github.com/user-attachments/assets/282a1e7d-85d1-4de5-aa6a-1ade6815d7bd)
+*Homepage: Instantly see latest match predictions and player statistics.*
+
+![Screenshot 2025-05-12 at 15-50-34 Tennis AI](https://github.com/user-attachments/assets/1d839282-5ec6-4bda-8868-9fcc038ca58a)
+*Match Calculator: Calculate match probabilities*
 
 ## Architecture
 
